@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+    <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-6">
       <h2 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
         Building the <span className="text-blue-500">Future</span>, <br />
         One Byte at a Time.
