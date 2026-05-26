@@ -21,7 +21,7 @@ export default function RootLayout({
           <img 
             src="/logo2.png" 
             alt="CactusByte Logo" 
-            style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+            style={{ width: '200px', height: '200px', objectFit: 'contain' }}
           />
           <h1 className="text-2xl font-bold tracking-tighter">
             CACTUS<span className="text-blue-500">BYTE</span>
