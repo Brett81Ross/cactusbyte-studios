@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-gray-950 text-white min-h-screen`}>
         <nav className="p-6 border-b border-gray-800 flex items-center gap-4">
-          <img src="/logo1.png" alt="CactusByte Logo" className="h-10 w-10" />
+          <img src="/logo2.png" alt="CactusByte Logo" className="h-10 w-10" />
           <h1 className="text-2xl font-bold tracking-tighter">
             CACTUS<span className="text-blue-500">BYTE</span>
           </h1>
@@ -30,4 +30,3 @@ export default function RootLayout({
     </html>
   );
 }
-
