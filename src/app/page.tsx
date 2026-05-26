@@ -1,24 +1,26 @@
-export default function Home() {
+export default function ResaleIQ() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-      <h2 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
-        Building the <span className="text-blue-500">Future</span>, <br />
-        One Byte at a Time.
-      </h2>
-      
-      <p className="text-gray-400 text-lg md:text-xl max-w-2xl mb-10">
-        CactusByte Studios is a high-performance digital laboratory. 
-        We build AI-driven tools and scalable software designed to 
-        solve complex problems with elegant code.
+    <div className="max-w-4xl mx-auto py-12 px-6">
+      <h1 className="text-4xl font-bold mb-4">ResaleIQ</h1>
+      <p className="text-gray-400 mb-8">
+        Upload your item photos, and let our AI determine the optimal resale value.
       </p>
 
-      <div className="flex gap-4">
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-semibold transition">
-          View Projects
+      <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl">
+        <div className="border-2 border-dashed border-gray-700 p-12 text-center rounded-xl hover:border-blue-500 transition cursor-pointer">
+          <p className="text-gray-400">Drag & drop photos or click to upload</p>
+        </div>
+        
+        <button className="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition">
+          Analyze Item Value
         </button>
-        <button className="border border-gray-700 hover:border-gray-500 text-white px-8 py-3 rounded-full font-semibold transition">
-          Contact Us
-        </button>
+      </div>
+
+      <div className="mt-12">
+        <h3 className="text-xl font-semibold mb-4">Recent Valuations</h3>
+        <div className="bg-gray-900 p-4 rounded-lg text-gray-500 text-center">
+          No items analyzed yet. Start by uploading an image above.
+        </div>
       </div>
     </div>
   );
