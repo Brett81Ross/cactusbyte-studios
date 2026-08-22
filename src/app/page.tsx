@@ -3,9 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { studioApps, type StudioApp } from "../data/apps";
 
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 type ShareTarget = { name: string; url: string };
+type SyncInfo = {
+  version: string;
+  status: "Live" | "Repository";
+  synced: boolean;
+};
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -16,6 +21,8 @@ export default function Home() {
   const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [installMessage, setInstallMessage] = useState("");
+  const [syncInfo, setSyncInfo] = useState<Record<string, SyncInfo>>({});
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("cactusbyte-settings");
@@ -36,6 +43,7 @@ export default function Home() {
       setInstallPrompt(event);
     };
     window.addEventListener("beforeinstallprompt", handler as EventListener);
+    void syncRegistry(false);
     return () => window.removeEventListener("beforeinstallprompt", handler as EventListener);
   }, []);
 
@@ -51,14 +59,43 @@ export default function Home() {
   const visibleApps = useMemo(() => {
     const term = query.trim().toLowerCase();
     return studioApps.filter((app) => {
-      if (!showRepoOnly && app.status === "Repository") return false;
+      const currentStatus = syncInfo[app.id]?.status ?? app.status;
+      if (!showRepoOnly && currentStatus === "Repository") return false;
       if (category !== "All" && app.category !== category) return false;
       if (!term) return true;
       return `${app.name} ${app.description} ${app.category}`.toLowerCase().includes(term);
     });
-  }, [query, category, showRepoOnly]);
+  }, [query, category, showRepoOnly, syncInfo]);
 
-  const liveCount = studioApps.filter((app) => app.status === "Live").length;
+  const liveCount = studioApps.filter(
+    (app) => (syncInfo[app.id]?.status ?? app.status) === "Live"
+  ).length;
+
+  async function syncRegistry(notify = true) {
+    setSyncing(true);
+    try {
+      const response = await fetch("/api/registry", { cache: "no-store" });
+      if (!response.ok) throw new Error("Registry sync failed");
+      const payload = await response.json();
+      const next: Record<string, SyncInfo> = {};
+      for (const item of payload.apps ?? []) {
+        next[item.id] = {
+          version: item.version,
+          status: item.status,
+          synced: Boolean(item.synced),
+        };
+      }
+      setSyncInfo(next);
+      if (notify) {
+        const syncedCount = Object.values(next).filter((item) => item.synced).length;
+        setInstallMessage(`Registry synced. ${syncedCount}/${studioApps.length} app sources responded.`);
+      }
+    } catch {
+      if (notify) setInstallMessage("Registry sync could not complete. Saved app data is still available.");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   async function installApp() {
     if (installPrompt?.prompt) {
@@ -108,7 +145,7 @@ export default function Home() {
           <p className="eyebrow">ONE STUDIO · ONE LAUNCHPAD</p>
           <h2>Your CactusByte apps, organized in one place.</h2>
           <p className="hero-copy">
-            Launch live products, inspect repository-backed projects, share verified links, and track the foundation for CactusByte Core™ and ByteLink™.
+            Launch live products, inspect repository-backed projects, share verified links, and sync app identity and version data through the CactusByte App Registry™.
           </p>
         </div>
         <div className="stat-grid" aria-label="Studio summary">
@@ -126,7 +163,7 @@ export default function Home() {
       )}
 
       <section className="core-strip" aria-label="Proprietary foundation">
-        <div><span className="core-dot" /> <strong>CactusByte App Registry™</strong><small>Active foundation</small></div>
+        <div><span className="core-dot" /> <strong>CactusByte App Registry™</strong><small>Live source sync enabled</small></div>
         <div><span className="core-dot pending" /> <strong>CactusByte Core™</strong><small>Architecture reserved</small></div>
         <div><span className="core-dot pending" /> <strong>ByteLink™</strong><small>Protocol reserved</small></div>
       </section>
@@ -137,7 +174,12 @@ export default function Home() {
             <p className="eyebrow">APP MATRIX</p>
             <h2>Studio Registry</h2>
           </div>
-          <span className="result-count">{visibleApps.length} shown</span>
+          <div className="section-actions">
+            <span className="result-count">{visibleApps.length} shown</span>
+            <button className="secondary-button" onClick={() => void syncRegistry(true)} disabled={syncing}>
+              {syncing ? "Syncing…" : "Sync Registry"}
+            </button>
+          </div>
         </div>
 
         <div className="controls">
@@ -160,7 +202,7 @@ export default function Home() {
 
         <div className={`app-grid ${compact ? "compact" : ""}`}>
           {visibleApps.map((app) => (
-            <AppCard key={app.id} app={app} onShare={setShareTarget} />
+            <AppCard key={app.id} app={app} sync={syncInfo[app.id]} onShare={setShareTarget} />
           ))}
         </div>
       </section>
@@ -209,12 +251,26 @@ export default function Home() {
   );
 }
 
-function AppCard({ app, onShare }: { app: StudioApp; onShare: (target: ShareTarget) => void }) {
+function AppCard({ app, sync, onShare }: { app: StudioApp; sync?: SyncInfo; onShare: (target: ShareTarget) => void }) {
+  const status = sync?.status ?? app.status;
+  const version = sync?.version ?? app.version;
+
   return (
     <article className="app-card">
       <div className="card-topline">
-        <div className="app-mark"><img src="/logo2.png" alt="" aria-hidden="true" /></div>
-        <div className={`status-pill ${app.status === "Live" ? "live" : "repo"}`}>{app.status}</div>
+        <div className="app-mark">
+          <img
+            src={app.logo}
+            alt={`${app.shortName} logo`}
+            loading="lazy"
+            onError={(event) => {
+              const image = event.currentTarget;
+              image.onerror = null;
+              image.src = "/logo2.png";
+            }}
+          />
+        </div>
+        <div className={`status-pill ${status === "Live" ? "live" : "repo"}`}>{status}</div>
       </div>
       <div className="app-copy">
         <span className="category-tag">{app.category}</span>
@@ -223,7 +279,7 @@ function AppCard({ app, onShare }: { app: StudioApp; onShare: (target: ShareTarg
       </div>
       <div className="app-meta">
         <span>{app.platform}</span>
-        <span>{app.version}</span>
+        <span>{version}</span>
       </div>
       <div className="card-actions">
         {app.url ? (
@@ -236,7 +292,7 @@ function AppCard({ app, onShare }: { app: StudioApp; onShare: (target: ShareTarg
       <details>
         <summary>Details</summary>
         <div className="details-body">
-          <span>{app.linkSource}</span>
+          <span>{app.linkSource}{sync?.synced ? " · source synced" : ""}</span>
           <a href={app.repo} target="_blank" rel="noreferrer">Repository</a>
         </div>
       </details>
