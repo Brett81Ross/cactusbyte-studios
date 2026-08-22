@@ -1,36 +1,34 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "CactusByte Studios",
-  description: "Realize your potential with CactusByte Studios.",
+  title: "Cactus🌵Byte Studios™",
+  description: "The official Cactus🌵Byte Studios™ command center for apps, launches, updates, and sharing.",
+  applicationName: "Cactus🌵Byte Studios™",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/logo2.png",
+    apple: "/logo2.png",
+  },
+  openGraph: {
+    title: "Cactus🌵Byte Studios™",
+    description: "One command center for the Cactus🌵Byte Studios™ app ecosystem.",
+    images: ["/logo2.png"],
+    type: "website",
+  },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#050807",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-gray-950 text-white min-h-screen`}>
-        <nav className="p-6 border-b border-gray-800 flex items-center gap-4">
-          <img 
-            src="/logo2.png" 
-            alt="CactusByte Logo" 
-            style={{ width: '200px', height: '200px', objectFit: 'contain' }}
-          />
-          <h1 className="text-2xl font-bold tracking-tighter">
-            CACTUS<span className="text-blue-500">BYTE</span>
-          </h1>
-        </nav>
-        <main className="p-6">
-          {children}
-        </main>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
