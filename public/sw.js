@@ -1,4 +1,4 @@
-const CACHE = "cactusbyte-studios-v1.0.0";
+const CACHE = "cactusbyte-studios-v1.0.1";
 const CORE = ["/", "/logo2.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
