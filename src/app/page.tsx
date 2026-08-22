@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { studioApps, type StudioApp } from "../data/apps";
 
-const VERSION = "1.0.1";
+const VERSION = "1.0.2";
 
 type ShareTarget = { name: string; url: string };
 type SyncInfo = {
@@ -254,22 +254,28 @@ export default function Home() {
 function AppCard({ app, sync, onShare }: { app: StudioApp; sync?: SyncInfo; onShare: (target: ShareTarget) => void }) {
   const status = sync?.status ?? app.status;
   const version = sync?.version ?? app.version;
+  const ghostLaneMark = app.id === "ghostlane";
 
   return (
     <article className="app-card">
-      <div className="card-topline">
-        <div className="app-mark">
-          <img
-            src={app.logo}
-            alt={`${app.shortName} logo`}
-            loading="lazy"
-            onError={(event) => {
-              const image = event.currentTarget;
-              image.onerror = null;
-              image.src = "/logo2.png";
-            }}
-          />
-        </div>
+      <div
+        className="app-mark"
+        style={ghostLaneMark ? { width: 56, height: 56, borderRadius: "50%", borderColor: "rgba(109,255,227,.32)" } : undefined}
+      >
+        <img
+          src={app.logo}
+          alt={`${app.shortName} logo`}
+          loading="lazy"
+          style={ghostLaneMark ? { width: 54, height: 54, objectFit: "cover", borderRadius: "50%" } : undefined}
+          onError={(event) => {
+            const image = event.currentTarget;
+            image.onerror = null;
+            image.src = "/logo2.png";
+          }}
+        />
+      </div>
+      <div className="card-topline" style={{ marginTop: ghostLaneMark ? -56 : 0 }}>
+        <span aria-hidden="true" />
         <div className={`status-pill ${status === "Live" ? "live" : "repo"}`}>{status}</div>
       </div>
       <div className="app-copy">
