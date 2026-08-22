@@ -129,7 +129,7 @@ export const studioApps: StudioApp[] = [
     platform: "Web + Mobile",
     status: "Repository",
     version: "v1.1.0",
-    logo: "https://raw.githubusercontent.com/Brett81Ross/fantasy-football-selector-matrix/main/icons/icon-192.png",
+    logo: "https://raw.githubusercontent.com/Brett81Ross/fantasy-football-selector-matrix/main/icons/ffm-logo-512.png",
     syncSource: "https://raw.githubusercontent.com/Brett81Ross/fantasy-football-selector-matrix/main/index.html",
     repo: "https://github.com/Brett81Ross/fantasy-football-selector-matrix",
     linkSource: "GitHub verified · production link pending",
