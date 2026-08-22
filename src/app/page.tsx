@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { studioApps, type StudioApp } from "../data/apps";
 
-const VERSION = "1.0.2";
+const VERSION = "1.0.3";
 
 type ShareTarget = { name: string; url: string };
 type SyncInfo = { version: string; status: "Live" | "Repository"; synced: boolean };
@@ -136,7 +136,7 @@ function AppCard({ app, sync, onShare }: { app: StudioApp; sync?: SyncInfo; onSh
     <article className="app-card">
       <div className="card-topline">
         <div className="app-mark" style={ghostLaneMark ? { width: 56, height: 56, borderRadius: "50%", borderColor: "rgba(109,255,227,.32)" } : undefined}>
-          <img src={app.logo} alt={`${app.shortName} logo`} loading="lazy" style={ghostLaneMark ? { width: 54, height: 54, objectFit: "cover", borderRadius: "50%" } : undefined} onError={(event) => { const image = event.currentTarget; image.onerror = null; image.src = "/logo2.png"; }} />
+          <img src={app.logo} alt={`${app.shortName} logo`} loading="lazy" style={ghostLaneMark ? { width: 54, height: 54, objectFit: "cover", borderRadius: "50%" } : undefined} onError={(event) => { event.currentTarget.style.visibility = "hidden"; }} />
         </div>
         <div className={`status-pill ${status === "Live" ? "live" : "repo"}`}>{status}</div>
       </div>
