@@ -1,0 +1,130 @@
+export type StudioApp = {
+  id: string;
+  name: string;
+  shortName: string;
+  description: string;
+  category: string;
+  platform: "Android + iOS" | "Web + Mobile";
+  status: "Live" | "Repository";
+  version: string;
+  url?: string;
+  repo: string;
+  linkSource: string;
+};
+
+export const studioApps: StudioApp[] = [
+  {
+    id: "noproblem",
+    name: "No Problem Pressure Washing Matrix™",
+    shortName: "No Problem Matrix",
+    description: "AI-assisted estimating and field workflow for fast, accurate exterior-cleaning quotes.",
+    category: "Business",
+    platform: "Android + iOS",
+    status: "Live",
+    version: "Sync pending",
+    url: "https://noproblem-pws.vercel.app/",
+    repo: "https://github.com/Brett81Ross/noproblem.pws",
+    linkSource: "Vercel verified",
+  },
+  {
+    id: "machzero",
+    name: "MachZero™",
+    shortName: "MachZero",
+    description: "AI-powered item appraisal and resale decision support built for speed and evidence-based pricing.",
+    category: "Commerce",
+    platform: "Android + iOS",
+    status: "Live",
+    version: "Sync pending",
+    url: "https://machzero-beta.vercel.app/",
+    repo: "https://github.com/Brett81Ross/machzero",
+    linkSource: "Vercel verified",
+  },
+  {
+    id: "rapid-takeoff",
+    name: "Rapid Takeoff™",
+    shortName: "Rapid Takeoff",
+    description: "AI-assisted blueprint analysis, takeoffs, estimating, and project planning for construction trades.",
+    category: "Construction",
+    platform: "Web + Mobile",
+    status: "Live",
+    version: "Sync pending",
+    url: "https://blueprint-estimator.vercel.app/",
+    repo: "https://github.com/Brett81Ross/blueprint_estimator-",
+    linkSource: "Vercel verified",
+  },
+  {
+    id: "acelynn-pro",
+    name: "Acelynn Pro™",
+    shortName: "Acelynn Pro",
+    description: "Audio and frequency diagnostics with mobile-first analysis tools.",
+    category: "Diagnostics",
+    platform: "Android + iOS",
+    status: "Live",
+    version: "Sync pending",
+    url: "https://acelynn.vercel.app/",
+    repo: "https://github.com/Brett81Ross/Acelynn",
+    linkSource: "Vercel verified",
+  },
+  {
+    id: "pocketstomp",
+    name: "PocketStomp™",
+    shortName: "PocketStomp",
+    description: "Mobile skate coaching and session intelligence built around real-time rider feedback.",
+    category: "Sports",
+    platform: "Android + iOS",
+    status: "Live",
+    version: "Sync pending",
+    url: "https://pocketstomp-v2-brett81ross.vercel.app/",
+    repo: "https://github.com/Brett81Ross/pocketstomp",
+    linkSource: "Vercel verified",
+  },
+  {
+    id: "ghostlane",
+    name: "GhostLane™",
+    shortName: "GhostLane",
+    description: "Privacy-focused automotive radar and navigation tooling with route-awareness features.",
+    category: "Navigation",
+    platform: "Android + iOS",
+    status: "Live",
+    version: "Sync pending",
+    url: "https://ghostlane-app.vercel.app/radar.html",
+    repo: "https://github.com/Brett81Ross/ghostlane-app",
+    linkSource: "Known share link",
+  },
+  {
+    id: "first-bearing",
+    name: "First Bearing™",
+    shortName: "First Bearing",
+    description: "Recovery-focused compass, daily support, and structured guidance tools.",
+    category: "Wellness",
+    platform: "Android + iOS",
+    status: "Repository",
+    version: "Sync pending",
+    repo: "https://github.com/Brett81Ross/first-bearing",
+    linkSource: "GitHub verified · production link pending",
+  },
+  {
+    id: "fantasy-matrix",
+    name: "Fantasy Football Selector Matrix™",
+    shortName: "Fantasy Matrix",
+    description: "Draft-day player selection and roster intelligence for fast fantasy-football decisions.",
+    category: "Sports",
+    platform: "Web + Mobile",
+    status: "Repository",
+    version: "Sync pending",
+    repo: "https://github.com/Brett81Ross/fantasy-football-selector-matrix",
+    linkSource: "GitHub verified · production link pending",
+  },
+  {
+    id: "scouttrace",
+    name: "Acelynn’s ScoutTrace™",
+    shortName: "ScoutTrace",
+    description: "Mobile diagnostics, scanning, and security-focused device intelligence.",
+    category: "Security",
+    platform: "Android + iOS",
+    status: "Repository",
+    version: "Sync pending",
+    repo: "https://github.com/Brett81Ross/acelynn_scoutrace",
+    linkSource: "GitHub verified · production link pending",
+  },
+];
