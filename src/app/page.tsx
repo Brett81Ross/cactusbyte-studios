@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { studioApps, type StudioApp } from "../data/apps";
 
-const VERSION = "1.1.0";
+const VERSION = "1.1.1";
 
 type ShareTarget = { name: string; url: string };
 type SyncInfo = { version: string; status: "Live" | "Repository"; synced: boolean };
@@ -23,7 +23,21 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem("cactusbyte-settings");
     if (saved) { try { const settings = JSON.parse(saved); setShowRepoOnly(settings.showRepoOnly ?? true); setCompact(settings.compact ?? false); } catch {} }
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+
+    // CactusByte Studios intentionally does not use a service worker.
+    // Remove any worker/cache left behind by earlier releases so stale app
+    // registry data, logos, and deployment state cannot override live data.
+    if ("serviceWorker" in navigator) {
+      void navigator.serviceWorker.getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+        .catch(() => undefined);
+    }
+    if ("caches" in window) {
+      void caches.keys()
+        .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+        .catch(() => undefined);
+    }
+
     const handler = (event: Event) => { event.preventDefault(); setInstallPrompt(event); };
     window.addEventListener("beforeinstallprompt", handler as EventListener);
     void syncRegistry(false);
