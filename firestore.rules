@@ -2,78 +2,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
-    function profile() {
-      return get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data;
-    }
-    function staff() {
-      return signedIn() && (profile().role == "owner" || profile().role == "moderator");
-    }
+    function profile() { return get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data; }
+    function staff() { return signedIn() && (profile().role == "owner" || profile().role == "moderator"); }
 
     match /profiles/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || staff());
-      allow create: if signedIn() && request.auth.uid == uid
-        && request.resource.data.role == "user";
-      allow update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.role == resource.data.role;
+      allow create: if signedIn() && request.auth.uid == uid && request.resource.data.role == "user";
+      allow update: if signedIn() && request.auth.uid == uid && request.resource.data.role == resource.data.role;
     }
-
     match /feedback/{id} {
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || staff());
       allow update: if staff();
     }
-
     match /ideas/{id} {
       allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if staff() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "New"
+        && request.resource.data.grandfatheredAccess == false
+        && request.resource.data.creatorBonusEligible == false
+        && request.resource.data.creatorBonusStatus == "Not Eligible";
+      allow update: if staff();
+      allow delete: if staff() || (signedIn() && resource.data.userId == request.auth.uid && resource.data.status == "New");
     }
-
     match /ideaVotes/{id} {
       allow read: if signedIn();
       allow create, delete: if signedIn() && request.resource.data.userId == request.auth.uid;
     }
-
-    match /chatChannels/{id} {
-      allow read: if signedIn();
-      allow write: if staff();
-    }
-
+    match /chatChannels/{id} { allow read: if signedIn(); allow write: if staff(); }
     match /chatMessages/{id} {
       allow read: if signedIn() && (!resource.data.hidden || staff());
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if staff() || (signedIn() && resource.data.userId == request.auth.uid);
     }
-
     match /chatBlocks/{id} {
       allow create: if signedIn() && request.resource.data.blockerId == request.auth.uid;
       allow read, delete: if signedIn() && resource.data.blockerId == request.auth.uid;
       allow update: if false;
     }
-
     match /chatReports/{id} {
       allow create: if signedIn() && request.resource.data.reporterId == request.auth.uid;
       allow read, update: if staff();
     }
-
     match /entitlements/{id} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || staff());
       allow write: if false;
     }
-
     match /byteLinkMessages/{id} {
       allow create: if signedIn() && request.resource.data.senderUserId == request.auth.uid;
       allow read, update: if signedIn() && (resource.data.senderUserId == request.auth.uid || staff());
     }
-
-    match /ideaRadarRuns/{id} {
-      allow read: if staff();
-      allow write: if false;
-    }
-
-    match /ideaRadarEvidence/{id} {
-      allow read: if staff();
-      allow write: if false;
-    }
+    match /ideaRadarRuns/{id} { allow read: if staff(); allow write: if false; }
+    match /ideaRadarEvidence/{id} { allow read: if staff(); allow write: if false; }
   }
 }
