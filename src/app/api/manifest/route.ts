@@ -1,2 +1,4 @@
 import { NextResponse } from "next/server";
-export async function GET(){return NextResponse.json({cactusbyte:"1.0",appId:"cactusbyte-studios",name:"Cactus🌵Byte Studios™",version:"1.2.0",channel:"stable",capabilities:["registry","sharing","feedback","ideas","community-preview","device-customization","core-development","bytelink-development"]},{headers:{"Cache-Control":"no-store"}})}
+import { studioApps } from "../../../data/apps";
+export const dynamic="force-dynamic";
+export async function GET(){return NextResponse.json({cactusbyte:"1.0",appId:"cactusbyte-studios",name:"Cactus🌵Byte Studios™",version:"1.3.0",channel:"stable",byteLink:{compatible:true,protocol:"1.0-development",state:"development"},capabilities:["registry","firebase-auth","feedback","idea-forge","community","bytelink-queue","device-customization","support"],apps:studioApps.map(({id,name,version,status,url,logo,channel,capabilities})=>({id,name,version,status,url,logo,channel,capabilities}))},{headers:{"Cache-Control":"no-store"}})}
