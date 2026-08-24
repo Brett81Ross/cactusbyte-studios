@@ -3,148 +3,54 @@
 import { useEffect, useMemo, useState } from "react";
 import { studioApps, type StudioApp } from "../data/apps";
 
-const VERSION = "1.1.1";
+const VERSION = "1.2.0";
+type Tab = "apps"|"ideas"|"feedback"|"community"|"pulse"|"releases"|"owner";
+type Sync = {version:string;status:string;synced:boolean};
+type Prefs = {accent:string;compact:boolean;layout:"grid"|"list";favorites:string[];hidden:string[];order:string[]};
+type Feedback = {id:string;category:string;appId:string;message:string;status:string;createdAt:string};
+type Idea = {id:string;title:string;problem:string;status:string;votes:number;source:"user"|"radar"};
+type Msg = {id:string;channel:string;name:string;text:string;createdAt:string};
+const DEFAULT:Prefs={accent:"#00d5be",compact:false,layout:"grid",favorites:[],hidden:[],order:studioApps.map(a=>a.id)};
+const radarSeeds:Idea[]=[
+ {id:"radar-field-photo",title:"Field Photo Memory™",problem:"Contractors lose context across jobsite photos and follow-up visits.",status:"Researching",votes:0,source:"radar"},
+ {id:"radar-property",title:"Property Maintenance Matrix™",problem:"Property owners juggle recurring exterior maintenance across disconnected services.",status:"Researching",votes:0,source:"radar"}
+];
+const read=<T,>(k:string,f:T):T=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch{return f}};
+const uid=(p:string)=>`${p}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`.toUpperCase();
 
-type ShareTarget = { name: string; url: string };
-type SyncInfo = { version: string; status: "Live" | "Repository"; synced: boolean };
-
-export default function Home() {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
-  const [showRepoOnly, setShowRepoOnly] = useState(true);
-  const [compact, setCompact] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [installMessage, setInstallMessage] = useState("");
-  const [syncInfo, setSyncInfo] = useState<Record<string, SyncInfo>>({});
-  const [syncing, setSyncing] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("cactusbyte-settings");
-    if (saved) { try { const settings = JSON.parse(saved); setShowRepoOnly(settings.showRepoOnly ?? true); setCompact(settings.compact ?? false); } catch {} }
-
-    // CactusByte Studios intentionally does not use a service worker.
-    // Remove any worker/cache left behind by earlier releases so stale app
-    // registry data, logos, and deployment state cannot override live data.
-    if ("serviceWorker" in navigator) {
-      void navigator.serviceWorker.getRegistrations()
-        .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
-        .catch(() => undefined);
-    }
-    if ("caches" in window) {
-      void caches.keys()
-        .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
-        .catch(() => undefined);
-    }
-
-    const handler = (event: Event) => { event.preventDefault(); setInstallPrompt(event); };
-    window.addEventListener("beforeinstallprompt", handler as EventListener);
-    void syncRegistry(false);
-    return () => window.removeEventListener("beforeinstallprompt", handler as EventListener);
-  }, []);
-
-  useEffect(() => { localStorage.setItem("cactusbyte-settings", JSON.stringify({ showRepoOnly, compact })); }, [showRepoOnly, compact]);
-
-  const categories = useMemo(() => ["All", ...Array.from(new Set(studioApps.map((app) => app.category))).sort()], []);
-  const visibleApps = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    return studioApps.filter((app) => {
-      const currentStatus = syncInfo[app.id]?.status ?? app.status;
-      if (!showRepoOnly && currentStatus === "Repository") return false;
-      if (category !== "All" && app.category !== category) return false;
-      return !term || `${app.name} ${app.description} ${app.category}`.toLowerCase().includes(term);
-    });
-  }, [query, category, showRepoOnly, syncInfo]);
-  const liveCount = studioApps.filter((app) => (syncInfo[app.id]?.status ?? app.status) === "Live").length;
-  const monetizedCount = studioApps.filter((app) => app.monetization).length;
-
-  async function syncRegistry(notify = true) {
-    setSyncing(true);
-    try {
-      const response = await fetch("/api/registry", { cache: "no-store" });
-      if (!response.ok) throw new Error("Registry sync failed");
-      const payload = await response.json();
-      const next: Record<string, SyncInfo> = {};
-      for (const item of payload.apps ?? []) next[item.id] = { version: item.version, status: item.status, synced: Boolean(item.synced) };
-      setSyncInfo(next);
-      if (notify) setInstallMessage(`Registry synced. ${Object.values(next).filter((item) => item.synced).length}/${studioApps.length} app sources responded.`);
-    } catch { if (notify) setInstallMessage("Registry sync could not complete. Saved app data is still available."); }
-    finally { setSyncing(false); }
-  }
-
-  async function installApp() {
-    if (installPrompt?.prompt) { await installPrompt.prompt(); setInstallPrompt(null); return; }
-    setInstallMessage("Android: browser menu → Install app. iPhone/iPad: Share → Add to Home Screen.");
-  }
-
-  async function nativeShare(target: ShareTarget) {
-    const data = { title: target.name, text: `${target.name} by Cactus🌵Byte Studios™`, url: target.url };
-    if (navigator.share) { try { await navigator.share(data); return; } catch {} }
-    await navigator.clipboard.writeText(target.url); setInstallMessage("Link copied to clipboard.");
-  }
-
-  function shareStudio() { setShareTarget({ name: "Cactus🌵Byte Studios™", url: window.location.href }); }
-
-  return (
-    <main className="app-shell">
-      <header className="topbar">
-        <div className="brand-lockup"><img src="/logo2.png" alt="Cactus Byte Studios logo" className="brand-logo" /><div><p className="eyebrow">APP ECOSYSTEM</p><h1>Cactus<span>🌵</span>Byte Studios™</h1><p className="brand-subtitle">Command Center · v{VERSION}</p></div></div>
-        <div className="top-actions"><button className="icon-button" onClick={installApp}>Install</button><button className="icon-button" onClick={shareStudio}>Share</button><button className="icon-button" onClick={() => setSettingsOpen(true)}>Settings</button></div>
-      </header>
-
-      <section className="hero-panel">
-        <div><p className="eyebrow">ONE STUDIO · ONE LAUNCHPAD</p><h2>Your CactusByte apps, now with a real storefront.</h2><p className="hero-copy">Try supported apps for free, then upgrade only when you need Pro. Every paid upgrade is routed through the same Cactus🌵Byte Studios Stripe account.</p></div>
-        <div className="stat-grid"><div className="stat-card"><strong>{studioApps.length}</strong><span>Registered apps</span></div><div className="stat-card"><strong>{liveCount}</strong><span>Launchable now</span></div><div className="stat-card"><strong>{monetizedCount}</strong><span>Pro catalogs live</span></div></div>
-      </section>
-
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12, marginBottom: 28 }}>
-        <div style={{ padding: 18, border: "1px solid var(--line)", borderRadius: 18, background: "rgba(0,213,190,.06)" }}><p className="eyebrow">FREEMIUM</p><strong style={{ display: "block", marginTop: 6, fontSize: "1.1rem" }}>Use before you buy</strong><span style={{ display: "block", color: "var(--muted)", marginTop: 6, fontSize: ".82rem", lineHeight: 1.5 }}>Free tiers stay useful. Pro removes the practical limits.</span></div>
-        <div style={{ padding: 18, border: "1px solid var(--line)", borderRadius: 18, background: "rgba(255,255,255,.025)" }}><p className="eyebrow">ONE STRIPE ACCOUNT</p><strong style={{ display: "block", marginTop: 6, fontSize: "1.1rem" }}>Centralized billing</strong><span style={{ display: "block", color: "var(--muted)", marginTop: 6, fontSize: ".82rem", lineHeight: 1.5 }}>Each app has its own Stripe product and subscription price, while payouts stay centralized.</span></div>
-      </section>
-
-      {installMessage && <div className="notice" role="status"><span>{installMessage}</span><button onClick={() => setInstallMessage("")} aria-label="Dismiss message">×</button></div>}
-
-      <section className="core-strip"><div><span className="core-dot" /><strong>CactusByte App Registry™</strong><small>Live source sync enabled</small></div><div><span className="core-dot" /><strong>Stripe Pro Catalog</strong><small>{monetizedCount} live upgrade paths</small></div><div><span className="core-dot pending" /><strong>ByteLink™</strong><small>Protocol reserved</small></div></section>
-
-      <section className="catalog-section">
-        <div className="section-heading"><div><p className="eyebrow">APP MATRIX</p><h2>Studio Registry</h2></div><div className="section-actions"><span className="result-count">{visibleApps.length} shown</span><button className="secondary-button" onClick={() => void syncRegistry(true)} disabled={syncing}>{syncing ? "Syncing…" : "Sync Registry"}</button></div></div>
-        <div className="controls"><label className="search-box"><span>Search</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps or categories" inputMode="search" /></label><label className="category-box"><span>Category</span><select value={category} onChange={(event) => setCategory(event.target.value)}>{categories.map((item) => <option value={item} key={item}>{item}</option>)}</select></label></div>
-        <div className={`app-grid ${compact ? "compact" : ""}`}>{visibleApps.map((app) => <AppCard key={app.id} app={app} sync={syncInfo[app.id]} onShare={setShareTarget} />)}</div>
-      </section>
-
-      <section className="foundation-panel"><div><p className="eyebrow">MONETIZATION FOUNDATION</p><h2>One storefront. Separate products. One Stripe destination.</h2></div><div className="foundation-grid"><article><strong>Free</strong><p>Each monetized app can offer a useful free tier before asking for payment.</p></article><article><strong>Pro</strong><p>Each paid plan has its own Stripe Product, recurring Price, and live Checkout link.</p></article><article><strong>Cactus🌵Byte</strong><p>The hub remains free and becomes the central catalog for the entire studio.</p></article></div></section>
-
-      <footer><img src="/logo2.png" alt="" aria-hidden="true" /><p>Cactus🌵Byte Studios™ v{VERSION} · Cactus🌵Byte Studios™ · All Rights Reserved</p></footer>
-
-      {settingsOpen && <Modal title="Settings" onClose={() => setSettingsOpen(false)}><div className="setting-row"><div><strong>Show repository-only apps</strong><span>Include projects without a verified live link.</span></div><input type="checkbox" checked={showRepoOnly} onChange={(e) => setShowRepoOnly(e.target.checked)} /></div><div className="setting-row"><div><strong>Compact app cards</strong><span>Fit more apps on screen.</span></div><input type="checkbox" checked={compact} onChange={(e) => setCompact(e.target.checked)} /></div><div className="settings-meta"><span>App version</span><strong>{VERSION}</strong><span>Registry records</span><strong>{studioApps.length}</strong><span>Payment model</span><strong>Freemium + Stripe</strong></div></Modal>}
-      {shareTarget && <Modal title={`Share ${shareTarget.name}`} onClose={() => setShareTarget(null)}><ShareCard target={shareTarget} onShare={nativeShare} /></Modal>}
-    </main>
-  );
+export default function Home(){
+ const [tab,setTab]=useState<Tab>("apps"),[prefs,setPrefs]=useState<Prefs>(DEFAULT),[sync,setSync]=useState<Record<string,Sync>>({});
+ const [feedback,setFeedback]=useState<Feedback[]>([]),[ideas,setIdeas]=useState<Idea[]>([]),[messages,setMessages]=useState<Msg[]>([]);
+ const [settings,setSettings]=useState(false),[share,setShare]=useState<StudioApp|null>(null),[notice,setNotice]=useState(""),[query,setQuery]=useState(""),[syncing,setSyncing]=useState(false),[owner,setOwner]=useState(false);
+ useEffect(()=>{setPrefs(read("cb-prefs-v12",DEFAULT));setFeedback(read("cb-feedback-v12",[]));setIdeas(read("cb-ideas-v12",radarSeeds));setMessages(read("cb-chat-v12",[]));if("serviceWorker" in navigator)void navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister())));if("caches" in window)void caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k))));void syncRegistry(false)},[]);
+ useEffect(()=>{localStorage.setItem("cb-prefs-v12",JSON.stringify(prefs));document.documentElement.style.setProperty("--cb-accent",prefs.accent)},[prefs]);
+ useEffect(()=>localStorage.setItem("cb-feedback-v12",JSON.stringify(feedback)),[feedback]);useEffect(()=>localStorage.setItem("cb-ideas-v12",JSON.stringify(ideas)),[ideas]);useEffect(()=>localStorage.setItem("cb-chat-v12",JSON.stringify(messages)),[messages]);
+ async function syncRegistry(show=true){setSyncing(true);try{const r=await fetch("/api/registry",{cache:"no-store"});if(!r.ok)throw 0;const p=await r.json();const n:Record<string,Sync>={};for(const x of p.apps??[])n[x.id]=x;setSync(n);if(show)setNotice(`Registry synced: ${Object.values(n).filter(x=>x.synced).length}/${studioApps.length} sources responded.`)}catch{if(show)setNotice("Registry source unavailable. Known LIVE links were preserved.")}finally{setSyncing(false)}}
+ const apps=useMemo(()=>{const rank=new Map(prefs.order.map((x,i)=>[x,i]));return studioApps.filter(a=>!prefs.hidden.includes(a.id)).filter(a=>!query||`${a.name} ${a.category}`.toLowerCase().includes(query.toLowerCase())).sort((a,b)=>Number(!prefs.favorites.includes(a.id))-Number(!prefs.favorites.includes(b.id))||(rank.get(a.id)??99)-(rank.get(b.id)??99))},[prefs,query]);
+ const version=(a:StudioApp)=>a.id==="noproblem"?"v1.0.0":sync[a.id]?.version??a.version;
+ const status=(a:StudioApp)=>sync[a.id]?.status??a.status;
+ const reorder=(from:string,to:string)=>setPrefs(p=>{const o=p.order.filter(x=>x!==from),i=o.indexOf(to);o.splice(i<0?o.length:i,0,from);return{...p,order:o}});
+ return <main className="cb-shell"><style>{CSS}</style>
+  <header><div><small>APP ECOSYSTEM</small><h1>Cactus🌵Byte Studios™</h1><p>Command Center · v{VERSION}</p></div><div className="top"><button onClick={()=>setSettings(true)}>My CactusByte</button><button onClick={()=>navigator.share?navigator.share({title:"Cactus🌵Byte Studios™",url:location.href}):navigator.clipboard.writeText(location.href)}>Share</button></div></header>
+  <section className="hero"><div><small>ONE STUDIO · ONE LAUNCHPAD</small><h2>Apps, ideas, feedback and community in one ecosystem.</h2><p>Build, discover, support and shape the CactusByte ecosystem while unfinished infrastructure stays clearly marked Development.</p></div><div className="stats"><b>{studioApps.length}<span>Apps</span></b><b>{studioApps.filter(a=>status(a)==="Live").length}<span>Live</span></b><b>{ideas.length}<span>Ideas</span></b></div></section>
+  {notice&&<div className="notice">{notice}<button onClick={()=>setNotice("")}>×</button></div>}
+  <nav>{(["apps","ideas","feedback","community","pulse","releases","owner"] as Tab[]).map(x=><button key={x} className={tab===x?"on":""} onClick={()=>setTab(x)}>{x==="ideas"?"Idea Forge":x[0].toUpperCase()+x.slice(1)}</button>)}</nav>
+  <section className="infra"><Status name="App Registry™" state="Connected"/><Status name="CactusByte Core™" state="Development"/><Status name="ByteLink™" state="Development"/></section>
+  {tab==="apps"&&<><div className="sectionHead"><div><small>APP MATRIX</small><h2>Studio Registry</h2></div><button onClick={()=>void syncRegistry()}>{syncing?"Syncing…":"Sync Registry"}</button></div><input className="search" placeholder="Search apps" value={query} onChange={e=>setQuery(e.target.value)}/><section className={`appGrid ${prefs.layout} ${prefs.compact?"compact":""}`}>{apps.map(a=><article className="card" key={a.id} draggable onDragStart={e=>e.dataTransfer.setData("text/plain",a.id)} onDragOver={e=>e.preventDefault()} onDrop={e=>reorder(e.dataTransfer.getData("text/plain"),a.id)}><div className="cardTop"><div className="logo"><img src={a.logo} alt={`${a.shortName} logo`}/></div><span className={`pill ${status(a)==="Live"?"live":"dev"}`}>{status(a)}</span></div><small>{a.category}</small><h3>{a.name}</h3><p>{a.description}</p><div className="meta"><span>{a.platform}</span><span>{version(a)}</span></div>{a.monetization&&<div className="price"><span>{a.monetization.free}</span><b>{a.monetization.proPrice}</b></div>}<div className="actions">{a.url?<a href={a.url} target="_blank">Open App</a>:<button disabled>Link Pending</button>}<button onClick={()=>setShare(a)}>Share</button></div><div className="mini"><button onClick={()=>setPrefs(p=>({...p,favorites:p.favorites.includes(a.id)?p.favorites.filter(x=>x!==a.id):[...p.favorites,a.id]}))}>{prefs.favorites.includes(a.id)?"Unpin":"Pin"}</button><button onClick={()=>setPrefs(p=>({...p,hidden:[...p.hidden,a.id]}))}>Hide</button></div></article>)}</section></>}
+  {tab==="ideas"&&<Ideas ideas={ideas} setIdeas={setIdeas} setNotice={setNotice}/>} {tab==="feedback"&&<FeedbackHub feedback={feedback} setFeedback={setFeedback}/>} {tab==="community"&&<Community messages={messages} setMessages={setMessages}/>} {tab==="pulse"&&<Pulse sync={sync} feedback={feedback} ideas={ideas}/>} {tab==="releases"&&<Releases version={version}/>} {tab==="owner"&&<Owner open={owner} setOpen={setOwner} sync={sync} feedback={feedback} ideas={ideas} version={version}/>} 
+  <section className="support"><div><small>FUEL THE NEXT UPDATE™</small><h2>Keep the command center free.</h2><p>One-time support stays separate from subscriptions and never buys votes or guarantees features.</p></div><div><button disabled>$2</button><button disabled>$5</button><button disabled>$10</button><button disabled>$25</button><small>Stripe one-time support link: Development</small></div></section>
+  <footer>Cactus🌵Byte Studios™ v{VERSION} · Cactus🌵Byte Studios™ · All Rights Reserved</footer>
+  {settings&&<Modal title="My CactusByte™" close={()=>setSettings(false)}><label>Accent<input type="color" value={prefs.accent} onChange={e=>setPrefs({...prefs,accent:e.target.value})}/></label><label>Layout<select value={prefs.layout} onChange={e=>setPrefs({...prefs,layout:e.target.value as Prefs["layout"]})}><option>grid</option><option>list</option></select></label><label><input type="checkbox" checked={prefs.compact} onChange={e=>setPrefs({...prefs,compact:e.target.checked})}/> Compact cards</label><button onClick={()=>setPrefs(DEFAULT)}>Restore CactusByte Default</button><button onClick={()=>setPrefs({...prefs,hidden:[]})}>Show hidden apps</button><p className="muted">These settings affect only this device.</p></Modal>}
+  {share&&<Modal title={`Share ${share.shortName}`} close={()=>setShare(null)}><div className="qr"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(share.url??share.repo)}`} alt="QR code"/><i><img src={share.logo} alt=""/></i></div><button onClick={()=>navigator.share?navigator.share({title:share.name,url:share.url??share.repo}):navigator.clipboard.writeText(share.url??share.repo)}>Share / Copy Link</button></Modal>}
+ </main>
 }
-
-function AppCard({ app, sync, onShare }: { app: StudioApp; sync?: SyncInfo; onShare: (target: ShareTarget) => void }) {
-  const status = sync?.status ?? app.status;
-  const version = sync?.version ?? app.version;
-  const monetization = app.monetization;
-  return (
-    <article className="app-card">
-      <div className="card-topline"><div className="app-mark"><img src={app.logo} alt={`${app.shortName} logo`} loading="lazy" onError={(event) => { event.currentTarget.style.visibility = "hidden"; }} /></div><div className={`status-pill ${status === "Live" ? "live" : "repo"}`}>{status}</div></div>
-      <div className="app-copy"><span className="category-tag">{app.category}</span><h3>{app.name}</h3><p>{app.description}</p></div>
-      {monetization && <div style={{ marginTop: 14, padding: 12, borderRadius: 14, border: "1px solid rgba(109,255,227,.15)", background: "rgba(0,213,190,.045)" }}><div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "baseline" }}><span style={{ color: "var(--muted)", fontSize: ".72rem" }}>FREE</span><strong style={{ color: "var(--teal-2)", fontSize: ".9rem" }}>{monetization.proPrice}</strong></div><div style={{ color: "var(--muted)", fontSize: ".76rem", marginTop: 5 }}>{monetization.free}</div></div>}
-      <div className="app-meta"><span>{app.platform}</span><span>{version}</span></div>
-      <div className="card-actions" style={{ gridTemplateColumns: monetization?.checkoutUrl ? "1fr 1fr" : "1fr auto" }}>{app.url ? <a className="primary-button" href={app.url} target="_blank" rel="noreferrer">Open App</a> : <button className="primary-button disabled" disabled>Link Pending</button>}{monetization?.checkoutUrl ? <a className="secondary-button" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }} href={monetization.checkoutUrl} target="_blank" rel="noreferrer">Upgrade</a> : <button className="secondary-button" onClick={() => onShare({ name: app.name, url: app.url || app.repo })}>Share</button>}</div>
-      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>{monetization?.checkoutUrl && <button className="secondary-button" style={{ flex: 1 }} onClick={() => onShare({ name: app.name, url: app.url || app.repo })}>Share</button>}</div>
-      <details><summary>Details</summary><div className="details-body"><span>{app.linkSource}{sync?.synced ? " · source synced" : ""}</span><a href={app.repo} target="_blank" rel="noreferrer">Repository</a></div></details>
-    </article>
-  );
-}
-
-function ShareCard({ target, onShare }: { target: ShareTarget; onShare: (target: ShareTarget) => Promise<void> }) {
-  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(target.url)}&color=00bfae&bgcolor=070b0a`;
-  return <div className="share-card"><div className="qr-frame"><img className="qr-image" src={qr} alt={`QR code for ${target.name}`} /><div className="qr-logo"><img src="/logo2.png" alt="" aria-hidden="true" /></div></div><strong>{target.name}</strong><p>{target.url}</p><button className="primary-button full" onClick={() => onShare(target)}>Share / Copy Link</button></div>;
-}
-
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="modal" role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()}><div className="modal-header"><h2>{title}</h2><button onClick={onClose} aria-label="Close">×</button></div>{children}</section></div>;
-}
+function Status({name,state}:{name:string;state:string}){return <div><i className={state==="Connected"?"green":"amber"}/><b>{name}</b><span>{state}</span></div>}
+function Ideas({ideas,setIdeas,setNotice}:{ideas:Idea[];setIdeas:(x:Idea[])=>void;setNotice:(x:string)=>void}){const[t,setT]=useState(""),[p,setP]=useState("");const add=()=>{if(!t.trim()||!p.trim())return;setIdeas([...ideas,{id:uid("IDEA"),title:t.trim(),problem:p.trim(),status:"New",votes:0,source:"user"}]);setT("");setP("")};return <section className="feature"><div className="sectionHead"><div><small>IDEA FORGE™ + IDEA RADAR™</small><h2>Community → Product Pipeline</h2></div><button onClick={()=>setNotice("Idea Radar™ is staged for scheduled internet research after Core research connectors are enabled.")}>Run Idea Radar</button></div><div className="form"><input placeholder="App idea / name" value={t} onChange={e=>setT(e.target.value)}/><textarea placeholder="What problem does it solve?" value={p} onChange={e=>setP(e.target.value)}/><button onClick={add}>Add Idea</button></div><div className="ideas">{ideas.map(x=><article key={x.id}><small>{x.source==="radar"?"AI RADAR":"USER IDEA"}</small><h3>{x.title}</h3><p>{x.problem}</p><button onClick={()=>setIdeas(ideas.map(i=>i.id===x.id?{...i,votes:i.votes+1}:i))}>Support · {x.votes}</button></article>)}</div></section>}
+function FeedbackHub({feedback,setFeedback}:{feedback:Feedback[];setFeedback:(x:Feedback[])=>void}){const[c,setC]=useState("Bug"),[app,setApp]=useState("cactusbyte-studios"),[m,setM]=useState("");const submit=()=>{if(!m.trim())return;setFeedback([{id:uid("CBF"),category:c,appId:app,message:m.trim(),status:"New",createdAt:new Date().toISOString()},...feedback]);setM("")};return <section className="feature"><small>CACTUSBYTE FEEDBACK HUB™</small><h2>Feedback + New App Ideas</h2><div className="form"><select value={c} onChange={e=>setC(e.target.value)}>{["Bug","Feature Request","Improvement","Billing","New App Idea","Other"].map(x=><option key={x}>{x}</option>)}</select><select value={app} onChange={e=>setApp(e.target.value)}><option value="cactusbyte-studios">CactusByte Studios</option>{studioApps.map(a=><option key={a.id} value={a.id}>{a.shortName}</option>)}</select><textarea value={m} onChange={e=>setM(e.target.value)} placeholder={c==="New App Idea"?"Describe the app idea and problem it solves":"Tell us what happened or what should improve"}/><button onClick={submit}>Submit Feedback</button></div><p className="muted">v1.2.0 stores feedback on this device until CactusByte Core shared storage is connected.</p>{feedback.slice(0,8).map(f=><div className="row" key={f.id}><b>{f.category}</b><span>{f.id}</span><p>{f.message}</p></div>)}</section>}
+function Community({messages,setMessages}:{messages:Msg[];setMessages:(x:Msg[])=>void}){const[ch,setCh]=useState("general"),[name,setName]=useState("Guest"),[text,setText]=useState("");const send=()=>{if(!text.trim())return;setMessages([...messages,{id:uid("MSG"),channel:ch,name:name||"Guest",text:text.trim(),createdAt:new Date().toISOString()}]);setText("")};return <section className="feature"><div className="sectionHead"><div><small>COMMUNITY CHAT™</small><h2>App-specific channels</h2></div><span className="pill dev">Development</span></div><div className="channels">{["general","app-ideas","ffm","scouttrace","ghostlane"].map(x=><button className={ch===x?"on":""} onClick={()=>setCh(x)} key={x}>#{x}</button>)}</div><div className="chat">{messages.filter(x=>x.channel===ch).map(x=><div key={x.id}><b>{x.name}</b><p>{x.text}</p></div>)}</div><div className="compose"><input value={name} onChange={e=>setName(e.target.value)}/><input value={text} onChange={e=>setText(e.target.value)} placeholder="Message"/><button onClick={send}>Send</button></div><p className="muted">Device-local preview. Multi-user chat stays Development until CactusByte ID™, moderation and realtime storage are connected.</p></section>}
+function Pulse({sync,feedback,ideas}:{sync:Record<string,Sync>;feedback:Feedback[];ideas:Idea[]}){return <section className="feature"><small>CACTUSBYTE PULSE™</small><h2>Ecosystem health</h2><div className="stats"><b>{Object.values(sync).filter(x=>x.synced).length}<span>Sources responding</span></b><b>{feedback.filter(x=>x.status==="New").length}<span>New feedback</span></b><b>{ideas.length}<span>Ideas tracked</span></b></div><div className="infra"><Status name="Registry" state="Connected"/><Status name="Core" state="Development"/><Status name="ByteLink" state="Development"/><Status name="Community" state="Development"/></div></section>}
+function Releases({version}:{version:(a:StudioApp)=>string}){return <section className="feature"><small>CACTUSBYTE RELEASE CENTER™</small><h2>Current release records</h2><div className="ideas"><article><small>STABLE</small><h3>Cactus🌵Byte Studios™</h3><b>v1.2.0</b><p>Atomic ecosystem foundation: Core/ByteLink groundwork, Feedback Hub, Idea Forge, Community foundation, My CactusByte, Pulse and Owner Console.</p></article>{studioApps.map(a=><article key={a.id}><small>STABLE</small><h3>{a.name}</h3><b>{version(a)}</b><p>Current registry record. Historical notes are not invented.</p></article>)}</div></section>}
+function Owner({open,setOpen,sync,feedback,ideas,version}:{open:boolean;setOpen:(x:boolean)=>void;sync:Record<string,Sync>;feedback:Feedback[];ideas:Idea[];version:(a:StudioApp)=>string}){const[code,setCode]=useState("");if(!open)return <section className="feature"><small>CACTUSBYTE OWNER CONSOLE™</small><h2>Private operations preview</h2><p className="muted">Production access requires server-side CactusByte ID™ owner authorization. This local preview is not secure authentication.</p><div className="compose"><input type="password" value={code} onChange={e=>setCode(e.target.value)} placeholder="Enter PREVIEW"/><button onClick={()=>code.toUpperCase()==="PREVIEW"&&setOpen(true)}>Open Preview</button></div></section>;const score=(a:StudioApp)=>Math.max(0,100-(statusFor(a,sync)!=="Live"?35:0)-(!a.url?25:0)-(!sync[a.id]?.synced?10:0)-(version(a).toLowerCase().includes("not exposed")?15:0));return <section className="feature"><div className="sectionHead"><div><small>OWNER CONSOLE™</small><h2>Portfolio operations</h2></div><button onClick={()=>setOpen(false)}>Lock</button></div><div className="stats"><b>{feedback.filter(x=>x.status==="New").length}<span>New feedback</span></b><b>{ideas.length}<span>Ideas</span></b><b>{studioApps.filter(a=>a.monetization).length}<span>Monetized apps</span></b></div>{studioApps.map(a=><div className="health" key={a.id}><span>{a.shortName}</span><b>{score(a)}/100</b></div>)}<p className="muted">Revenue telemetry and moderation actions remain disabled until secure Core APIs are connected.</p></section>}
+const statusFor=(a:StudioApp,s:Record<string,Sync>)=>s[a.id]?.status??a.status;
+function Modal({title,close,children}:{title:string;close:()=>void;children:any}){return <div className="back" onMouseDown={close}><section className="modal" onMouseDown={e=>e.stopPropagation()}><div className="sectionHead"><h2>{title}</h2><button onClick={close}>×</button></div>{children}</section></div>}
+const CSS=`:root{--cb-accent:#00d5be}.cb-shell{max-width:1180px;margin:auto;padding:16px 16px 32px;color:#f2f7f5}header,.sectionHead{display:flex;justify-content:space-between;gap:14px;align-items:center}header{padding:8px 0 18px;border-bottom:1px solid #19322d}h1,h2,h3,p{margin-top:0}h1{font-size:1.35rem}small{color:#6dffe3;font-weight:800;letter-spacing:.1em}.top,.actions,.mini,.channels,.compose{display:flex;gap:8px;flex-wrap:wrap}button,a,input,select,textarea{border:1px solid #1c4840;background:#09110f;color:#eef8f5;border-radius:11px;padding:10px 12px}button,a{cursor:pointer;text-decoration:none}.hero{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;padding:40px 0 24px}.hero h2{font-size:clamp(2rem,6vw,4rem);line-height:1}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stats b{padding:15px;border:1px solid #173a33;border-radius:15px;background:#0b1412;font-size:1.5rem}.stats span{display:block;color:#8ea09b;font-size:.7rem;font-weight:500;margin-top:4px}nav{display:flex;gap:7px;overflow:auto;padding:8px 0 16px}nav .on,.channels .on{border-color:var(--cb-accent);color:#6dffe3}.infra{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:24px}.infra>div{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;padding:12px;border:1px solid #173a33;border-radius:13px}.infra i{width:9px;height:9px;border-radius:50%;margin-top:5px}.green{background:#36ef9a;box-shadow:0 0 12px #36ef9a}.amber{background:#c8a34b}.infra span{grid-column:2;color:#8ea09b;font-size:.72rem}.notice{display:flex;justify-content:space-between;background:#073a33;border:1px solid #00d5be;padding:10px;border-radius:10px}.search{width:100%;margin:10px 0 14px}.appGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.appGrid.list{grid-template-columns:1fr}.card{display:flex;flex-direction:column;min-height:350px;padding:15px;border:1px solid #173a33;border-radius:18px;background:#0a100f}.compact .card{min-height:300px}.cardTop{display:flex;justify-content:space-between}.logo{width:54px;height:54px;border:1px solid #1c4840;border-radius:50%;display:grid;place-items:center;overflow:hidden}.logo img{width:90%;height:90%;object-fit:contain}.pill{padding:6px 8px;border-radius:999px;font-size:.68rem;height:max-content}.live{color:#6dffe3;border:1px solid #1f6659}.dev{color:#d6b867;border:1px solid #614f24}.card>p{color:#8ea09b;line-height:1.45}.meta{display:flex;justify-content:space-between;color:#8ea09b;margin-top:auto}.price{display:flex;justify-content:space-between;margin:10px 0;padding:9px;background:#09221d;border-radius:10px;font-size:.78rem}.actions{display:grid;grid-template-columns:1fr auto;margin-top:8px}.mini button{padding:6px 9px;font-size:.72rem}.feature,.support{margin:20px 0;padding:20px;border:1px solid #173a33;border-radius:18px;background:#08100e}.form{display:grid;gap:8px;max-width:620px}.form textarea{min-height:100px}.ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:14px}.ideas article,.row,.health{padding:12px;border:1px solid #173a33;border-radius:12px;background:#0a1412}.row{margin-top:8px}.row span{float:right;color:#8ea09b;font-size:.7rem}.chat{min-height:180px;max-height:350px;overflow:auto;padding:10px;border:1px solid #173a33;border-radius:12px;margin:10px 0}.chat div{padding:8px;border-bottom:1px solid #142a26}.muted{color:#8ea09b;font-size:.82rem}.health{display:flex;justify-content:space-between;margin-top:7px}.support{display:grid;grid-template-columns:1.5fr 1fr;gap:20px}.support>div:last-child{display:flex;gap:7px;flex-wrap:wrap}.support small{width:100%}footer{text-align:center;color:#8ea09b;padding:24px}.back{position:fixed;inset:0;background:#000b;display:grid;place-items:end center;z-index:100;padding:12px}.modal{width:min(540px,100%);max-height:82vh;overflow:auto;padding:18px;background:#09110f;border:1px solid #1c4840;border-radius:20px}.modal label{display:grid;gap:6px;margin:12px 0}.qr{position:relative;width:260px;max-width:100%;margin:auto}.qr>img{width:100%;background:white}.qr i{position:absolute;width:48px;height:48px;left:calc(50% - 24px);top:calc(50% - 24px);background:#050807;border-radius:12px;padding:4px}.qr i img{width:100%;height:100%;object-fit:contain}@media(max-width:760px){.hero,.support{grid-template-columns:1fr}.appGrid{grid-template-columns:1fr}.stats b{font-size:1.2rem}.cb-shell{padding-inline:12px}header{align-items:flex-start}.top button{padding:8px}.modal{border-radius:18px 18px 0 0}}`;
