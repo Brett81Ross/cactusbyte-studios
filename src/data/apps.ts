@@ -1,4 +1,4 @@
-export type AppStatus = "Live" | "Repository" | "Development" | "Offline";
+export type AppStatus = "Live" | "Repository";
 export type Capability = "ai" | "camera" | "location" | "reports" | "payments" | "sharing" | "notifications" | "bytelink" | "feedback";
 export type StudioApp = {id:string;name:string;shortName:string;description:string;category:string;platform:"Android + iOS"|"Web + Mobile";status:AppStatus;version:string;logo:string;syncSource?:string;url?:string;repo:string;linkSource:string;channel:"stable"|"beta"|"experimental";capabilities:Capability[];monetization?:{free:string;proPrice:string;checkoutUrl?:string}};
 export const studioApps:StudioApp[]=[
