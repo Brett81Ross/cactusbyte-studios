@@ -4,18 +4,23 @@ Cactus🌵Byte Studios™ is the mobile-first command center for the CactusByte 
 
 ## Version
 
-**1.0.0**
+**1.4.0**
 
 ## Current foundation
 
-- CactusByte App Registry™
-- Verified launch links for connected live apps
-- Repository-backed project records for apps without a verified production link
+- CactusByte App Registry™ with verified live links and repository-backed project records
+- CactusByte ID™ with Firebase Authentication and Firestore-backed profile roles
+- Persistent Feedback Hub™, Idea Forge™ voting, Community Chat™ and ByteLink™ queue
+- My CactusByte™ personalization with accent color, grid/list layouts, compact mode, pin/hide and app reordering
+- Native share support with app-branded QR sharing
+- CactusByte Pulse™ ecosystem health dashboard and Release Center™
+- Owner Console™ gated by Firestore owner role
 - Mobile-first Android and iOS-friendly UI
-- Installable PWA foundation
-- Native share support with branded QR sharing
-- Persistent local settings
-- Reserved architecture for CactusByte Core™ and ByteLink™
+- TerraFlow Matrix™ and OrbitGather™ included in the current registry build
+
+## Deployment workflow
+
+GitHub is the active atomic-build workspace. Vercel Git deployment can remain disconnected while a release is being assembled, then be reconnected for one deliberate production deployment after review.
 
 ## Architecture direction
 
