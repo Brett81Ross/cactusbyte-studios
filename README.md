@@ -11,8 +11,11 @@ Cactus🌵Byte Studios™ is the mobile-first command center for the CactusByte 
 - CactusByte App Registry™ with verified live links and repository-backed project records
 - CactusByte ID™ with Firebase Authentication and Firestore-backed profile roles
 - Persistent Feedback Hub™, Idea Forge™ voting, Community Chat™ and ByteLink™ queue
-- My CactusByte™ personalization with accent color, grid/list layouts, compact mode, pin/hide and app reordering
+- Portfolio-wide Community Chat channels for the current CactusByte app registry
+- My CactusByte™ personalization with accent color, grid/list layouts, compact mode, pin/hide, category filtering and app reordering
 - Native share support with app-branded QR sharing
+- Install control with Android and iPhone/iPad fallback instructions while service workers remain disabled
+- CactusByte Storefront™ with free-tier visibility and live per-app Stripe Pro upgrade paths
 - CactusByte Pulse™ ecosystem health dashboard and Release Center™
 - Owner Console™ gated by Firestore owner role
 - Mobile-first Android and iOS-friendly UI
