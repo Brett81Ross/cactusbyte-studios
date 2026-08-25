@@ -48,6 +48,7 @@ for(const line of records){
  const checkout=line.match(/checkoutUrl:"([^"]+)"/)?.[1];
  if(version)registryVersions.set(id,version);
  check(Boolean(version),`${id}: version is present`);
+ check(version!=="Version not exposed",`${id}: registry exposes a concrete version`);
  check(Boolean(logo),`${id}: logo is present`);
  check(Boolean(repo&&repo.startsWith("https://github.com/")),`${id}: GitHub repository URL is present`);
  if(logo?.startsWith("/"))check(exists(`public${logo}`),`${id}: local logo asset exists`);
@@ -60,14 +61,19 @@ for(const line of records){
 }
 
 const releaseRecords=[...releases.matchAll(/\{appId:"([^"]+)",version:"([^"]+)"/g)].map(m=>({appId:m[1],version:m[2]}));
+const releaseIds=releaseRecords.map(r=>r.appId);
 check(releaseRecords.length>0,"Release Center contains versioned records");
-check(new Set(releaseRecords.map(r=>r.appId)).size===releaseRecords.length,"Release Center app IDs are unique");
+check(new Set(releaseIds).size===releaseRecords.length,"Release Center app IDs are unique");
+check(releaseIds.includes("cactusbyte-studios"),"Release Center includes CactusByte Studios");
+check(ids.every(id=>releaseIds.includes(id)),"Every registry app has a Release Center record");
+check(releaseRecords.length===ids.length+1,"Release Center has exactly one record per app plus CactusByte Studios");
 for(const release of releaseRecords){
  if(release.appId==="cactusbyte-studios"){
   check(release.version.replace(/^v/,"")===pkg.version,"CactusByte Release Center version matches package.json");
   continue;
  }
  const registered=registryVersions.get(release.appId);
+ check(Boolean(registered),`${release.appId}: Release Center app exists in registry`);
  if(registered)check(registered===release.version,`${release.appId}: Release Center version matches registry (${registered})`);
 }
 
@@ -75,6 +81,10 @@ const fantasy=records.find(line=>line.includes('id:"fantasy-matrix"'))||"";
 const fantasyVersion=fantasy.match(/version:"v?([^"]+)"/)?.[1];
 const fantasyUrl=fantasy.match(/url:"([^"]+)"/)?.[1]||"";
 check(!fantasyVersion||fantasyUrl.includes(`v=${fantasyVersion}`),"Fantasy Matrix launch query matches its registered version");
+
+const pocketstomp=records.find(line=>line.includes('id:"pocketstomp"'))||"";
+check(pocketstomp.includes('repo:"https://github.com/Brett81Ross/pocketstomp-"'),"PocketStomp registry points to the current public app repository");
+check(pocketstomp.includes('syncSource:"https://raw.githubusercontent.com/Brett81Ross/pocketstomp-/main/package.json"'),"PocketStomp version sync uses its current package source");
 
 const terraflow=records.find(line=>line.includes('id:"terraflow-matrix"'))||"";
 check(terraflow.includes('version:"v1.13.1"'),"TerraFlow registry tracks the current v1.13.1 branding release");
