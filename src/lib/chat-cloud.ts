@@ -1,7 +1,21 @@
 import {addDocument,getSession,runQuery,setDocument}from"./firebase-rest";
 export type ChatChannel={id:string;label:string;appId?:string|null};export type ChatMessage={id:string;channelId:string;userId:string;displayName:string;body:string;replyTo?:string|null;hidden:boolean;createdAt?:unknown};
 function user(){const s=getSession();if(!s)throw new Error("Sign in with CactusByte ID™ first.");return s}
-export const defaultChannels:ChatChannel[]=[{id:"general",label:"General CactusByte"},{id:"app-ideas",label:"App Ideas"},{id:"ffm",label:"Fantasy Football Matrix",appId:"fantasy-matrix"},{id:"scouttrace",label:"ScoutTrace",appId:"scouttrace"},{id:"ghostlane",label:"GhostLane",appId:"ghostlane"}];
+export const defaultChannels:ChatChannel[]=[
+{id:"general",label:"General CactusByte"},
+{id:"app-ideas",label:"App Ideas"},
+{id:"noproblem",label:"No Problem Matrix",appId:"noproblem"},
+{id:"machzero",label:"MachZero",appId:"machzero"},
+{id:"rapid-takeoff",label:"Rapid Takeoff",appId:"rapid-takeoff"},
+{id:"acelynn-pro",label:"Acelynn Pro",appId:"acelynn-pro"},
+{id:"pocketstomp",label:"PocketStomp",appId:"pocketstomp"},
+{id:"ghostlane",label:"GhostLane",appId:"ghostlane"},
+{id:"first-bearing",label:"First Bearing",appId:"first-bearing"},
+{id:"ffm",label:"Fantasy Football Matrix",appId:"fantasy-matrix"},
+{id:"scouttrace",label:"ScoutTrace",appId:"scouttrace"},
+{id:"terraflow",label:"TerraFlow Matrix",appId:"terraflow-matrix"},
+{id:"orbitgather",label:"OrbitGather",appId:"orbitgather"}
+];
 export function subscribeToMessages(channelId:string,callback:(x:ChatMessage[])=>void,onError?:(e:Error)=>void){let stopped=false;async function pull(){try{const rows=await runQuery("chatMessages","channelId",channelId) as ChatMessage[];rows.sort((a:any,b:any)=>String(a.createdAt||"").localeCompare(String(b.createdAt||"")));if(!stopped)callback(rows)}catch(e){if(!stopped)onError?.(e instanceof Error?e:new Error(String(e)))}}void pull();const timer=setInterval(()=>void pull(),3000);return()=>{stopped=true;clearInterval(timer)}}
 export async function sendMessage(input:{channelId:string;displayName:string;body:string;replyTo?:string|null}){const s=user(),body=input.body.trim();if(!body)throw new Error("Message cannot be empty.");return addDocument("chatMessages",{channelId:input.channelId,userId:s.uid,displayName:input.displayName||"CactusByte User",body,replyTo:input.replyTo||null,hidden:false})}
 export async function reportMessage(messageId:string,reason:string){return addDocument("chatReports",{reporterId:user().uid,messageId,reason:reason||"Other",status:"New"})}
