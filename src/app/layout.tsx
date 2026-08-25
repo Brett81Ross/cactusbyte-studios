@@ -1,7 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const configuredHost = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+const metadataBase = new URL(
+  configuredHost
+    ? configuredHost.startsWith("http://") || configuredHost.startsWith("https://")
+      ? configuredHost
+      : `https://${configuredHost}`
+    : "http://localhost:3000",
+);
+
 export const metadata: Metadata = {
+  metadataBase,
   title: "Cactus🌵Byte Studios™",
   description: "The official Cactus🌵Byte Studios™ command center for apps, launches, updates, and sharing.",
   applicationName: "Cactus🌵Byte Studios™",

@@ -17,6 +17,8 @@ const apiManifest=read("src/app/api/manifest/route.ts");
 const core=read("src/app/api/core/route.ts");
 const firebase=read("src/lib/firebase.ts");
 const gitignore=read(".gitignore");
+const layout=read("src/app/layout.tsx");
+const workflow=read(".github/workflows/atomic-qa.yml");
 
 const pageVersion=page.match(/const V="([^"]+)"/)?.[1];
 const manifestVersion=apiManifest.match(/version:"([^"]+)"/)?.[1];
@@ -30,6 +32,12 @@ check(firebase.includes("NEXT_PUBLIC_FIREBASE_API_KEY"),"Firebase browser key is
 check(!/AIza[0-9A-Za-z_-]{20,}/.test(firebase),"No Firebase API key is hard-coded in src/lib/firebase.ts");
 check(gitignore.includes(".env*"),"Environment files are ignored by Git");
 check(!/serviceWorker\.register\s*\(/.test(page),"CactusByte does not register a service worker");
+check(exists("tsconfig.json"),"TypeScript configuration is tracked instead of generated during CI");
+check(layout.includes("metadataBase"),"Metadata base is explicitly configured for share-image URL resolution");
+check(layout.includes("VERCEL_PROJECT_PRODUCTION_URL"),"Metadata base can resolve from the Vercel production hostname");
+check(workflow.includes("actions/checkout@v5"),"Atomic QA uses the Node 24-compatible checkout action");
+check(workflow.includes("actions/setup-node@v5"),"Atomic QA uses the Node 24-compatible setup-node action");
+check(/node-version:\s*24/.test(workflow),"Atomic QA runs on Node.js 24");
 
 const ids=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(m=>m[1]);
 check(ids.length>0,"App registry contains records");
@@ -48,7 +56,7 @@ for(const line of records){
  const checkout=line.match(/checkoutUrl:"([^"]+)"/)?.[1];
  if(version)registryVersions.set(id,version);
  check(Boolean(version),`${id}: version is present`);
- check(version!=="Version not exposed",`${id}: registry exposes a concrete version`);
+ check(Boolean(version&&version!=="Version not exposed"),`${id}: registry exposes a concrete version`);
  check(Boolean(logo),`${id}: logo is present`);
  check(Boolean(repo&&repo.startsWith("https://github.com/")),`${id}: GitHub repository URL is present`);
  if(logo?.startsWith("/"))check(exists(`public${logo}`),`${id}: local logo asset exists`);
@@ -61,11 +69,10 @@ for(const line of records){
 }
 
 const releaseRecords=[...releases.matchAll(/\{appId:"([^"]+)",version:"([^"]+)"/g)].map(m=>({appId:m[1],version:m[2]}));
-const releaseIds=releaseRecords.map(r=>r.appId);
 check(releaseRecords.length>0,"Release Center contains versioned records");
-check(new Set(releaseIds).size===releaseRecords.length,"Release Center app IDs are unique");
-check(releaseIds.includes("cactusbyte-studios"),"Release Center includes CactusByte Studios");
-check(ids.every(id=>releaseIds.includes(id)),"Every registry app has a Release Center record");
+check(new Set(releaseRecords.map(r=>r.appId)).size===releaseRecords.length,"Release Center app IDs are unique");
+check(releaseRecords.some(r=>r.appId==="cactusbyte-studios"),"Release Center includes CactusByte Studios");
+check(ids.every(id=>releaseRecords.some(r=>r.appId===id)),"Every registry app has a Release Center record");
 check(releaseRecords.length===ids.length+1,"Release Center has exactly one record per app plus CactusByte Studios");
 for(const release of releaseRecords){
  if(release.appId==="cactusbyte-studios"){
