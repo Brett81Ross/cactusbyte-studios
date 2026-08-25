@@ -14,11 +14,13 @@ export async function GET() {
         firebaseIdentity: "connected",
         firestorePersistence: "connected",
         community: "connected",
+        portfolioChannels: "connected",
         ideaVoting: "connected",
+        stripeCatalog: "connected",
         byteLinkTransport: "development",
         ideaRadarWorker: "development",
       },
-      note: "Firebase identity, persistence, community data and Idea Forge voting are connected. Privileged Core services remain Development until server credentials and signed ByteLink identities are enabled.",
+      note: "Firebase identity, persistence, portfolio community channels, Idea Forge voting and Stripe storefront catalog are connected. Privileged Core services remain Development until server credentials and signed ByteLink identities are enabled.",
     },
     { headers: { "Cache-Control": "no-store" } }
   );
