@@ -1,0 +1,4 @@
+import {NextRequest,NextResponse}from"next/server";
+import {createSubscriptionCheckout,verifyFirebaseIdToken}from"../../../../lib/stripe-billing-server";
+export const dynamic="force-dynamic";
+export async function POST(req:NextRequest){try{const auth=req.headers.get("authorization")||"",token=auth.startsWith("Bearer ")?auth.slice(7):"";if(!token)return NextResponse.json({error:"CactusByte ID session required."},{status:401});const user=await verifyFirebaseIdToken(token),body=await req.json(),appId=String(body?.appId||"");const origin=new URL(req.url).origin,session=await createSubscriptionCheckout({appId,userId:user.uid,email:user.email,origin});return NextResponse.json({url:session.url,id:session.id},{headers:{"Cache-Control":"no-store"}})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Checkout failed."},{status:400})}}
