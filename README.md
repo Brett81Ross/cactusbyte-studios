@@ -21,6 +21,12 @@ Cactus🌵Byte Studios™ is the mobile-first command center for the CactusByte 
 - Mobile-first Android and iOS-friendly UI
 - TerraFlow Matrix™ and OrbitGather™ included in the current registry build
 
+## Atomic QA
+
+Run `npm run qa` for fast release checks or `npm run preflight` for the full QA + production build gate. The preflight verifies version consistency, app-registry integrity, live launch URLs, Stripe checkout records, Firebase environment-key hygiene, `.env` protection, and the no-service-worker rule.
+
+A GitHub Actions workflow at `.github/workflows/atomic-qa.yml` is included so the same preflight can run as a repository build gate without consuming a Vercel deployment.
+
 ## Deployment workflow
 
 GitHub is the active atomic-build workspace. Vercel Git deployment can remain disconnected while a release is being assembled, then be reconnected for one deliberate production deployment after review.
