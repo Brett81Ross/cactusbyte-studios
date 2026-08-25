@@ -1,6 +1,6 @@
 export type ReleaseRecord={appId:string;version:string;channel:"stable"|"beta"|"experimental";title:string;notes:string[];verified:boolean};
 export const releases:ReleaseRecord[]=[
-{appId:"cactusbyte-studios",version:"v1.4.0",channel:"stable",title:"Full connected command center",notes:["Restored My CactusByte™ personalization, pin/hide/reorder and grid/list layouts","Restored branded QR sharing and Release Center™","Expanded cloud Feedback Hub™, Idea Forge™ voting and CactusByte Pulse™ while preserving Firebase, Community Chat and ByteLink™"],verified:true},
+{appId:"cactusbyte-studios",version:"v1.4.0",channel:"stable",title:"Full connected command center + storefront",notes:["Restored My CactusByte™ personalization, pin/hide/reorder, category filtering and grid/list layouts","Restored branded QR sharing, install control, Release Center™ and the freemium storefront with live Stripe upgrade paths","Expanded cloud Feedback Hub™, Idea Forge™ voting, CactusByte Pulse™ and app-specific Community Chat channels while preserving Firebase and ByteLink™"],verified:true},
 {appId:"noproblem",version:"v1.0.0",channel:"stable",title:"Current registered release",notes:["Version verified from package.json"],verified:true},
 {appId:"acelynn-pro",version:"v1.1.1",channel:"stable",title:"Current registered release",notes:["Version exposed by app source"],verified:true},
 {appId:"first-bearing",version:"v2.6.0",channel:"stable",title:"Current registered release",notes:["Production version verified from app metadata"],verified:true},
