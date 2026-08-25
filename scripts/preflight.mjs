@@ -3,6 +3,7 @@ import path from "node:path";
 
 const root=process.cwd();
 const read=p=>fs.readFileSync(path.join(root,p),"utf8");
+const exists=p=>fs.existsSync(path.join(root,p));
 const pass=[];
 const warn=[];
 const fail=[];
@@ -45,6 +46,7 @@ for(const line of records){
  check(Boolean(version),`${id}: version is present`);
  check(Boolean(logo),`${id}: logo is present`);
  check(Boolean(repo&&repo.startsWith("https://github.com/")),`${id}: GitHub repository URL is present`);
+ if(logo?.startsWith("/"))check(exists(`public${logo}`),`${id}: local logo asset exists`);
  if(status==="Live")check(Boolean(url&&url.startsWith("https://")),`${id}: live app has an HTTPS launch URL`);
  if(checkout)check(checkout.startsWith("https://buy.stripe.com/"),`${id}: Stripe checkout uses buy.stripe.com`);
  if(status==="Repository")warn.push(`${id}: production link still pending`);
@@ -54,6 +56,11 @@ const fantasy=records.find(line=>line.includes('id:"fantasy-matrix"'))||"";
 const fantasyVersion=fantasy.match(/version:"v?([^"]+)"/)?.[1];
 const fantasyUrl=fantasy.match(/url:"([^"]+)"/)?.[1]||"";
 check(!fantasyVersion||fantasyUrl.includes(`v=${fantasyVersion}`),"Fantasy Matrix launch query matches its registered version");
+
+const terraflow=records.find(line=>line.includes('id:"terraflow-matrix"'))||"";
+check(terraflow.includes('logo:"/terraflow-mark.svg"'),"TerraFlow uses its approved Concept 2 brand mark");
+check(exists("public/terraflow-mark.svg"),"Approved TerraFlow local brand asset exists");
+check(!terraflow.includes('logo:"/logo2.png"'),"TerraFlow no longer falls back to the CactusByte logo");
 
 console.log(`\nCactusByte atomic preflight v${pkg.version}`);
 for(const x of pass)console.log(`✓ ${x}`);
