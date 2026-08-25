@@ -12,6 +12,7 @@ const check=(ok,message)=>{(ok?pass:fail).push(message)};
 const pkg=JSON.parse(read("package.json"));
 const page=read("src/app/page.tsx");
 const apps=read("src/data/apps.ts");
+const releases=read("src/data/releases.ts");
 const apiManifest=read("src/app/api/manifest/route.ts");
 const core=read("src/app/api/core/route.ts");
 const firebase=read("src/lib/firebase.ts");
@@ -35,6 +36,7 @@ check(ids.length>0,"App registry contains records");
 check(new Set(ids).size===ids.length,"App registry IDs are unique");
 
 const records=apps.split("\n").filter(line=>line.trim().startsWith("{id:"));
+const registryVersions=new Map();
 for(const line of records){
  const id=line.match(/id:"([^"]+)"/)?.[1]||"unknown";
  const status=line.match(/status:"([^"]+)"/)?.[1];
@@ -42,14 +44,31 @@ for(const line of records){
  const logo=line.match(/logo:"([^"]+)"/)?.[1];
  const repo=line.match(/repo:"([^"]+)"/)?.[1];
  const url=line.match(/url:"([^"]+)"/)?.[1];
+ const syncSource=line.match(/syncSource:"([^"]+)"/)?.[1];
  const checkout=line.match(/checkoutUrl:"([^"]+)"/)?.[1];
+ if(version)registryVersions.set(id,version);
  check(Boolean(version),`${id}: version is present`);
  check(Boolean(logo),`${id}: logo is present`);
  check(Boolean(repo&&repo.startsWith("https://github.com/")),`${id}: GitHub repository URL is present`);
  if(logo?.startsWith("/"))check(exists(`public${logo}`),`${id}: local logo asset exists`);
  if(status==="Live")check(Boolean(url&&url.startsWith("https://")),`${id}: live app has an HTTPS launch URL`);
+ if(status==="Repository"){
+  warn.push(`${id}: production link still pending`);
+  check(Boolean(syncSource&&syncSource.startsWith("https://")),`${id}: repository-only app has a live version sync source`);
+ }
  if(checkout)check(checkout.startsWith("https://buy.stripe.com/"),`${id}: Stripe checkout uses buy.stripe.com`);
- if(status==="Repository")warn.push(`${id}: production link still pending`);
+}
+
+const releaseRecords=[...releases.matchAll(/\{appId:"([^"]+)",version:"([^"]+)"/g)].map(m=>({appId:m[1],version:m[2]}));
+check(releaseRecords.length>0,"Release Center contains versioned records");
+check(new Set(releaseRecords.map(r=>r.appId)).size===releaseRecords.length,"Release Center app IDs are unique");
+for(const release of releaseRecords){
+ if(release.appId==="cactusbyte-studios"){
+  check(release.version.replace(/^v/,"")===pkg.version,"CactusByte Release Center version matches package.json");
+  continue;
+ }
+ const registered=registryVersions.get(release.appId);
+ if(registered)check(registered===release.version,`${release.appId}: Release Center version matches registry (${registered})`);
 }
 
 const fantasy=records.find(line=>line.includes('id:"fantasy-matrix"'))||"";
@@ -58,6 +77,8 @@ const fantasyUrl=fantasy.match(/url:"([^"]+)"/)?.[1]||"";
 check(!fantasyVersion||fantasyUrl.includes(`v=${fantasyVersion}`),"Fantasy Matrix launch query matches its registered version");
 
 const terraflow=records.find(line=>line.includes('id:"terraflow-matrix"'))||"";
+check(terraflow.includes('version:"v1.13.1"'),"TerraFlow registry tracks the current v1.13.1 branding release");
+check(terraflow.includes('syncSource:"https://raw.githubusercontent.com/Brett81Ross/terraflow-matrix/main/cloud-release.js"'),"TerraFlow version sync is connected to its release surface");
 check(terraflow.includes('logo:"/terraflow-mark.svg"'),"TerraFlow uses its approved Concept 2 brand mark");
 check(exists("public/terraflow-mark.svg"),"Approved TerraFlow local brand asset exists");
 check(!terraflow.includes('logo:"/logo2.png"'),"TerraFlow no longer falls back to the CactusByte logo");
