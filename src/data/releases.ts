@@ -6,6 +6,6 @@ export const releases:ReleaseRecord[]=[
 {appId:"first-bearing",version:"v2.6.0",channel:"stable",title:"Current registered release",notes:["Production version verified from app metadata"],verified:true},
 {appId:"fantasy-matrix",version:"v1.4.5",channel:"stable",title:"Current registered release",notes:["Version sourced from repository VERSION record"],verified:true},
 {appId:"scouttrace",version:"v1.1.0",channel:"stable",title:"Current registered release",notes:["PWA manifest exposes the current release version"],verified:true},
-{appId:"terraflow-matrix",version:"v1.11.0",channel:"stable",title:"Repository release",notes:["Registry entry verified from TerraFlow repository","Approved Concept 2 sprout + irrigation-orbit branding is now wired into the CactusByte registry","Production link remains pending"],verified:true},
+{appId:"terraflow-matrix",version:"v1.13.1",channel:"stable",title:"Brand-integrated field platform release",notes:["Current TerraFlow release verified from cloud-release.js","Approved Concept 2 sprout + irrigation-orbit identity is integrated across app UI and install metadata","Registry now live-syncs TerraFlow version from its repository","Production link remains pending"],verified:true},
 {appId:"orbitgather",version:"v0.3.1",channel:"beta",title:"Lead intelligence beta",notes:["Repository package version verified","Production link remains pending in the CactusByte registry"],verified:true}
 ];
