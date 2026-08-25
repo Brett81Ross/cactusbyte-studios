@@ -21,7 +21,11 @@ const firestoreRules=read("firestore.rules");
 const gitignore=read(".gitignore");
 const layout=read("src/app/layout.tsx");
 const workflow=read(".github/workflows/atomic-qa.yml");
+const envExample=read(".env.example");
 const entitlementCloud=exists("src/lib/entitlements-cloud.ts")?read("src/lib/entitlements-cloud.ts"):"";
+const firebaseAdmin=exists("src/lib/firebase-admin.ts")?read("src/lib/firebase-admin.ts"):"";
+const stripeServer=exists("src/lib/stripe-server.ts")?read("src/lib/stripe-server.ts"):"";
+const stripeWebhook=exists("src/app/api/stripe/webhook/route.ts")?read("src/app/api/stripe/webhook/route.ts"):"";
 
 const pageVersion=page.match(/const V="([^"]+)"/)?.[1];
 const manifestVersion=apiManifest.match(/version:"([^"]+)"/)?.[1];
@@ -49,8 +53,31 @@ check(cactusId.includes("hasEntitlement"),"CactusByte ID exposes entitlement che
 check(cactusId.includes("refreshEntitlements"),"CactusByte ID can refresh entitlement state after authentication");
 const entitlementRule=firestoreRules.match(/match \/entitlements\/\{id\} \{([\s\S]*?)\n    \}/)?.[1]||"";
 check(entitlementRule.includes("allow write: if false"),"Firestore entitlement writes remain blocked from clients");
-check(core.includes('entitlementLedger: "read-only"'),"Core reports the entitlement ledger as read-only");
-check(core.includes('entitlementProvisioning: "development"'),"Core does not overstate payment-to-entitlement provisioning");
+check(core.includes('entitlementLedger: "read-only"'),"Core reports the entitlement ledger as read-only to clients");
+check(core.includes('entitlementProvisioning: "webhook-ready"'),"Core reports Stripe entitlement provisioning as webhook-ready, not falsely connected");
+
+check(Boolean(firebaseAdmin),"Server-only Firebase Admin helper is present");
+check(firebaseAdmin.includes("FIREBASE_ADMIN_PRIVATE_KEY"),"Firebase Admin uses a server-only private-key environment variable");
+check(!firebaseAdmin.includes("NEXT_PUBLIC_FIREBASE_ADMIN"),"Firebase Admin credentials are never exposed through NEXT_PUBLIC variables");
+check(Boolean(stripeServer),"Server-only Stripe helper is present");
+check(stripeServer.includes("STRIPE_SECRET_KEY"),"Stripe server helper loads the secret key from server environment");
+check(Boolean(stripeWebhook),"Stripe entitlement webhook route is present");
+check(stripeWebhook.includes("constructEvent"),"Stripe webhook verifies signatures before processing events");
+check(stripeWebhook.includes('event.type==="checkout.session.completed"'),"Stripe webhook provisions after completed Checkout sessions");
+check(stripeWebhook.includes('event.type==="customer.subscription.updated"'),"Stripe webhook tracks subscription lifecycle updates");
+check(stripeWebhook.includes('event.type==="customer.subscription.deleted"'),"Stripe webhook revokes access on subscription deletion");
+check(stripeWebhook.includes('collection("entitlements")'),"Stripe webhook writes only through the privileged server entitlement path");
+check(envExample.includes("STRIPE_WEBHOOK_SECRET")&&envExample.includes("FIREBASE_ADMIN_PRIVATE_KEY"),"Environment template documents webhook and Firebase Admin secrets");
+check(!/sk_(live|test)_[A-Za-z0-9]{16,}/.test(stripeServer+stripeWebhook),"No live Stripe secret key is hard-coded in server source");
+check(!/whsec_[A-Za-z0-9]{16,}/.test(stripeServer+stripeWebhook),"No Stripe webhook signing secret is hard-coded in server source");
+check(pkg.dependencies?.stripe,"Stripe server SDK is installed");
+check(pkg.dependencies?.["firebase-admin"],"Firebase Admin SDK is installed");
+
+check(page.includes("client_reference_id"),"Storefront binds signed-in upgrades to CactusByte ID through Stripe client_reference_id");
+check(page.includes("prefilled_email"),"Storefront prefills the signed-in CactusByte ID email at Stripe checkout");
+check(page.includes("✓ Pro Active"),"Storefront replaces upgrade CTA with Pro Active for entitled apps");
+check(page.includes("Sign In to Upgrade"),"Storefront requires CactusByte ID before linked upgrades");
+check(page.includes("Refresh Pro Access"),"Storefront exposes entitlement refresh after payment");
 
 const ids=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(m=>m[1]);
 check(ids.length>0,"App registry contains records");
