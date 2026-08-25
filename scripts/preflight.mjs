@@ -16,9 +16,12 @@ const releases=read("src/data/releases.ts");
 const apiManifest=read("src/app/api/manifest/route.ts");
 const core=read("src/app/api/core/route.ts");
 const firebase=read("src/lib/firebase.ts");
+const cactusId=read("src/lib/cactusbyte-id.ts");
+const firestoreRules=read("firestore.rules");
 const gitignore=read(".gitignore");
 const layout=read("src/app/layout.tsx");
 const workflow=read(".github/workflows/atomic-qa.yml");
+const entitlementCloud=exists("src/lib/entitlements-cloud.ts")?read("src/lib/entitlements-cloud.ts"):"";
 
 const pageVersion=page.match(/const V="([^"]+)"/)?.[1];
 const manifestVersion=apiManifest.match(/version:"([^"]+)"/)?.[1];
@@ -38,6 +41,16 @@ check(layout.includes("VERCEL_PROJECT_PRODUCTION_URL"),"Metadata base can resolv
 check(workflow.includes("actions/checkout@v5"),"Atomic QA uses the Node 24-compatible checkout action");
 check(workflow.includes("actions/setup-node@v5"),"Atomic QA uses the Node 24-compatible setup-node action");
 check(/node-version:\s*24/.test(workflow),"Atomic QA runs on Node.js 24");
+
+check(Boolean(entitlementCloud),"Read-only entitlement cloud helper is present");
+check(entitlementCloud.includes('runQuery("entitlements","userId"'),"Entitlements are queried only for the signed-in CactusByte ID");
+check(!/setDocument\("entitlements"|addDocument\("entitlements"|patchDocument\("entitlements"/.test(entitlementCloud),"Client entitlement helper has no Firestore write path");
+check(cactusId.includes("hasEntitlement"),"CactusByte ID exposes entitlement checks to app surfaces");
+check(cactusId.includes("refreshEntitlements"),"CactusByte ID can refresh entitlement state after authentication");
+const entitlementRule=firestoreRules.match(/match \/entitlements\/\{id\} \{([\s\S]*?)\n    \}/)?.[1]||"";
+check(entitlementRule.includes("allow write: if false"),"Firestore entitlement writes remain blocked from clients");
+check(core.includes('entitlementLedger: "read-only"'),"Core reports the entitlement ledger as read-only");
+check(core.includes('entitlementProvisioning: "development"'),"Core does not overstate payment-to-entitlement provisioning");
 
 const ids=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(m=>m[1]);
 check(ids.length>0,"App registry contains records");

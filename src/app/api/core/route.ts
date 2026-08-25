@@ -17,10 +17,12 @@ export async function GET() {
         portfolioChannels: "connected",
         ideaVoting: "connected",
         stripeCatalog: "connected",
+        entitlementLedger: "read-only",
+        entitlementProvisioning: "development",
         byteLinkTransport: "development",
         ideaRadarWorker: "development",
       },
-      note: "Firebase identity, persistence, portfolio community channels, Idea Forge voting and Stripe storefront catalog are connected. Privileged Core services remain Development until server credentials and signed ByteLink identities are enabled.",
+      note: "Firebase identity, persistence, portfolio community channels, Idea Forge voting and Stripe storefront catalog are connected. Signed-in CactusByte IDs can read server-managed entitlement records, while payment-to-entitlement provisioning remains Development until a privileged server webhook is enabled. ByteLink signing and other privileged Core services remain Development.",
     },
     { headers: { "Cache-Control": "no-store" } }
   );
