@@ -58,6 +58,9 @@ check(testerRedeem.includes('collection("testerCoupons")')&&testerRedeem.include
 check(testerRedeem.includes('plan:"tester-lifetime"')&&testerRedeem.includes('source:"tester_coupon"')&&testerRedeem.includes('status:"lifetime"')&&testerRedeem.includes("expiresAt:null"),"Tester coupons grant non-expiring tester entitlements without a Stripe subscription");
 check(testerRedeem.includes('role:"tester"')&&!testerRedeem.toLowerCase().includes("stripe"),"Tester redemption assigns tester role without creating Pro billing status");
 check(Boolean(testerStatus)&&authSurface.includes("/api/tester/status")&&authSurface.includes("/api/tester/redeem")&&authSurface.includes("TESTER LIFETIME PASS"),"CactusByte ID exposes tester-pass status and redemption UI");
+check(authSurface.includes("VIP STATUS UNLOCKED™")&&authSurface.includes("LIFETIME VIP ACTIVATED")&&authSurface.includes("Enter Cactus🌵Byte")&&authSurface.includes("View My VIP Access"),"Tester redemption launches the cinematic lifetime VIP success experience");
+check(authSurface.includes("cbVipSweep")&&authSurface.includes("cbVipRing")&&authSurface.includes("cbVipParticle")&&authSurface.includes("prefers-reduced-motion"),"VIP success animation includes energy sweep, radar rings, particles and reduced-motion accessibility");
+check(authSurface.includes("VIP Tester · Lifetime")&&authSurface.includes("cactusbyte:tester-redeemed"),"Lifetime VIP state is visible in the account surface and emits a refresh event after redemption");
 check(exists("src/app/owner-device/page.tsx"),"One-time owner device setup page exists");
 check(env.includes("OWNER_DEVICE_SETUP_SECRET")&&env.includes("OWNER_DEVICE_SIGNING_SECRET"),"Owner-device production secrets are documented");
 check(!/NEXT_PUBLIC_OWNER|NEXT_PUBLIC_STRIPE_SECRET|NEXT_PUBLIC_FIREBASE_ADMIN/.test(env+ownerDevice+ownerAccess+portal),"Owner, Stripe secret and Firebase Admin credentials are never exposed as NEXT_PUBLIC variables");
