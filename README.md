@@ -13,8 +13,9 @@ Cactus🌵Byte Studios™ is the mobile-first command center for the CactusByte 
 - CactusByte ID™ with Firebase Authentication and Firestore-backed profile roles
 - Server-managed entitlement ledger readable by the signed-in CactusByte ID™ while client entitlement writes remain blocked
 - Entitlement-aware CactusByte Storefront™ that shows **Pro Active** for paid apps and requires sign-in before linked upgrades
-- Stripe Payment Links remain the live customer checkout surfaces; signed-in storefront launches attach the CactusByte user reference and email for provisioning
-- Signature-verified Stripe subscription webhook staged to grant, update, and revoke Firestore entitlements using server-only Firebase Admin credentials
+- Stripe Payment Links remain the live customer checkout surfaces; normal Storefront upgrade clicks are intercepted by a secure bridge and routed through an authenticated server launcher
+- The checkout launcher verifies the Firebase ID token and replaces raw user attribution with an HMAC-signed CactusByte user/app reference before opening Stripe
+- The Stripe webhook validates both Stripe's webhook signature and the CactusByte checkout reference before any entitlement can be provisioned
 - Persistent Feedback Hub™, Idea Forge™ voting, Community Chat™ and ByteLink™ queue
 - Portfolio-wide Community Chat channels for the current CactusByte app registry
 - My CactusByte™ personalization with accent color, grid/list layouts, compact mode, pin/hide, category filtering and app reordering
@@ -28,9 +29,9 @@ Cactus🌵Byte Studios™ is the mobile-first command center for the CactusByte 
 
 ## Stripe entitlement provisioning
 
-The storefront can already read entitlement records and suppress duplicate upgrade prompts for entitled users. The privileged webhook route at `/api/stripe/webhook` validates Stripe signatures and handles completed Checkout sessions plus subscription update/delete lifecycle events. It writes entitlements only through Firebase Admin on the server.
+The storefront can already read entitlement records and suppress duplicate upgrade prompts for entitled users. The staged checkout route at `/api/stripe/checkout-link` verifies the signed-in Firebase ID token, creates a server-signed `client_reference_id` bound to both the CactusByte user and selected app, and then opens the existing Stripe Payment Link. The privileged webhook route at `/api/stripe/webhook` validates Stripe signatures, rejects unsigned or app-mismatched checkout references, and handles completed Checkout sessions plus subscription update/delete lifecycle events. It writes entitlements only through Firebase Admin on the server.
 
-Before production activation, configure `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_ADMIN_PROJECT_ID` in the production environment, then register the deployed `/api/stripe/webhook` endpoint in Stripe. These values are intentionally not stored in GitHub.
+Before production activation, configure `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_CHECKOUT_SIGNING_SECRET`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_ADMIN_PROJECT_ID` in the production environment, then register the deployed `/api/stripe/webhook` endpoint in Stripe. These values are intentionally not stored in GitHub.
 
 ## Registry verification
 
@@ -38,7 +39,7 @@ The current registry tracks explicit versions for every app. MachZero™, Rapid 
 
 ## Atomic QA
 
-Run `npm run qa` for fast release checks or `npm run preflight` for the full QA + production build gate. The preflight verifies version consistency, app-registry integrity, live launch URLs, local logo assets, Stripe checkout records, Firebase environment-key hygiene, `.env` protection, the no-service-worker rule, entitlement client-write protection, server-only Stripe/Firebase Admin configuration, webhook signature verification, subscription lifecycle handling, and entitlement-aware Storefront behavior.
+Run `npm run qa` for fast release checks or `npm run preflight` for the full QA + production build gate. The preflight verifies version consistency, app-registry integrity, live launch URLs, local logo assets, Stripe checkout records, Firebase environment-key hygiene, `.env` protection, the no-service-worker rule, entitlement client-write protection, server-only Stripe/Firebase Admin configuration, authenticated checkout launching, HMAC checkout-reference verification, subscription lifecycle handling, and entitlement-aware Storefront behavior.
 
 The release gate also requires every registry app to have exactly one matching Release Center™ record, rejects placeholder versions such as `Version not exposed`, verifies PocketStomp’s current repository source, and locks TerraFlow to the approved Concept 2 branding and v1.13.1 release source.
 
