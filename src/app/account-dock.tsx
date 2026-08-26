@@ -4,15 +4,16 @@ import {useEffect,useState} from "react";
 import {getSession} from "../lib/firebase-rest";
 import {entitlementIsActive,myEntitlements} from "../lib/entitlements-cloud";
 
+const OWNER_BACKUP_KEY="cb_owner_device_backup_v1";
 type OwnerStats={registeredUsers:number;newUsers7d:number;disabledUsers:number;signIns24h:number;signIns7d:number;activeProUsers:number;activeProEntitlements:number;recentSignIns:{email:string;event:string;createdAt:string|null}[]};
 
 export default function AccountDock(){
  const[hasPro,setHasPro]=useState(false),[owner,setOwner]=useState(false),[open,setOpen]=useState(false),[stats,setStats]=useState<OwnerStats|null>(null),[busy,setBusy]=useState(false),[note,setNote]=useState("");
- async function authHeaders(){const s=getSession();return s?{Authorization:`Bearer ${s.idToken}`}:{}}
+ async function authHeaders(){const s=getSession();const headers:Record<string,string>={};if(s)headers.Authorization=`Bearer ${s.idToken}`;try{const token=localStorage.getItem(OWNER_BACKUP_KEY);if(token)headers["X-CactusByte-Owner-Device"]=token}catch{}return headers}
  async function refresh(){
   const session=getSession();
   if(session){try{const rows=await myEntitlements();setHasPro(rows.some(entitlementIsActive))}catch{setHasPro(false)}}else setHasPro(false);
-  try{const r=await fetch("/api/owner/status",{headers:await authHeaders(),cache:"no-store"});setOwner(r.ok)}catch{setOwner(false)}
+  try{const r=await fetch("/api/owner/status",{headers:await authHeaders(),cache:"no-store",credentials:"include"});setOwner(r.ok)}catch{setOwner(false)}
  }
  useEffect(()=>{void refresh();const update=()=>void refresh();window.addEventListener("focus",update);window.addEventListener("cactusbyte:session",update);return()=>{window.removeEventListener("focus",update);window.removeEventListener("cactusbyte:session",update)}},[]);
  async function manageBilling(){
@@ -22,7 +23,7 @@ export default function AccountDock(){
  }
  async function loadStats(){
   setBusy(true);setNote("");
-  try{const r=await fetch("/api/owner/stats",{headers:await authHeaders(),cache:"no-store"});if(!r.ok)throw new Error("Owner analytics are unavailable.");setStats(await r.json());setOpen(true)}catch(e){setNote(e instanceof Error?e.message:"Owner analytics are unavailable.")}finally{setBusy(false)}
+  try{const r=await fetch("/api/owner/stats",{headers:await authHeaders(),cache:"no-store",credentials:"include"});if(!r.ok)throw new Error("Owner analytics are unavailable.");setStats(await r.json());setOpen(true)}catch(e){setNote(e instanceof Error?e.message:"Owner analytics are unavailable.")}finally{setBusy(false)}
  }
  if(!hasPro&&!owner)return null;
  return <aside style={{position:"fixed",right:12,bottom:12,zIndex:90,display:"grid",gap:8,maxWidth:360,width:"calc(100% - 24px)",justifyItems:"end",pointerEvents:"none"}}>

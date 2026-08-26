@@ -1,6 +1,7 @@
 import {createHmac,timingSafeEqual} from "node:crypto";
 
 export const OWNER_DEVICE_COOKIE="cb_owner_device_v1";
+export const OWNER_DEVICE_HEADER="x-cactusbyte-owner-device";
 export const OWNER_DEVICE_MAX_AGE=60*60*24*365*5;
 const PAYLOAD="cactusbyte-owner-device-v1";
 
@@ -37,8 +38,10 @@ export function requestCookie(request:Request,name:string){
 }
 
 export function ownerDeviceTrusted(request:Request){
- const value=requestCookie(request,OWNER_DEVICE_COOKIE);
- try{return Boolean(value)&&verifyOwnerDeviceToken(value)}catch{return false}
+ const cookie=requestCookie(request,OWNER_DEVICE_COOKIE);
+ try{if(cookie&&verifyOwnerDeviceToken(cookie))return true}catch{}
+ const backup=(request.headers.get(OWNER_DEVICE_HEADER)||"").trim();
+ try{return Boolean(backup)&&verifyOwnerDeviceToken(backup)}catch{return false}
 }
 
 export function ownerCookieHeader(token:string){
