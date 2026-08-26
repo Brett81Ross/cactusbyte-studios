@@ -1,4 +1,4 @@
-import {testerIdentity,testerPassActive} from "../../../lib/tester-pass";
+import {testerIdentity,testerPassActive} from "../../../../lib/tester-pass";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";

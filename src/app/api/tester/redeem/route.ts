@@ -1,7 +1,7 @@
 import {FieldValue} from "firebase-admin/firestore";
-import {studioApps} from "../../../data/apps";
-import {adminDb} from "../../../lib/firebase-admin";
-import {testerCodeHash,testerIdentity,validTesterCodeHash} from "../../../lib/tester-pass";
+import {studioApps} from "../../../../data/apps";
+import {adminDb} from "../../../../lib/firebase-admin";
+import {testerCodeHash,testerIdentity,validTesterCodeHash} from "../../../../lib/tester-pass";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
