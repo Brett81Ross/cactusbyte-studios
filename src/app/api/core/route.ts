@@ -18,6 +18,7 @@ export async function GET() {
         ideaVoting: "connected",
         stripeCatalog: "connected",
         entitlementLedger: "read-only",
+        checkoutIdentityBinding: "signed-staged",
         entitlementProvisioning: "webhook-ready",
         subscriptionManagement: "portal-ready",
         ownerTrustedDevice: "staged",
