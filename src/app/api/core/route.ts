@@ -6,7 +6,7 @@ export async function GET() {
   return NextResponse.json(
     {
       service: "CactusByte Core™",
-      version: "0.2-development",
+      version: "0.3-development",
       studioVersion: "1.4.0",
       state: "development",
       infrastructure: {
@@ -18,12 +18,15 @@ export async function GET() {
         ideaVoting: "connected",
         stripeCatalog: "connected",
         entitlementLedger: "read-only",
-        checkoutIdentityBinding: "signed-staged",
         entitlementProvisioning: "webhook-ready",
+        subscriptionManagement: "portal-ready",
+        ownerTrustedDevice: "staged",
+        ownerAnalytics: "staged",
+        authEventTracking: "staged",
         byteLinkTransport: "development",
         ideaRadarWorker: "development",
       },
-      note: "Firebase identity, persistence, community, Idea Forge voting and the Stripe storefront catalog are connected. Storefront checkout launches are staged to bind a verified CactusByte ID to the selected Stripe Payment Link with a server-signed reference, and the Stripe webhook accepts only that signed identity before provisioning entitlements. Production activation still requires the server-only Stripe/Firebase Admin credentials, checkout-signing secret and deployed webhook endpoint. ByteLink signing and other privileged Core services remain Development.",
+      note: "CactusByte ID, cloud persistence, community and the Stripe storefront are connected. The atomic build now includes signed checkout attribution, Stripe entitlement provisioning, customer-portal subscription management, a trusted-owner-device session path, and owner-only user analytics. Production secrets and final deployment activation remain release-time configuration.",
     },
     { headers: { "Cache-Control": "no-store" } }
   );

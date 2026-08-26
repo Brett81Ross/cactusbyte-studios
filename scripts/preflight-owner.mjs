@@ -1,0 +1,48 @@
+import fs from "node:fs";
+import path from "node:path";
+
+const root=process.cwd();
+const read=p=>fs.readFileSync(path.join(root,p),"utf8");
+const exists=p=>fs.existsSync(path.join(root,p));
+const fail=[];
+const pass=[];
+const check=(ok,msg)=>{(ok?pass:fail).push(msg)};
+
+const ownerDevice=exists("src/lib/owner-device.ts")?read("src/lib/owner-device.ts"):"";
+const ownerAccess=exists("src/lib/owner-access.ts")?read("src/lib/owner-access.ts"):"";
+const ownerSession=exists("src/app/api/owner/session/route.ts")?read("src/app/api/owner/session/route.ts"):"";
+const ownerStats=exists("src/app/api/owner/stats/route.ts")?read("src/app/api/owner/stats/route.ts"):"";
+const authTrack=exists("src/app/api/auth/track/route.ts")?read("src/app/api/auth/track/route.ts"):"";
+const portal=exists("src/app/api/stripe/portal/route.ts")?read("src/app/api/stripe/portal/route.ts"):"";
+const cactusId=read("src/lib/cactusbyte-id.ts");
+const firebaseRest=read("src/lib/firebase-rest.ts");
+const dock=exists("src/app/account-dock.tsx")?read("src/app/account-dock.tsx"):"";
+const layout=read("src/app/layout.tsx");
+const rules=read("firestore.rules");
+const env=read(".env.example");
+
+check(Boolean(ownerDevice),"Trusted owner-device helper exists");
+check(ownerDevice.includes("HttpOnly")&&ownerDevice.includes("SameSite=Strict"),"Trusted owner credential is stored in an HttpOnly SameSite=Strict cookie");
+check(ownerDevice.includes("OWNER_DEVICE_SIGNING_SECRET"),"Owner-device token is signed with a server-only secret");
+check(ownerAccess.includes('role!=="owner"'),"Normal CactusByte ID owner access still checks the Firestore owner role");
+check(ownerSession.includes("createCustomToken"),"Trusted owner device can obtain a Firebase custom token without password login");
+check(firebaseRest.includes("accounts:signInWithCustomToken"),"Firebase REST client supports silent owner custom-token sign-in");
+check(cactusId.includes("ownerAutoSession"),"CactusByte ID attempts silent trusted-owner restoration on startup");
+check(cactusId.includes('/api/auth/track'),"CactusByte ID records login/register events through the server tracker");
+check(Boolean(authTrack)&&authTrack.includes("verifyIdToken"),"Auth-event tracking verifies Firebase identity server-side");
+check(rules.includes("match /authEvents/{id}")&&rules.includes("allow read, write: if false"),"Raw auth-event documents are blocked from client Firestore access");
+check(Boolean(ownerStats)&&ownerStats.includes("listUsers"),"Owner analytics derives the registered-user count from Firebase Auth");
+check(ownerStats.includes('collection("authEvents")'),"Owner analytics includes sign-in activity counters");
+check(Boolean(portal)&&portal.includes("billingPortal.sessions.create"),"Stripe customer portal session route exists");
+check(portal.includes("subscription_cancel")&&portal.includes("payment_method_update"),"Stripe portal enables cancel-at-period-end and payment-method management");
+check(Boolean(dock)&&dock.includes("Manage Billing")&&dock.includes("Owner Stats"),"Account dock exposes subscription management and owner-only analytics controls");
+check(layout.includes("<AccountDock/>"),"Account dock is mounted globally");
+check(exists("src/app/owner-device/page.tsx"),"One-time owner device setup page exists");
+check(env.includes("OWNER_DEVICE_SETUP_SECRET")&&env.includes("OWNER_DEVICE_SIGNING_SECRET"),"Owner-device production secrets are documented");
+check(!/NEXT_PUBLIC_OWNER|NEXT_PUBLIC_STRIPE_SECRET|NEXT_PUBLIC_FIREBASE_ADMIN/.test(env+ownerDevice+ownerAccess+portal),"Owner, Stripe secret and Firebase Admin credentials are never exposed as NEXT_PUBLIC variables");
+
+console.log("\nCactusByte owner + billing preflight");
+for(const x of pass)console.log(`✓ ${x}`);
+for(const x of fail)console.error(`✗ ${x}`);
+console.log(`\n${pass.length} passed · ${fail.length} failed`);
+if(fail.length)process.exit(1);

@@ -61,6 +61,10 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /authEvents/{id} {
+      allow read, write: if false;
+    }
+
     match /byteLinkMessages/{id} {
       allow create: if signedIn() && request.resource.data.senderUserId == request.auth.uid;
       allow read, update: if signedIn() && (resource.data.senderUserId == request.auth.uid || staff());
