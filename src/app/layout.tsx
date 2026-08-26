@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import AccountDock from "./account-dock";
 import SecureCheckoutBridge from "./secure-checkout-bridge";
 import "./globals.css";
+import "./mobile.css";
 
 const configuredHost = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
 const metadataBase = new URL(
