@@ -33,6 +33,9 @@ export default function CactusByteAuthSurface(){
  const[message,setMessage]=useState("");
  const[error,setError]=useState("");
  const[session,setSession]=useState<Session|null>(null);
+ const[testerCode,setTesterCode]=useState("");
+ const[testerActive,setTesterActive]=useState<boolean|null>(null);
+ const[testerBusy,setTesterBusy]=useState(false);
 
  useEffect(()=>{
   const refresh=()=>setSession(getSession());
@@ -64,6 +67,19 @@ export default function CactusByteAuthSurface(){
   return()=>window.removeEventListener("keydown",close);
  },[open]);
 
+ useEffect(()=>{
+  if(!open||!session){setTesterActive(null);return}
+  let alive=true;
+  void(async()=>{
+   try{
+    const response=await fetch("/api/tester/status",{headers:{Authorization:`Bearer ${session.idToken}`},cache:"no-store"});
+    const data=await response.json().catch(()=>({}));
+    if(alive)setTesterActive(Boolean(response.ok&&data?.tester));
+   }catch{if(alive)setTesterActive(false)}
+  })();
+  return()=>{alive=false}
+ },[open,session]);
+
  function switchMode(next:Mode){setMode(next);setError("");setMessage("");setPassword("")}
 
  async function submit(){
@@ -85,6 +101,21 @@ export default function CactusByteAuthSurface(){
   }catch(err){setError(friendlyAuthError(err))}finally{setBusy(false)}
  }
 
+ async function redeemTesterPass(){
+  if(!session){setError("Sign in with CactusByte ID before redeeming a tester coupon.");return}
+  if(!testerCode.trim()){setError("Enter the tester coupon code.");return}
+  setTesterBusy(true);setError("");setMessage("");
+  try{
+   const response=await fetch("/api/tester/redeem",{method:"POST",headers:{Authorization:`Bearer ${session.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({code:testerCode})});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(String(data?.error||"Tester coupon could not be redeemed."));
+   setTesterActive(true);
+   setTesterCode("");
+   setMessage("Tester Lifetime Pass activated. This CactusByte ID now has lifetime tester access with no Stripe subscription and no expiration.");
+   window.setTimeout(()=>window.location.reload(),700);
+  }catch(err){setError(err instanceof Error?err.message:String(err))}finally{setTesterBusy(false)}
+ }
+
  function signOut(){logoutRest();setSession(null);setOpen(false);window.location.reload()}
 
  if(!open)return null;
@@ -96,7 +127,16 @@ export default function CactusByteAuthSurface(){
     <button aria-label="Close CactusByte ID" onClick={()=>setOpen(false)} style={{...buttonStyle,minWidth:48,padding:0,fontSize:"1.35rem"}}>×</button>
    </div>
 
-   {session?<div style={{display:"grid",gap:12,marginTop:18}}><div style={{padding:15,border:"1px solid rgba(103,255,225,.16)",borderRadius:14,background:"rgba(255,255,255,.025)"}}><div style={{fontSize:13,color:"#8ea09b",marginBottom:5}}>SIGNED IN AS</div><strong style={{fontSize:"1.05rem",overflowWrap:"anywhere"}}>{session.email||"CactusByte owner account"}</strong><p style={{margin:"8px 0 0",color:"#9cafaa",lineHeight:1.5}}>Your apps, Pro access and cloud features use this CactusByte ID.</p></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}><button onClick={()=>setOpen(false)} style={primaryStyle}>Continue</button><button onClick={signOut} style={buttonStyle}>Sign Out</button></div></div>:<>
+   {session?<div style={{display:"grid",gap:12,marginTop:18}}>
+    <div style={{padding:15,border:"1px solid rgba(103,255,225,.16)",borderRadius:14,background:"rgba(255,255,255,.025)"}}><div style={{fontSize:13,color:"#8ea09b",marginBottom:5}}>SIGNED IN AS</div><strong style={{fontSize:"1.05rem",overflowWrap:"anywhere"}}>{session.email||"CactusByte owner account"}</strong><p style={{margin:"8px 0 0",color:"#9cafaa",lineHeight:1.5}}>Your apps, access and cloud features use this CactusByte ID.</p></div>
+    <div style={{padding:15,border:"1px solid rgba(103,255,225,.16)",borderRadius:14,background:"rgba(255,255,255,.025)"}}>
+     <div style={{fontSize:13,color:"#6dffe3",fontWeight:800,letterSpacing:".08em",marginBottom:6}}>TESTER LIFETIME PASS</div>
+     {testerActive===null?<p style={{margin:0,color:"#9cafaa"}}>Checking tester access…</p>:testerActive?<><strong style={{color:"#8fffdc"}}>Active · lifetime</strong><p style={{margin:"7px 0 0",color:"#9cafaa",lineHeight:1.5}}>Unlimited tester access is bound to this CactusByte ID. No Stripe subscription and no expiration.</p></>:<><p style={{margin:"0 0 10px",color:"#9cafaa",lineHeight:1.5}}>Tester coupons are single-use. The first CactusByte ID to redeem one keeps the lifetime pass.</p><div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8}}><input value={testerCode} onChange={event=>setTesterCode(event.target.value)} placeholder="CBT-XXXX-XXXX-XXXX" autoCapitalize="characters" style={fieldStyle}/><button disabled={testerBusy} onClick={()=>void redeemTesterPass()} style={primaryStyle}>{testerBusy?"Redeeming…":"Redeem"}</button></div></>}
+    </div>
+    {error&&<p role="alert" style={{margin:0,color:"#ffaaaa",lineHeight:1.45}}>{error}</p>}
+    {message&&<p role="status" style={{margin:0,color:"#8fffdc",lineHeight:1.45}}>{message}</p>}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}><button onClick={()=>setOpen(false)} style={primaryStyle}>Continue</button><button onClick={signOut} style={buttonStyle}>Sign Out</button></div>
+   </div>:<>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:18}}><button onClick={()=>switchMode("signin")} style={mode==="signin"?primaryStyle:buttonStyle}>Sign In</button><button onClick={()=>switchMode("create")} style={mode==="create"?primaryStyle:buttonStyle}>Create Account</button></div>
     <div style={{display:"grid",gap:10,marginTop:14}}>
      {mode==="create"&&<p style={{margin:0,color:"#9cafaa",lineHeight:1.5}}>New to CactusByte? Create your ID using your email and a password you choose.</p>}

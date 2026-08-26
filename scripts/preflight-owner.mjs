@@ -14,6 +14,9 @@ const ownerSession=exists("src/app/api/owner/session/route.ts")?read("src/app/ap
 const ownerStats=exists("src/app/api/owner/stats/route.ts")?read("src/app/api/owner/stats/route.ts"):"";
 const authTrack=exists("src/app/api/auth/track/route.ts")?read("src/app/api/auth/track/route.ts"):"";
 const portal=exists("src/app/api/stripe/portal/route.ts")?read("src/app/api/stripe/portal/route.ts"):"";
+const testerPass=exists("src/lib/tester-pass.ts")?read("src/lib/tester-pass.ts"):"";
+const testerRedeem=exists("src/app/api/tester/redeem/route.ts")?read("src/app/api/tester/redeem/route.ts"):"";
+const testerStatus=exists("src/app/api/tester/status/route.ts")?read("src/app/api/tester/status/route.ts"):"";
 const cactusId=read("src/lib/cactusbyte-id.ts");
 const firebaseRest=read("src/lib/firebase-rest.ts");
 const dock=exists("src/app/account-dock.tsx")?read("src/app/account-dock.tsx"):"";
@@ -49,6 +52,12 @@ check(Boolean(authSurface)&&authSurface.includes("Your email address is your Cac
 check(firebaseRest.includes('accounts:sendOobCode')&&firebaseRest.includes('PASSWORD_RESET'),"Firebase password-reset email flow is implemented");
 check(layout.includes("<CactusByteAuthSurface/>"),"CactusByte ID account surface is mounted globally");
 check(authSurface.includes("Continue browsing without an account"),"CactusByte remains browseable without a forced sign-in wall");
+check((testerPass.match(/[a-f0-9]{64}/g)||[]).length===3&&testerPass.includes("timingSafeEqual"),"Exactly three tester coupon hashes are staged and verified without storing raw coupon codes");
+check(testerPass.includes("verifyIdToken")&&testerRedeem.includes("testerIdentity(request)"),"Tester coupon redemption is bound to a verified CactusByte ID");
+check(testerRedeem.includes('collection("testerCoupons")')&&testerRedeem.includes("COUPON_ALREADY_REDEEMED"),"Tester coupons are single-use and account-bound");
+check(testerRedeem.includes('plan:"tester-lifetime"')&&testerRedeem.includes('source:"tester_coupon"')&&testerRedeem.includes('status:"lifetime"')&&testerRedeem.includes("expiresAt:null"),"Tester coupons grant non-expiring tester entitlements without a Stripe subscription");
+check(testerRedeem.includes('role:"tester"')&&!testerRedeem.toLowerCase().includes("stripe"),"Tester redemption assigns tester role without creating Pro billing status");
+check(Boolean(testerStatus)&&authSurface.includes("/api/tester/status")&&authSurface.includes("/api/tester/redeem")&&authSurface.includes("TESTER LIFETIME PASS"),"CactusByte ID exposes tester-pass status and redemption UI");
 check(exists("src/app/owner-device/page.tsx"),"One-time owner device setup page exists");
 check(env.includes("OWNER_DEVICE_SETUP_SECRET")&&env.includes("OWNER_DEVICE_SIGNING_SECRET"),"Owner-device production secrets are documented");
 check(!/NEXT_PUBLIC_OWNER|NEXT_PUBLIC_STRIPE_SECRET|NEXT_PUBLIC_FIREBASE_ADMIN/.test(env+ownerDevice+ownerAccess+portal),"Owner, Stripe secret and Firebase Admin credentials are never exposed as NEXT_PUBLIC variables");
