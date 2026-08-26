@@ -3,6 +3,7 @@ import AccountDock from "./account-dock";
 import BrandedShare from "./branded-share";
 import CactusByteAuthSurface from "./cactusbyte-auth-surface";
 import SecureCheckoutBridge from "./secure-checkout-bridge";
+import TesterAppBridge from "./tester-app-bridge";
 import "./globals.css";
 import "./mobile.css";
 
@@ -43,7 +44,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body><BrandedShare/><CactusByteAuthSurface/><SecureCheckoutBridge/><AccountDock/>{children}</body>
+      <body><BrandedShare/><CactusByteAuthSurface/><TesterAppBridge/><SecureCheckoutBridge/><AccountDock/>{children}</body>
     </html>
   );
 }
