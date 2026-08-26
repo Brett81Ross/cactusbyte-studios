@@ -17,6 +17,7 @@ const portal=exists("src/app/api/stripe/portal/route.ts")?read("src/app/api/stri
 const cactusId=read("src/lib/cactusbyte-id.ts");
 const firebaseRest=read("src/lib/firebase-rest.ts");
 const dock=exists("src/app/account-dock.tsx")?read("src/app/account-dock.tsx"):"";
+const brandedShare=exists("src/app/branded-share.tsx")?read("src/app/branded-share.tsx"):"";
 const layout=read("src/app/layout.tsx");
 const mobile=exists("src/app/mobile.css")?read("src/app/mobile.css"):"";
 const rules=read("firestore.rules");
@@ -40,7 +41,9 @@ check(Boolean(portal)&&portal.includes("billingPortal.sessions.create"),"Stripe 
 check(portal.includes("subscription_cancel")&&portal.includes("payment_method_update"),"Stripe portal enables cancel-at-period-end and payment-method management");
 check(Boolean(dock)&&dock.includes("Manage Billing")&&dock.includes("Owner Stats"),"Account dock exposes subscription management and owner-only analytics controls");
 check(layout.includes("<AccountDock/>")&&layout.includes('import "./mobile.css"'),"Account dock and phone stylesheet are mounted globally");
-check(mobile.includes("max-device-width:500px")&&mobile.includes(".grid,.grid.list{grid-template-columns:1fr!important}"),"Phone stylesheet forces a readable one-column app grid even in wide mobile/custom-tab viewports");
+check(mobile.includes("max-device-width:500px")&&mobile.includes(".grid{grid-template-columns:1fr!important}")&&mobile.includes(".grid.list{grid-template-columns:1fr!important}"),"Phone stylesheet forces a readable one-column app grid even in wide mobile/custom-tab viewports");
+check(Boolean(brandedShare)&&brandedShare.includes("CACTUSBYTE SHARE™")&&brandedShare.includes("Android / iOS Share"),"CactusByte branded QR share surface exists");
+check(layout.includes("<BrandedShare/>"),"CactusByte branded share surface is mounted globally");
 check(exists("src/app/owner-device/page.tsx"),"One-time owner device setup page exists");
 check(env.includes("OWNER_DEVICE_SETUP_SECRET")&&env.includes("OWNER_DEVICE_SIGNING_SECRET"),"Owner-device production secrets are documented");
 check(!/NEXT_PUBLIC_OWNER|NEXT_PUBLIC_STRIPE_SECRET|NEXT_PUBLIC_FIREBASE_ADMIN/.test(env+ownerDevice+ownerAccess+portal),"Owner, Stripe secret and Firebase Admin credentials are never exposed as NEXT_PUBLIC variables");

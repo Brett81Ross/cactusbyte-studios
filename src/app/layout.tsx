@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import AccountDock from "./account-dock";
+import BrandedShare from "./branded-share";
 import SecureCheckoutBridge from "./secure-checkout-bridge";
 import "./globals.css";
 import "./mobile.css";
@@ -41,7 +42,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body><SecureCheckoutBridge/><AccountDock/>{children}</body>
+      <body><BrandedShare/><SecureCheckoutBridge/><AccountDock/>{children}</body>
     </html>
   );
 }
