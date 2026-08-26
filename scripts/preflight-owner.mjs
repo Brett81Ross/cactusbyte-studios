@@ -52,7 +52,7 @@ check(Boolean(authSurface)&&authSurface.includes("Your email address is your Cac
 check(firebaseRest.includes('accounts:sendOobCode')&&firebaseRest.includes('PASSWORD_RESET'),"Firebase password-reset email flow is implemented");
 check(layout.includes("<CactusByteAuthSurface/>"),"CactusByte ID account surface is mounted globally");
 check(authSurface.includes("Continue browsing without an account"),"CactusByte remains browseable without a forced sign-in wall");
-check((testerPass.match(/[a-f0-9]{64}/g)||[]).length===3&&testerPass.includes("timingSafeEqual"),"Exactly three tester coupon hashes are staged and verified without storing raw coupon codes");
+check((testerPass.match(/[a-f0-9]{64}/g)||[]).length===8&&testerPass.includes("timingSafeEqual"),"Exactly eight tester coupon hashes are staged and verified without storing raw coupon codes");
 check(testerPass.includes("verifyIdToken")&&testerRedeem.includes("testerIdentity(request)"),"Tester coupon redemption is bound to a verified CactusByte ID");
 check(testerRedeem.includes('collection("testerCoupons")')&&testerRedeem.includes("COUPON_ALREADY_REDEEMED"),"Tester coupons are single-use and account-bound");
 check(testerRedeem.includes('plan:"tester-lifetime"')&&testerRedeem.includes('source:"tester_coupon"')&&testerRedeem.includes('status:"lifetime"')&&testerRedeem.includes("expiresAt:null"),"Tester coupons grant non-expiring tester entitlements without a Stripe subscription");
