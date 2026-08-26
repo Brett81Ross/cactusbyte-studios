@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import SecureCheckoutBridge from "./secure-checkout-bridge";
 import "./globals.css";
 
 const configuredHost = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
@@ -38,7 +39,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><SecureCheckoutBridge/>{children}</body>
     </html>
   );
 }
