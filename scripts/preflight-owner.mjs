@@ -18,6 +18,7 @@ const cactusId=read("src/lib/cactusbyte-id.ts");
 const firebaseRest=read("src/lib/firebase-rest.ts");
 const dock=exists("src/app/account-dock.tsx")?read("src/app/account-dock.tsx"):"";
 const brandedShare=exists("src/app/branded-share.tsx")?read("src/app/branded-share.tsx"):"";
+const authSurface=exists("src/app/cactusbyte-auth-surface.tsx")?read("src/app/cactusbyte-auth-surface.tsx"):"";
 const layout=read("src/app/layout.tsx");
 const mobile=exists("src/app/mobile.css")?read("src/app/mobile.css"):"";
 const rules=read("firestore.rules");
@@ -44,6 +45,10 @@ check(layout.includes("<AccountDock/>")&&layout.includes('import "./mobile.css"'
 check(mobile.includes("max-device-width:500px")&&mobile.includes(".grid{grid-template-columns:1fr!important}")&&mobile.includes(".grid.list{grid-template-columns:1fr!important}"),"Phone stylesheet forces a readable one-column app grid even in wide mobile/custom-tab viewports");
 check(Boolean(brandedShare)&&brandedShare.includes("CACTUSBYTE SHARE™")&&brandedShare.includes("Android / iOS Share"),"CactusByte branded QR share surface exists");
 check(layout.includes("<BrandedShare/>"),"CactusByte branded share surface is mounted globally");
+check(Boolean(authSurface)&&authSurface.includes("Your email address is your CactusByte ID")&&authSurface.includes("Create a password")&&authSurface.includes("Forgot password?")&&authSurface.includes("Show password"),"CactusByte ID clearly explains email login, account creation and password visibility");
+check(firebaseRest.includes('accounts:sendOobCode')&&firebaseRest.includes('PASSWORD_RESET'),"Firebase password-reset email flow is implemented");
+check(layout.includes("<CactusByteAuthSurface/>"),"CactusByte ID account surface is mounted globally");
+check(authSurface.includes("Continue browsing without an account"),"CactusByte remains browseable without a forced sign-in wall");
 check(exists("src/app/owner-device/page.tsx"),"One-time owner device setup page exists");
 check(env.includes("OWNER_DEVICE_SETUP_SECRET")&&env.includes("OWNER_DEVICE_SIGNING_SECRET"),"Owner-device production secrets are documented");
 check(!/NEXT_PUBLIC_OWNER|NEXT_PUBLIC_STRIPE_SECRET|NEXT_PUBLIC_FIREBASE_ADMIN/.test(env+ownerDevice+ownerAccess+portal),"Owner, Stripe secret and Firebase Admin credentials are never exposed as NEXT_PUBLIC variables");
