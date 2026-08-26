@@ -18,6 +18,7 @@ const cactusId=read("src/lib/cactusbyte-id.ts");
 const firebaseRest=read("src/lib/firebase-rest.ts");
 const dock=exists("src/app/account-dock.tsx")?read("src/app/account-dock.tsx"):"";
 const layout=read("src/app/layout.tsx");
+const mobile=exists("src/app/mobile.css")?read("src/app/mobile.css"):"";
 const rules=read("firestore.rules");
 const env=read(".env.example");
 
@@ -28,15 +29,18 @@ check(ownerAccess.includes('role!=="owner"'),"Normal CactusByte ID owner access 
 check(ownerSession.includes("createCustomToken"),"Trusted owner device can obtain a Firebase custom token without password login");
 check(firebaseRest.includes("accounts:signInWithCustomToken"),"Firebase REST client supports silent owner custom-token sign-in");
 check(cactusId.includes("ownerAutoSession"),"CactusByte ID attempts silent trusted-owner restoration on startup");
+check(cactusId.includes("hasOwnerBackup()")&&cactusId.includes('isOwner:ownerSessionActive||hasOwnerBackup()||profile?.role==="owner"'),"Trusted owner backup remains authoritative for owner UI");
+check(cactusId.includes('return ownerSessionActive||hasOwnerBackup()?asOwner(p):p'),"Trusted owner backup upgrades the loaded profile to owner before rendering");
 check(cactusId.includes('/api/auth/track'),"CactusByte ID records login/register events through the server tracker");
 check(Boolean(authTrack)&&authTrack.includes("verifyIdToken"),"Auth-event tracking verifies Firebase identity server-side");
 check(rules.includes("match /authEvents/{id}")&&rules.includes("allow read, write: if false"),"Raw auth-event documents are blocked from client Firestore access");
 check(Boolean(ownerStats)&&ownerStats.includes("listUsers"),"Owner analytics derives the registered-user count from Firebase Auth");
-check(ownerStats.includes('collection("authEvents")'),"Owner analytics includes sign-in activity counters");
+check(ownerStats.includes("isUserAuth")&&ownerStats.includes("ownerRestores24h"),"Owner restores are separated from real user sign-in counts");
 check(Boolean(portal)&&portal.includes("billingPortal.sessions.create"),"Stripe customer portal session route exists");
 check(portal.includes("subscription_cancel")&&portal.includes("payment_method_update"),"Stripe portal enables cancel-at-period-end and payment-method management");
 check(Boolean(dock)&&dock.includes("Manage Billing")&&dock.includes("Owner Stats"),"Account dock exposes subscription management and owner-only analytics controls");
-check(layout.includes("<AccountDock/>"),"Account dock is mounted globally");
+check(layout.includes("<AccountDock/>")&&layout.includes('import "./mobile.css"'),"Account dock and phone stylesheet are mounted globally");
+check(mobile.includes("max-device-width:500px")&&mobile.includes(".grid,.grid.list{grid-template-columns:1fr!important}"),"Phone stylesheet forces a readable one-column app grid even in wide mobile/custom-tab viewports");
 check(exists("src/app/owner-device/page.tsx"),"One-time owner device setup page exists");
 check(env.includes("OWNER_DEVICE_SETUP_SECRET")&&env.includes("OWNER_DEVICE_SIGNING_SECRET"),"Owner-device production secrets are documented");
 check(!/NEXT_PUBLIC_OWNER|NEXT_PUBLIC_STRIPE_SECRET|NEXT_PUBLIC_FIREBASE_ADMIN/.test(env+ownerDevice+ownerAccess+portal),"Owner, Stripe secret and Firebase Admin credentials are never exposed as NEXT_PUBLIC variables");
