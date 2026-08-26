@@ -2,6 +2,7 @@ import {FieldValue} from "firebase-admin/firestore";
 import type Stripe from "stripe";
 import {adminDb} from "../../../../lib/firebase-admin";
 import {stripeServer} from "../../../../lib/stripe-server";
+import {verifyCheckoutReference} from "../../../../lib/stripe-checkout-ref";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -40,12 +41,14 @@ function activeSubscriptionStatus(status:string){
 }
 
 async function provisionFromCheckout(session:Stripe.Checkout.Session){
- const uid=(session.client_reference_id||session.metadata?.cactusbyte_uid||"").trim();
+ const reference=verifyCheckoutReference(session.client_reference_id||"");
  const appId=appIdFromMetadata(session.metadata);
  const subId=subscriptionId(session.subscription);
- if(!uid||!appId||!subId)return;
+ if(!reference||!appId||reference.appId!==appId||!subId)return;
  const stripe=stripeServer();
  const subscription=await stripe.subscriptions.retrieve(subId);
+ if(!activeSubscriptionStatus(subscription.status))return;
+ const uid=reference.uid;
  const docId=`${uid}__${appId}`;
  await adminDb().collection("entitlements").doc(docId).set({
   userId:uid,
@@ -53,7 +56,7 @@ async function provisionFromCheckout(session:Stripe.Checkout.Session){
   plan:session.metadata?.plan||subscription.metadata.plan||"pro",
   source:"stripe",
   status:subscription.status,
-  active:activeSubscriptionStatus(subscription.status),
+  active:true,
   stripeCustomerId:customerId(session.customer)||String(subscription.customer||""),
   stripeSubscriptionId:subscription.id,
   stripeCheckoutSessionId:session.id,
