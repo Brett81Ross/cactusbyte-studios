@@ -3,91 +3,107 @@ button,a,input,select,textarea{touch-action:manipulation}
 
 /* Phone mode must still activate when Android/iOS opens the site in a wide/custom-tab viewport. */
 @media (max-width:700px),(max-device-width:500px),(hover:none) and (pointer:coarse) and (max-aspect-ratio:3/4){
- html{font-size:17px}
- body{font-size:17px;line-height:1.5;overflow-x:hidden}
- .shell{width:100%;max-width:100%;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));padding-bottom:calc(34px + env(safe-area-inset-bottom))}
- .shell>header{flex-direction:column;align-items:flex-start;gap:14px;padding:14px 0 16px}
- header b{font-size:1.3rem;line-height:1.2}
- header small,header span{font-size:.86rem;line-height:1.35}
- .topActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;justify-content:stretch}
- .topActions button{min-height:48px;font-size:1rem!important;padding:0 10px;width:100%}
- button,.actions a{min-height:48px;font-size:1rem}
- input,select,textarea{font-size:16px!important}
- .hero{grid-template-columns:1fr!important;padding:26px 0 18px;gap:14px;align-items:start}
- .hero h1{font-size:clamp(2.25rem,11vw,3.25rem);line-height:1;letter-spacing:-.045em}
- .hero p,.panel p,.support p{font-size:1rem;line-height:1.55}
- .hero>div:first-child>small,.head small,.panel>small,.support small{font-size:.8rem;line-height:1.35}
+ html{font-size:18px}
+ body{font-size:18px;line-height:1.55;overflow-x:hidden}
+ .shell{width:100%;max-width:100%;padding-left:max(15px,env(safe-area-inset-left));padding-right:max(15px,env(safe-area-inset-right));padding-bottom:calc(36px + env(safe-area-inset-bottom))}
+ .shell>header{flex-direction:column;align-items:flex-start;gap:14px;padding:15px 0 17px}
+ header b{font-size:1.32rem;line-height:1.2}
+ header small,header span{font-size:.88rem;line-height:1.4}
+ .topActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;width:100%;justify-content:stretch}
+ .topActions button{min-height:52px;font-size:1rem!important;padding:0 11px;width:100%}
+ button,.actions a{min-height:50px;font-size:1rem}
+ input,select,textarea{font-size:18px!important}
+ .hero{grid-template-columns:1fr!important;padding:28px 0 20px;gap:16px;align-items:start}
+ .hero h1{font-size:clamp(2.35rem,11vw,3.35rem);line-height:1;letter-spacing:-.045em}
+ .hero p,.panel p,.support p{font-size:1rem;line-height:1.6}
+ .hero>div:first-child>small,.head small,.panel>small,.support small{font-size:.82rem;line-height:1.4}
  .hero .stats{width:100%;max-width:none}
- .identity,.infra,.notice{padding:14px;border-radius:14px}
- .identity b{font-size:1.08rem}
- .identity span{font-size:.94rem;line-height:1.45}
+ .identity,.infra,.notice{padding:16px;border-radius:15px}
+ .identity b{font-size:1.1rem}
+ .identity span{font-size:.96rem;line-height:1.5}
  .notice{align-items:flex-start}
- .notice span{font-size:.96rem;line-height:1.4}
- .shell>nav{gap:8px;padding:4px 0 15px;-webkit-overflow-scrolling:touch}
- .shell>nav button{min-height:48px;font-size:1rem;padding-inline:14px}
- .infra{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
- .infra>div{padding:8px 2px;min-width:0}
- .infra b{font-size:.94rem;overflow-wrap:anywhere}
- .infra span{font-size:.82rem;line-height:1.3}
- .head{margin:20px 0 10px;align-items:flex-start}
- .head h2,.panel h2,.support h2,.modal h2{font-size:1.42rem;line-height:1.2}
- .panel{margin:16px 0;padding:16px;border-radius:16px}
+ .notice span{font-size:.98rem;line-height:1.45}
+ .shell>nav{gap:9px;padding:5px 0 17px;-webkit-overflow-scrolling:touch}
+ .shell>nav button{min-height:50px;font-size:1rem;padding-inline:15px}
+ .infra{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px}
+ .infra>div{padding:9px 2px;min-width:0}
+ .infra b{font-size:.96rem;overflow-wrap:anywhere}
+ .infra span{font-size:.84rem;line-height:1.35}
+ .head{margin:22px 0 11px;align-items:flex-start}
+ .head h2,.panel h2,.support h2,.modal h2{font-size:1.46rem;line-height:1.22}
+ .panel{margin:18px 0;padding:18px;border-radius:17px}
  .form.twoCol{grid-template-columns:1fr!important}
  .form .full{grid-column:auto!important}
- .form label,.settingsGrid label{font-size:.92rem}
- .form input,.form select,.form textarea,.panel textarea,.compose input,.panel select,.settingsGrid select{min-height:50px;padding:12px;font-size:16px!important}
- .grid,.grid.list{grid-template-columns:1fr!important;gap:14px;margin-top:14px}
- .card{min-height:0;padding:18px;border-radius:18px}
- .cardtop img{width:58px;height:58px}
- .cardtop span,.live,.dev{font-size:.78rem;padding:7px 9px}
- .card>small{font-size:.86rem}
- .card h3{font-size:1.25rem;line-height:1.25;overflow-wrap:anywhere}
- .card p{font-size:.98rem;line-height:1.5}
- .capabilities{gap:7px}
- .capabilities span{font-size:.8rem;line-height:1.25;padding:5px 8px}
- .meta,.price{font-size:.86rem;line-height:1.35}
- .actions{grid-template-columns:1fr 1fr;gap:8px}
+ .form label,.settingsGrid label{font-size:.94rem}
+ .form input,.form select,.form textarea,.panel textarea,.compose input,.panel select,.settingsGrid select{min-height:52px;padding:13px;font-size:18px!important}
+ .grid{grid-template-columns:1fr!important}
+ .grid.list{grid-template-columns:1fr!important}
+ .grid,.grid.list{gap:16px;margin-top:16px}
+ .card{min-height:0;padding:20px;border-radius:19px}
+ .cardtop img{width:60px;height:60px}
+ .cardtop span,.live,.dev{font-size:.8rem;padding:7px 10px}
+ .card>small{font-size:.88rem}
+ .card h3{font-size:1.3rem;line-height:1.28;overflow-wrap:anywhere}
+ .card p{font-size:1rem;line-height:1.55}
+ .capabilities{gap:8px}
+ .capabilities span{font-size:.82rem;line-height:1.3;padding:6px 9px}
+ .meta,.price{font-size:.88rem;line-height:1.4}
+ .actions{grid-template-columns:1fr 1fr;gap:9px}
  .actions a,.actions button{font-size:1rem}
- .mini{grid-template-columns:1fr 1fr 48px 48px;gap:8px}
- .mini button{min-height:46px;font-size:.9rem}
- .stats,.pulseStats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
- .stats b{font-size:1.18rem;padding:14px}
- .stats span{font-size:.82rem;line-height:1.3;margin-top:2px}
+ .mini{grid-template-columns:1fr 1fr 50px 50px;gap:9px}
+ .mini button{min-height:48px;font-size:.92rem}
+ .stats,.pulseStats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px}
+ .stats b{font-size:1.22rem;padding:16px}
+ .stats span{font-size:.84rem;line-height:1.35;margin-top:3px}
  .auth{align-items:flex-start;flex-direction:column}
  .compose{grid-template-columns:1fr!important}
  .releaseGrid,.radarGrid,.ideaGrid{grid-template-columns:1fr!important}
  .release.featured{grid-column:auto!important}
- .row span,.listTitle span,.radarGrid span,.ideaGrid span{font-size:.84rem}
- .row p,.chat p{font-size:.96rem}
- .channels button{font-size:.94rem}
- .muted{font-size:.92rem!important;line-height:1.5}
- .release ul{font-size:.92rem;line-height:1.55}
- .support{grid-template-columns:1fr!important;padding:18px;margin:24px 0}
+ .row span,.listTitle span,.radarGrid span,.ideaGrid span{font-size:.86rem}
+ .row p,.chat p{font-size:.98rem}
+ .channels button{font-size:.96rem}
+ .muted{font-size:.94rem!important;line-height:1.55}
+ .release ul{font-size:.94rem;line-height:1.6}
+ .support{grid-template-columns:1fr!important;padding:20px;margin:26px 0}
  .supportButtons{justify-content:flex-start}
- .supportButtons span,footer{font-size:.84rem;line-height:1.4;text-align:left}
- .modal{padding:17px;max-height:92dvh}
- .modalHead button{min-width:46px;min-height:46px}
- .settingsStats span{font-size:.84rem}
+ .supportButtons span,footer{font-size:.86rem;line-height:1.45;text-align:left}
+ .modal{padding:18px;max-height:92dvh}
+ .modalHead button{min-width:48px;min-height:48px}
+ .settingsStats span{font-size:.86rem}
 }
 
+/* Normal iPhone/Android widths and the Z Fold cover display get intentionally larger type. */
 @media (max-width:430px),(max-device-width:430px){
- .shell{padding-left:max(13px,env(safe-area-inset-left));padding-right:max(13px,env(safe-area-inset-right))}
- .hero{padding-top:22px}
- .hero h1{font-size:clamp(2.15rem,12vw,2.85rem)}
+ html{font-size:20px}
+ body{font-size:20px;line-height:1.58}
+ .shell{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+ .hero{padding-top:24px}
+ .hero h1{font-size:clamp(2.2rem,12vw,2.9rem)}
+ .hero p,.panel p,.support p{font-size:1rem}
+ .topActions{grid-template-columns:1fr 1fr}
+ .topActions button{min-height:54px;font-size:.92rem!important;padding-inline:8px}
+ .shell>nav button{min-height:52px;font-size:.95rem}
  .infra{grid-template-columns:1fr!important}
- .head{flex-direction:column;align-items:stretch;gap:8px}
- .head>button{width:100%}
+ .infra b{font-size:.98rem}
+ .infra span{font-size:.86rem}
+ .head{flex-direction:column;align-items:stretch;gap:9px}
+ .head>button{width:100%;min-height:54px}
  .buttonRow{width:100%}
- .buttonRow button{flex:1 1 140px}
- .supportButtons button{flex:1 1 70px}
+ .buttonRow button{flex:1 1 140px;min-height:52px}
+ .card{padding:20px}
+ .card h3{font-size:1.28rem}
+ .actions a,.actions button{min-height:54px}
+ .supportButtons button{flex:1 1 70px;min-height:52px}
  .row>div{align-items:flex-start;flex-direction:column}
 }
 
 @media (max-width:360px),(max-device-width:360px){
- html{font-size:16px}
- .topActions{grid-template-columns:1fr}
+ html{font-size:20px}
+ body{font-size:20px}
+ .topActions{grid-template-columns:1fr 1fr}
+ .topActions button{font-size:.86rem!important}
  .actions{grid-template-columns:1fr}
  .mini{grid-template-columns:1fr 1fr}
- .mini button{min-height:46px}
- .stats,.pulseStats{grid-template-columns:1fr 1fr!important}
+ .mini button{min-height:50px}
+ .stats,.pulseStats{grid-template-columns:1fr!important}
 }
