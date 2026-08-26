@@ -18,11 +18,12 @@ export async function GET() {
         ideaVoting: "connected",
         stripeCatalog: "connected",
         entitlementLedger: "read-only",
+        checkoutIdentityBinding: "signed-staged",
         entitlementProvisioning: "webhook-ready",
         byteLinkTransport: "development",
         ideaRadarWorker: "development",
       },
-      note: "Firebase identity, persistence, community, Idea Forge voting and the Stripe storefront catalog are connected. Signed-in CactusByte IDs can read server-managed entitlements, and a signature-verified Stripe webhook is staged to provision and revoke access once the server-only Stripe and Firebase Admin credentials plus production webhook endpoint are configured. ByteLink signing and other privileged Core services remain Development.",
+      note: "Firebase identity, persistence, community, Idea Forge voting and the Stripe storefront catalog are connected. Storefront checkout launches are staged to bind a verified CactusByte ID to the selected Stripe Payment Link with a server-signed reference, and the Stripe webhook accepts only that signed identity before provisioning entitlements. Production activation still requires the server-only Stripe/Firebase Admin credentials, checkout-signing secret and deployed webhook endpoint. ByteLink signing and other privileged Core services remain Development.",
     },
     { headers: { "Cache-Control": "no-store" } }
   );
