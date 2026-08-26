@@ -26,6 +26,9 @@ const entitlementCloud=exists("src/lib/entitlements-cloud.ts")?read("src/lib/ent
 const firebaseAdmin=exists("src/lib/firebase-admin.ts")?read("src/lib/firebase-admin.ts"):"";
 const stripeServer=exists("src/lib/stripe-server.ts")?read("src/lib/stripe-server.ts"):"";
 const stripeWebhook=exists("src/app/api/stripe/webhook/route.ts")?read("src/app/api/stripe/webhook/route.ts"):"";
+const checkoutRef=exists("src/lib/stripe-checkout-ref.ts")?read("src/lib/stripe-checkout-ref.ts"):"";
+const checkoutRoute=exists("src/app/api/stripe/checkout-link/route.ts")?read("src/app/api/stripe/checkout-link/route.ts"):"";
+const checkoutBridge=exists("src/app/secure-checkout-bridge.tsx")?read("src/app/secure-checkout-bridge.tsx"):"";
 
 const pageVersion=page.match(/const V="([^"]+)"/)?.[1];
 const manifestVersion=apiManifest.match(/version:"([^"]+)"/)?.[1];
@@ -54,6 +57,7 @@ check(cactusId.includes("refreshEntitlements"),"CactusByte ID can refresh entitl
 const entitlementRule=firestoreRules.match(/match \/entitlements\/\{id\} \{([\s\S]*?)\n    \}/)?.[1]||"";
 check(entitlementRule.includes("allow write: if false"),"Firestore entitlement writes remain blocked from clients");
 check(core.includes('entitlementLedger: "read-only"'),"Core reports the entitlement ledger as read-only to clients");
+check(core.includes('checkoutIdentityBinding: "signed-staged"'),"Core reports signed checkout identity binding as staged");
 check(core.includes('entitlementProvisioning: "webhook-ready"'),"Core reports Stripe entitlement provisioning as webhook-ready, not falsely connected");
 
 check(Boolean(firebaseAdmin),"Server-only Firebase Admin helper is present");
@@ -62,19 +66,31 @@ check(!firebaseAdmin.includes("NEXT_PUBLIC_FIREBASE_ADMIN"),"Firebase Admin cred
 check(Boolean(stripeServer),"Server-only Stripe helper is present");
 check(stripeServer.includes("STRIPE_SECRET_KEY"),"Stripe server helper loads the secret key from server environment");
 check(Boolean(stripeWebhook),"Stripe entitlement webhook route is present");
-check(stripeWebhook.includes("constructEvent"),"Stripe webhook verifies signatures before processing events");
+check(stripeWebhook.includes("constructEvent"),"Stripe webhook verifies Stripe signatures before processing events");
+check(stripeWebhook.includes("verifyCheckoutReference"),"Stripe webhook verifies the server-signed checkout identity reference");
+check(stripeWebhook.includes("reference.appId!==appId"),"Stripe webhook binds the signed identity to the paid app");
+check(!stripeWebhook.includes("session.metadata?.cactusbyte_uid"),"Stripe webhook never trusts a client-supplied UID metadata fallback");
 check(stripeWebhook.includes('event.type==="checkout.session.completed"'),"Stripe webhook provisions after completed Checkout sessions");
 check(stripeWebhook.includes('event.type==="customer.subscription.updated"'),"Stripe webhook tracks subscription lifecycle updates");
 check(stripeWebhook.includes('event.type==="customer.subscription.deleted"'),"Stripe webhook revokes access on subscription deletion");
 check(stripeWebhook.includes('collection("entitlements")'),"Stripe webhook writes only through the privileged server entitlement path");
 check(envExample.includes("STRIPE_WEBHOOK_SECRET")&&envExample.includes("FIREBASE_ADMIN_PRIVATE_KEY"),"Environment template documents webhook and Firebase Admin secrets");
+check(envExample.includes("STRIPE_CHECKOUT_SIGNING_SECRET"),"Environment template documents the server-only checkout signing secret");
 check(!/sk_(live|test)_[A-Za-z0-9]{16,}/.test(stripeServer+stripeWebhook),"No live Stripe secret key is hard-coded in server source");
 check(!/whsec_[A-Za-z0-9]{16,}/.test(stripeServer+stripeWebhook),"No Stripe webhook signing secret is hard-coded in server source");
 check(pkg.dependencies?.stripe,"Stripe server SDK is installed");
 check(pkg.dependencies?.["firebase-admin"],"Firebase Admin SDK is installed");
 
-check(page.includes("client_reference_id"),"Storefront binds signed-in upgrades to CactusByte ID through Stripe client_reference_id");
-check(page.includes("prefilled_email"),"Storefront prefills the signed-in CactusByte ID email at Stripe checkout");
+check(Boolean(checkoutRef),"Server-side checkout-reference signer is present");
+check(checkoutRef.includes('createHmac("sha256"'),"Checkout identity uses HMAC-SHA256 signing");
+check(checkoutRef.includes("timingSafeEqual"),"Checkout identity verification uses timing-safe signature comparison");
+check(Boolean(checkoutRoute),"Authenticated Stripe checkout-link route is present");
+check(checkoutRoute.includes("adminAuth().verifyIdToken"),"Checkout launcher verifies the Firebase ID token server-side");
+check(checkoutRoute.includes("createCheckoutReference"),"Checkout launcher creates a server-signed user/app reference");
+check(checkoutRoute.includes("prefilled_email"),"Checkout launcher prefills the verified CactusByte ID email");
+check(Boolean(checkoutBridge),"Secure checkout bridge is mounted in the client shell");
+check(layout.includes("SecureCheckoutBridge"),"Root layout mounts the secure checkout bridge");
+check(checkoutBridge.includes('/api/stripe/checkout-link'),"Storefront upgrade clicks route through the authenticated checkout launcher");
 check(page.includes("✓ Pro Active"),"Storefront replaces upgrade CTA with Pro Active for entitled apps");
 check(page.includes("Sign In to Upgrade"),"Storefront requires CactusByte ID before linked upgrades");
 check(page.includes("Refresh Pro Access"),"Storefront exposes entitlement refresh after payment");
