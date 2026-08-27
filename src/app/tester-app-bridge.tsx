@@ -7,6 +7,7 @@ const VIP_APPS:Record<string,string>={
  "https://noproblem-pws.vercel.app":"noproblem",
  "https://machzero-beta.vercel.app":"machzero"
 };
+const VIP_LAUNCH_TIMEOUT_MS=3500;
 
 export default function TesterAppBridge(){
  const[tester,setTester]=useState(false);
@@ -46,12 +47,17 @@ export default function TesterAppBridge(){
    event.stopPropagation();
    event.stopImmediatePropagation();
    void(async()=>{
+    const controller=new AbortController();
+    const timeout=window.setTimeout(()=>controller.abort(),VIP_LAUNCH_TIMEOUT_MS);
+    let navigated=false;
+    const go=(url:string)=>{if(navigated)return;navigated=true;window.location.assign(url)};
     try{
-     const response=await fetch("/api/tester/issue-app-token",{method:"POST",headers:{Authorization:`Bearer ${session.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({appId}),cache:"no-store"});
+     const response=await fetch("/api/tester/issue-app-token",{method:"POST",headers:{Authorization:`Bearer ${session.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({appId}),cache:"no-store",signal:controller.signal});
      const data=await response.json().catch(()=>({}));
-     if(response.ok&&data?.launchUrl){window.location.assign(String(data.launchUrl));return}
+     if(response.ok&&data?.launchUrl){go(String(data.launchUrl));return}
     }catch{}
-    window.location.assign(original);
+    finally{window.clearTimeout(timeout)}
+    go(original);
    })();
   };
   window.addEventListener("click",intercept,true);
