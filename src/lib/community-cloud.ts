@@ -1,6 +1,7 @@
 import {addDocument,getSession,runQuery,setDocument}from"./firebase-rest";
 export type FeedbackRecord={id?:string;userId:string;appId:string;category:string;severity?:string|null;message:string;contact?:string|null;status:string;createdAt?:unknown};
-export type IdeaRecord={id?:string;userId:string;title:string;problem?:string|null;audience?:string|null;details?:string|null;status:string;source:string;votes:number;supportedByMe?:boolean;createdAt?:unknown};
+export type IdeaSource={title:string;url:string};
+export type IdeaRecord={id?:string;userId:string;title:string;problem?:string|null;audience?:string|null;details?:string|null;status:string;source:string;votes:number;sources?:IdeaSource[];supportedByMe?:boolean;createdAt?:unknown};
 type IdeaVoteRecord={id?:string;userId:string;ideaId:string;createdAt?:unknown};
 function session(){const s=getSession();if(!s)throw new Error("Sign in with CactusByte ID™ first.");return s}
 function uid(){return session().uid}

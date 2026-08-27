@@ -5,7 +5,7 @@ import {useEffect,useState} from "react";
 type InstallPrompt=Event&{prompt:()=>Promise<void>};
 
 const wrap={position:"relative",zIndex:40,display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:8,padding:"10px 12px",background:"linear-gradient(180deg,rgba(4,14,12,.98),rgba(4,10,9,.94))",borderBottom:"1px solid rgba(103,255,225,.18)",boxShadow:"0 10px 30px rgba(0,0,0,.18)"} as const;
-const btn={minHeight:46,border:"1px solid rgba(103,255,225,.24)",borderRadius:12,background:"rgba(255,255,255,.035)",color:"#f3f8f6",fontWeight:800,fontSize:13,padding:"9px 8px"} as const;
+const btn={minHeight:46,border:"1px solid rgba(103,255,225,.52)",borderRadius:12,background:"linear-gradient(180deg,rgba(24,55,49,.98),rgba(8,24,21,.98))",color:"#f3fffc",fontWeight:850,fontSize:13,padding:"9px 8px",boxShadow:"inset 0 1px 0 rgba(255,255,255,.1),0 3px 0 rgba(0,213,190,.22),0 8px 20px rgba(0,0,0,.28)"} as const;
 
 export default function LaunchBar(){
  const[prompt,setPrompt]=useState<InstallPrompt|null>(null),[hint,setHint]=useState("");

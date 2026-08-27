@@ -29,6 +29,9 @@ const stripeWebhook=exists("src/app/api/stripe/webhook/route.ts")?read("src/app/
 const checkoutRef=exists("src/lib/stripe-checkout-ref.ts")?read("src/lib/stripe-checkout-ref.ts"):"";
 const checkoutRoute=exists("src/app/api/stripe/checkout-link/route.ts")?read("src/app/api/stripe/checkout-link/route.ts"):"";
 const checkoutBridge=exists("src/app/secure-checkout-bridge.tsx")?read("src/app/secure-checkout-bridge.tsx"):"";
+const ideaRadar=exists("src/app/api/idea-radar/route.ts")?read("src/app/api/idea-radar/route.ts"):"";
+const communityCloud=exists("src/lib/community-cloud.ts")?read("src/lib/community-cloud.ts"):"";
+const buttonPolish=exists("src/app/button-polish.css")?read("src/app/button-polish.css"):"";
 
 const pageVersion=page.match(/const V="([^"]+)"/)?.[1];
 const manifestVersion=apiManifest.match(/version:"([^"]+)"/)?.[1];
@@ -42,6 +45,14 @@ check(firebase.includes("NEXT_PUBLIC_FIREBASE_API_KEY"),"Firebase browser key is
 check(!/AIza[0-9A-Za-z_-]{20,}/.test(firebase),"No Firebase API key is hard-coded in src/lib/firebase.ts");
 check(gitignore.includes(".env*"),"Environment files are ignored by Git");
 check(!/serviceWorker\.register\s*\(/.test(page),"CactusByte does not register a service worker");
+check(Boolean(buttonPolish),"Dedicated cross-device tappable-action styling is present");
+check(buttonPolish.includes("button.primaryAction:not(:disabled)"),"Primary actions use the high-contrast raised treatment");
+check(buttonPolish.includes(":focus-visible")&&buttonPolish.includes(":active"),"Buttons expose visible keyboard focus and pressed states");
+check(buttonPolish.includes("prefers-reduced-motion"),"Button motion respects reduced-motion preferences");
+check(!page.includes("RADAR_SEEDS"),"Hard-coded Idea Radar seeds are removed from the live Forge surface");
+check(page.includes("Run AI Idea Radar")&&page.includes("AI web research + CactusByte signals"),"Idea Forge identifies the real AI research workflow");
+check(page.includes('headers:{Authorization:`Bearer ${session.idToken}`}'),"Idea Radar sends verified CactusByte owner identity to the server");
+check(communityCloud.includes("sources?:IdeaSource[]"),"Idea records retain clickable research evidence");
 check(exists("tsconfig.json"),"TypeScript configuration is tracked instead of generated during CI");
 check(layout.includes("metadataBase"),"Metadata base is explicitly configured for share-image URL resolution");
 check(layout.includes("VERCEL_PROJECT_PRODUCTION_URL"),"Metadata base can resolve from the Vercel production hostname");
@@ -78,6 +89,17 @@ check(envExample.includes("STRIPE_WEBHOOK_SECRET")&&envExample.includes("FIREBAS
 check(envExample.includes("STRIPE_CHECKOUT_SIGNING_SECRET"),"Environment template documents the server-only checkout signing secret");
 check(!/sk_(live|test)_[A-Za-z0-9]{16,}/.test(stripeServer+stripeWebhook),"No live Stripe secret key is hard-coded in server source");
 check(!/whsec_[A-Za-z0-9]{16,}/.test(stripeServer+stripeWebhook),"No Stripe webhook signing secret is hard-coded in server source");
+check(Boolean(ideaRadar),"AI Idea Radar route is present");
+check(ideaRadar.includes("ownerIdentity(request)"),"Idea Radar is restricted to verified owner access");
+check(ideaRadar.includes('tools:[{type:"web_search"}]'),"Idea Radar uses OpenAI live web search");
+check(ideaRadar.includes('type:"json_schema"')&&ideaRadar.includes("IDEA_SCHEMA"),"Idea Radar requires schema-validated research output");
+check(ideaRadar.includes("citedUrls(data)")&&ideaRadar.includes("citations.has(source.url)"),"Idea Radar saves only evidence links returned as web citations");
+check(ideaRadar.includes("existingIdeaTitles")&&ideaRadar.includes("known.has(key)"),"Idea Radar compares against existing Forge titles and skips duplicates");
+check(ideaRadar.includes("anonymizedFeedback")&&!ideaRadar.includes("data.contact"),"Idea Radar uses feedback signals without sending contact fields");
+check(ideaRadar.includes('collection("ideas")')&&ideaRadar.includes('source:"radar"'),"AI concepts are persisted directly into Idea Forge");
+check(ideaRadar.includes('collection("ideaRadarEvidence")')&&ideaRadar.includes('collection("ideaRadarRuns")'),"Radar runs and source evidence are retained for owner review");
+check(envExample.includes("OPENAI_API_KEY")&&envExample.includes("OPENAI_IDEA_RADAR_MODEL"),"Environment template documents server-only Idea Radar credentials");
+check(!/sk-[A-Za-z0-9_-]{20,}/.test(ideaRadar+envExample),"No OpenAI API key is hard-coded in source");
 check(pkg.dependencies?.stripe,"Stripe server SDK is installed");
 check(pkg.dependencies?.["firebase-admin"],"Firebase Admin SDK is installed");
 
