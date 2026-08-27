@@ -3,10 +3,12 @@ import AccountDock from "./account-dock";
 import BrandedShare from "./branded-share";
 import CactusByteAuthSurface from "./cactusbyte-auth-surface";
 import LaunchBar from "./launch-bar";
+import PersonalizationLayer from "./personalization-layer";
 import SecureCheckoutBridge from "./secure-checkout-bridge";
 import TesterAppBridge from "./tester-app-bridge";
 import "./globals.css";
 import "./mobile.css";
+import "./personalization.css";
 
 const configuredHost = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
 const metadataBase = new URL(
@@ -45,7 +47,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body><LaunchBar/><BrandedShare/><CactusByteAuthSurface/><TesterAppBridge/><SecureCheckoutBridge/><AccountDock/>{children}</body>
+      <body><LaunchBar/><BrandedShare/><CactusByteAuthSurface/><PersonalizationLayer/><TesterAppBridge/><SecureCheckoutBridge/><AccountDock/>{children}</body>
     </html>
   );
 }
