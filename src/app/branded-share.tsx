@@ -28,6 +28,7 @@ export default function BrandedShare(){
 
  useEffect(()=>{
   const canonical=()=>`${window.location.origin}/`;
+  const show=()=>{setCopied(false);setShareUrl(canonical());setOpen(true)};
   setShareUrl(canonical());
   const intercept=(event:MouseEvent)=>{
    const target=event.target as HTMLElement|null;
@@ -36,12 +37,11 @@ export default function BrandedShare(){
    event.preventDefault();
    event.stopPropagation();
    event.stopImmediatePropagation();
-   setCopied(false);
-   setShareUrl(canonical());
-   setOpen(true);
+   show();
   };
   window.addEventListener("click",intercept,true);
-  return()=>window.removeEventListener("click",intercept,true);
+  window.addEventListener("cactusbyte:share-open",show);
+  return()=>{window.removeEventListener("click",intercept,true);window.removeEventListener("cactusbyte:share-open",show)};
  },[]);
 
  useEffect(()=>{
@@ -91,7 +91,7 @@ export default function BrandedShare(){
     <button onClick={()=>void nativeShare()} style={{...buttonStyle,background:"linear-gradient(#0bcfbb,#07988b)",color:"#02100d",borderColor:"transparent"}}>Android / iOS Share</button>
     <button onClick={()=>void copyLink()} style={buttonStyle}>{copied?"Copied ✓":"Copy Link"}</button>
    </div>
-   <p style={{margin:"13px 0 0",fontSize:".82rem",lineHeight:1.45,color:"#8ea09b"}}>Android and Chrome control their own generic QR tile, so CactusByte now shows this branded QR before opening the native share sheet.</p>
+   <p style={{margin:"13px 0 0",fontSize:".82rem",lineHeight:1.45,color:"#8ea09b"}}>Scan this QR from another phone or use the native share button to send the CactusByte command center directly.</p>
   </section>
  </div>;
 }

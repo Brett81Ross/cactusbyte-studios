@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import AccountDock from "./account-dock";
 import BrandedShare from "./branded-share";
 import CactusByteAuthSurface from "./cactusbyte-auth-surface";
+import LaunchBar from "./launch-bar";
 import SecureCheckoutBridge from "./secure-checkout-bridge";
 import TesterAppBridge from "./tester-app-bridge";
 import "./globals.css";
@@ -44,7 +45,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body><BrandedShare/><CactusByteAuthSurface/><TesterAppBridge/><SecureCheckoutBridge/><AccountDock/>{children}</body>
+      <body><LaunchBar/><BrandedShare/><CactusByteAuthSurface/><TesterAppBridge/><SecureCheckoutBridge/><AccountDock/>{children}</body>
     </html>
   );
 }
