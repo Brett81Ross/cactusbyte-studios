@@ -1,0 +1,58 @@
+name: Build American Male Demo Narration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/build_demo_male_voice.py
+      - .github/workflows/build-demo-male-voice.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message, '[demo-voice]') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install neural TTS and media tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install edge-tts
+
+      - name: Generate American male narration and patch demo engine
+        run: python scripts/build_demo_male_voice.py
+
+      - name: Verify generated narration
+        run: |
+          test "$(find public/demo-audio -name '*-en-us-male.mp3' | wc -l)" -eq 13
+          for f in public/demo-audio/*-en-us-male.mp3; do
+            ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$f"
+          done
+          grep -q "demo-audio/\${app}-en-us-male.mp3" public/demo-embed.js
+
+      - name: Commit staged voice upgrade
+        run: |
+          git config user.name "CactusByte Demo Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/demo-audio/*.mp3 public/demo-embed.js
+          if git diff --cached --quiet; then
+            echo "American male demo narration is already current."
+            exit 0
+          fi
+          git commit -m "[demo-voice] Replace robotic narration with American male neural voice"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
