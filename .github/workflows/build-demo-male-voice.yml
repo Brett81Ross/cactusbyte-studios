@@ -43,16 +43,49 @@ jobs:
           done
           grep -q "demo-audio/\${app}-en-us-male.mp3" public/demo-embed.js
 
+      - name: Replace narration inside every 60-second MP4
+        run: |
+          set -euo pipefail
+          for audio in public/demo-audio/*-en-us-male.mp3; do
+            app="$(basename "$audio" -en-us-male.mp3)"
+            video="public/demos/${app}-60-second-demo.mp4"
+            tmp="public/demos/${app}-60-second-demo.neural.mp4"
+            test -f "$video"
+            ffmpeg -y -v error -i "$video" -i "$audio" \
+              -map 0:v:0 -map 1:a:0 \
+              -c:v copy -c:a aac -b:a 128k \
+              -af "loudnorm=I=-16:TP=-1.5:LRA=11,apad" \
+              -t 60 \
+              -metadata:s:a:0 title="CactusByte American Male Neural Narration" \
+              -metadata:s:a:0 language=eng \
+              -movflags +faststart "$tmp"
+            mv "$tmp" "$video"
+          done
+
+      - name: Verify neural narration is embedded in all MP4s
+        run: |
+          test "$(find public/demos -name '*-60-second-demo.mp4' | wc -l)" -eq 13
+          for f in public/demos/*-60-second-demo.mp4; do
+            title="$(ffprobe -v error -select_streams a:0 -show_entries stream_tags=title -of default=nw=1:nk=1 "$f")"
+            duration="$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$f")"
+            test "$title" = "CactusByte American Male Neural Narration"
+            python - "$duration" <<'PY'
+import sys
+seconds=float(sys.argv[1])
+assert 59.5 <= seconds <= 60.5, seconds
+PY
+          done
+
       - name: Commit staged voice upgrade
         run: |
           git config user.name "CactusByte Demo Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add public/demo-audio/*.mp3 public/demo-embed.js
+          git add public/demo-audio/*.mp3 public/demo-embed.js public/demos/*.mp4
           if git diff --cached --quiet; then
             echo "American male demo narration is already current."
             exit 0
           fi
-          git commit -m "[demo-voice] Replace robotic narration with American male neural voice"
+          git commit -m "[demo-voice] Embed American male neural voice in every demo"
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
