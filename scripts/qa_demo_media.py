@@ -6,6 +6,7 @@ DEMO_DIR=ROOT/'public'/'demos'
 EXPECTED={
 'cactusbyte-studios','no-problem-pressure-washing-matrix','machzero','rapid-takeoff','acelynn-pro','pocketstomp','ghostlane','first-bearing','fantasy-football-matrix','acelynn-scouttrace','terraflow-matrix','orbitgather','shadownex-prime'
 }
+NEURAL_HANDLER='CactusByte American Male Neural Narration'
 files=sorted(DEMO_DIR.glob('*-60-second-demo.mp4'))
 seen={p.name.removesuffix('-60-second-demo.mp4') for p in files}
 errors=[]
@@ -29,6 +30,8 @@ for p in files:
     if not v or v.get('codec_name')!='h264': errors.append(f'{p.name}: video codec is not H.264')
     if v and (v.get('width'),v.get('height'))!=(540,960): errors.append(f"{p.name}: resolution {v.get('width')}x{v.get('height')}")
     if not a or a.get('codec_name')!='aac': errors.append(f'{p.name}: audio codec is not AAC')
+    if a and a.get('tags',{}).get('handler_name')!=NEURAL_HANDLER:
+        errors.append(f"{p.name}: neural narration marker missing ({a.get('tags',{}).get('handler_name')!r})")
     raw=p.read_bytes()
     moov=raw.find(b'moov'); mdat=raw.find(b'mdat')
     if moov<0 or mdat<0 or moov>mdat: errors.append(f'{p.name}: MP4 is not fast-start/seek optimized')
@@ -37,10 +40,10 @@ for p in files:
         seek=subprocess.run(['ffmpeg','-v','error','-ss',t,'-i',str(p),'-frames:v','1','-f','null','-'],capture_output=True,text=True)
         if seek.returncode:
             errors.append(f'{p.name}: seek/decode failed at {t}s: {seek.stderr.strip()}')
-    print(f'OK {p.name}: {duration:.3f}s, {p.stat().st_size} bytes, H.264/AAC, seekable')
+    print(f'OK {p.name}: {duration:.3f}s, {p.stat().st_size} bytes, H.264/AAC, neural narration, seekable')
 
 if errors:
     print('\nDEMO MEDIA QA FAILED')
     for e in errors: print(' -',e)
     sys.exit(1)
-print(f'\nDEMO MEDIA QA PASSED: {len(files)} videos')
+print(f'\nDEMO MEDIA QA PASSED: {len(files)} videos with American male neural narration')
