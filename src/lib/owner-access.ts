@@ -6,8 +6,10 @@ function bearer(request:Request){
  return header.toLowerCase().startsWith("bearer ")?header.slice(7).trim():"";
 }
 
+function configuredOwnerUid(){return(process.env.OWNER_FIREBASE_UID||"").trim()}
+
 export async function ownerUid(){
- const configured=(process.env.OWNER_FIREBASE_UID||"").trim();
+ const configured=configuredOwnerUid();
  if(configured){
   await adminDb().collection("profiles").doc(configured).set({uid:configured,role:"owner"},{merge:true});
   return configured;
@@ -23,6 +25,11 @@ export async function ownerIdentity(request:Request){
  if(!token)return null;
  let decoded;
  try{decoded=await adminAuth().verifyIdToken(token)}catch{return null}
+ const configured=configuredOwnerUid();
+ if(configured&&decoded.uid===configured){
+  await adminDb().collection("profiles").doc(decoded.uid).set({uid:decoded.uid,role:"owner"},{merge:true});
+  return{uid:decoded.uid,source:"cactusbyte-id" as const};
+ }
  const profile=await adminDb().collection("profiles").doc(decoded.uid).get();
  if(profile.data()?.role!=="owner")return null;
  return{uid:decoded.uid,source:"cactusbyte-id" as const};
