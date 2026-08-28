@@ -7,12 +7,29 @@
   if(!app)return;
 
   const names={
+    'cactusbyte-studios':'Cactus🌵Byte Studios™',
     'no-problem-pressure-washing-matrix':'No Problem Pressure Washing Matrix™',
     'machzero':'MachZero™',
+    'rapid-takeoff':'Rapid Takeoff™',
+    'acelynn-pro':'Acelynn Pro™',
+    'pocketstomp':'PocketStomp™',
     'ghostlane':'GhostLane™',
-    'first-bearing':'First Bearing™'
+    'first-bearing':'First Bearing™',
+    'fantasy-football-matrix':'Fantasy Football Matrix™',
+    'acelynn-scouttrace':'Acelynn’s ScoutTrace™',
+    'terraflow-matrix':'TerraFlow Matrix™',
+    'orbitgather':'OrbitGather™',
+    'shadownex-prime':'ShadowNex Prime™'
   };
   const tracks={
+    'cactusbyte-studios':[
+      {title:'Open the App Matrix',copy:'Apps is the launchpad for the complete CactusByte lineup.',target:'apps',activate:true},
+      {title:'Find the right app',copy:'Search and category filters narrow the registry without hiding the important plan and capability details.',target:'Search',activate:false},
+      {title:'Build in Idea Forge',copy:'Idea Forge keeps product ideas, research, and support votes connected to the studio.',target:'Idea Forge',activate:true},
+      {title:'Send useful feedback',copy:'Feedback keeps app-specific reports tied to your CactusByte identity when you are signed in.',target:'feedback',activate:true},
+      {title:'Review releases',copy:'Releases is the quick view of current versions and recent updates across the ecosystem.',target:'releases',activate:true},
+      {title:'Personalize the hub',copy:'My CactusByte controls favorites, hidden apps, compact layout, color, and other local preferences.',target:'My CactusByte',activate:true}
+    ],
     machzero:[
       {title:'Start with the item',copy:'Tap Snap Item to photograph the item you want priced.',target:'SNAP ITEM'},
       {title:'Add useful angles',copy:'Add Photos lets you include extra views when condition or markings matter.',target:'ADD PHOTOS'},
@@ -44,6 +61,70 @@
       {title:'Run Matrix Sight',copy:'The scan turns the photos and field note into an evidence-based scope, crew plan, and quote inputs.',target:'Run Matrix Sight',activate:false},
       {title:'Prepare the crew',copy:'Crew Command carries the approved scope, safety boundaries, and proof-photo plan into the field.',target:'Crew command',activate:true},
       {title:'Prepare supplies',copy:'Supply Matrix organizes the chemicals, equipment, and inventory needed for the approved job.',target:'Supply Matrix',activate:true}
+    ],
+    'rapid-takeoff':[
+      {title:'Choose the trade',copy:'Start by choosing the trade so quantities, materials, systems, and labor are scoped correctly.',target:'General Contractor'},
+      {title:'Enter known facts',copy:'Add ceiling height, project type, drawing scale, floors, location, and labor rate when they are known.',target:'Ceiling Height'},
+      {title:'Capture the plans',copy:'Take Blueprint Pics uses the camera for plan sheets in the field.',target:'Take Blueprint Pics'},
+      {title:'Upload plan files',copy:'Upload Files accepts the drawings and PDFs that belong to this takeoff.',target:'Upload Files'},
+      {title:'Run the Matrix',copy:'Rapid Matrix Engine analyzes the plan evidence only after the required inputs and sheets are ready.',target:'Run Rapid Matrix Engine'},
+      {title:'Review before bidding',copy:'Use confidence, ProofTrace, SheetLink, and Conflict Radar before committing quantities or price.',target:'Rapid Matrix Engine'}
+    ],
+    'acelynn-pro':[
+      {title:'Choose the source',copy:'Use Live Microphone for the room or Audio File for a recorded track.',target:'Live microphone',activate:true},
+      {title:'Start listening',copy:'Start Live Analysis begins the real-time mix and room check.',target:'Start live analysis'},
+      {title:'Choose a listening profile',copy:'The listening profile changes the target balance for the kind of mix you are checking.',target:'Listening profile'},
+      {title:'Read the spectrum',copy:'The live frequency spectrum shows where the energy is reaching the listener.',target:'LIVE FREQUENCY SPECTRUM'},
+      {title:'Follow the next move',copy:'Acelynn turns the measurements into a few specific places to listen instead of a wall of numbers.',target:'Your next move'},
+      {title:'Keep the result',copy:'Save the current check or export a session report after audio has been analyzed.',target:'Export session report'}
+    ],
+    pocketstomp:[
+      {title:'Calibrate your ride',copy:'The three-step calibration teaches PocketStomp your push, pop, airtime, and landing patterns.',target:'START 3-STEP CALIBRATION'},
+      {title:'Choose coaching depth',copy:'Use Tricks or Full Coach to control how much live feedback you hear.',target:'FULL COACH',activate:true},
+      {title:'Pick the coach style',copy:'Personality changes the tone while keeping the same session measurements.',target:'PERSONALITY'},
+      {title:'Check local conditions',copy:'Local conditions helps you review the session environment before skating.',target:'CHECK LOCAL CONDITIONS'},
+      {title:'Start the session',copy:'Start Session begins speed, run time, vertical, and trick tracking.',target:'START SESSION'},
+      {title:'Review the trick log',copy:'The trick log keeps height, airtime, confidence, and landing results together.',target:'Trick log'}
+    ],
+    'fantasy-football-matrix':[
+      {title:'Start with Draft',copy:'Draft ranks the best move for the current pick using production, opportunity, floor, upside, and roster context.',target:'Draft',activate:true},
+      {title:'Filter the board',copy:'Position, draft round, and player search narrow the live board to the decision in front of you.',target:'Position'},
+      {title:'Compare finalists',copy:'Compare puts the strongest candidates side by side before the clock runs out.',target:'Compare',activate:true},
+      {title:'Work waivers',copy:'Waivers applies the same decision framework to available-player pickups.',target:'Waivers',activate:true},
+      {title:'Evaluate a trade',copy:'Trade helps compare the roster value moving in both directions.',target:'Trade',activate:true},
+      {title:'Reset for the next draft',copy:'Reset Drafted Players clears local availability when you start a new board.',target:'Reset drafted players'}
+    ],
+    'acelynn-scouttrace':[
+      {title:'Run a magnetic sweep',copy:'Magnetic Sweep uses the device magnetometer when the hardware exposes it.',target:'Magnetic Sweep'},
+      {title:'Inspect with the camera',copy:'Lens Sweep opens a rear-camera visual inspection and cleans up the camera when you leave.',target:'Lens Sweep'},
+      {title:'Check a suspicious link',copy:'Digital Sweep performs local link checks and SHA-256 file fingerprinting.',target:'Digital Sweep'},
+      {title:'Review a QR destination',copy:'QR Threat Check decodes the destination for review before anything opens.',target:'QR Threat Check'},
+      {title:'Review past scans',copy:'Scan History keeps completed checks together on this device.',target:'Scan History'},
+      {title:'Share the toolkit',copy:'Share ScoutTrace sends the app without exposing scan information.',target:'Share ScoutTrace'}
+    ],
+    'terraflow-matrix':[
+      {title:'Start a quick quote',copy:'Quick Quote builds a field estimate with live ProfitGuard margin feedback.',target:'Start Quick Quote'},
+      {title:'Capture the property',copy:'TerraScan organizes photos, conditions, measurements, and a quote-ready scope.',target:'Run TerraScan'},
+      {title:'Diagnose irrigation',copy:'Irrigation Diagnostic Matrix moves from test to diagnosis, parts, labor, and price.',target:'Irrigation Diagnostic Matrix'},
+      {title:'Map the system',copy:'HydroTrace creates a persistent zone-by-zone irrigation map.',target:'HydroTrace'},
+      {title:'Protect the margin',copy:'ProfitGuard shows cost, gross profit, margin risk, and target selling price before commitment.',target:'ProfitGuard Matrix'},
+      {title:'Deliver the proposal',copy:'Customer Proposal System turns the approved quote into a branded, PDF-ready customer handoff.',target:'Customer Proposal System'}
+    ],
+    orbitgather:[
+      {title:'Choose the trade',copy:'Select the construction trade or specialty that matches the work you want.',target:'Trade 107'},
+      {title:'Set the service area',copy:'Enter a ZIP, city, or service area and choose the useful search radius.',target:'ZIP / service areas'},
+      {title:'Scan opportunities',copy:'Scan Opportunities searches the configured public datasets for matching contractor leads.',target:'Scan opportunities'},
+      {title:'Rank the results',copy:'Sort by fit, freshness, distance, value, or contactability for the current sales goal.',target:'Best fit'},
+      {title:'Work the pipeline',copy:'Pipeline keeps qualified, contacted, estimate-sent, won, and lost opportunities organized.',target:'Pipeline',activate:true},
+      {title:'Verify the source',copy:'Open each promising lead and verify the originating public record before acting.',target:'Ranked opportunities'}
+    ],
+    'shadownex-prime':[
+      {title:'Choose intelligence layers',copy:'NexVision controls which available public-source layers appear on the globe.',target:'NEXVISION'},
+      {title:'Change the analysis lens',copy:'ShadowLens switches between Normal, NVG, Thermal, and CRT visualization modes.',target:'THERMAL',activate:true},
+      {title:'Mark and measure',copy:'NexDraw can mark points, build routes, define areas, and measure on the globe.',target:'MEASURE',activate:true},
+      {title:'Direct the scene',copy:'SceneDirector can orbit a contact, sweep the world, or play a saved route.',target:'WORLD SWEEP'},
+      {title:'Use command navigation',copy:'NexCommand accepts fast navigation, layer, lens, and briefing commands.',target:'NEXCOMMAND'},
+      {title:'Check feed health',copy:'NexPulse shows when public data sources are healthy, delayed, or unavailable.',target:'NEXPULSE'}
     ]
   };
   const name=names[app]||app;
@@ -158,4 +239,3 @@
   button.onclick=start;
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&running)stop()});
 })();
-
