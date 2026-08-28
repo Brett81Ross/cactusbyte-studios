@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-labelledby="t d">
+  <title id="t">ShadowNex Prime placeholder mark</title><desc id="d">Temporary SNX registry mark until the approved permanent eye logo asset is added.</desc>
+  <defs><radialGradient id="g" cx="50%" cy="42%" r="72%"><stop offset="0" stop-color="#122735"/><stop offset="1" stop-color="#05070b"/></radialGradient><linearGradient id="a" x1="0" x2="1"><stop stop-color="#58ecff"/><stop offset="1" stop-color="#70ffce"/></linearGradient></defs>
+  <rect width="192" height="192" rx="42" fill="url(#g)"/>
+  <path d="M25 96c18-27 43-41 71-41s53 14 71 41c-18 27-43 41-71 41S43 123 25 96Z" fill="none" stroke="url(#a)" stroke-width="7"/>
+  <circle cx="96" cy="96" r="23" fill="none" stroke="#58ecff" stroke-width="6"/><circle cx="96" cy="96" r="7" fill="#70ffce"/>
+  <text x="96" y="166" text-anchor="middle" fill="#dffbff" font-family="system-ui,sans-serif" font-size="18" font-weight="900" letter-spacing="4">SNX</text>
+</svg>
