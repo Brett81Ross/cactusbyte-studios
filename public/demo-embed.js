@@ -167,6 +167,9 @@
       const exact=candidates.find(el=>clean(el.getAttribute('aria-label'))===wanted||clean(el.textContent)===wanted);
       const partial=exact||candidates.find(el=>clean(el.getAttribute('aria-label')).includes(wanted)||clean(el.textContent).includes(wanted));
       if(partial&&partial.getBoundingClientRect().width&&partial.getBoundingClientRect().height)return {el:partial,ctx};
+      const leaf=[...ctx.doc.querySelectorAll('body *')].filter(el=>!el.children.length&&clean(el.textContent).includes(wanted));
+      const label=leaf.sort((a,b)=>clean(a.textContent).length-clean(b.textContent).length)[0];
+      if(label&&label.getBoundingClientRect().width&&label.getBoundingClientRect().height)return {el:label,ctx};
     }
     return null;
   }
