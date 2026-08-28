@@ -81,8 +81,8 @@ export function useCactusByteId(){
   if(!s){
    s=await ownerAutoSession();
    if(!s)return false;
-   setUser({uid:s.uid,email:s.email});
    const loaded=await profileFor(s);
+   setUser({uid:s.uid,email:s.email});
    setProfile(asOwner(loaded));
    await refreshEntitlements();
    announceSession();
@@ -101,11 +101,11 @@ export function useCactusByteId(){
    if(!s)s=getSession();
    if(!alive)return;
    if(!s){setBusy(false);return}
-   setUser({uid:s.uid,email:s.email});
    try{
     const loaded=await profileFor(s);
     const owner=Boolean(ownerSession)||ownerSessionActive||hasOwnerBackup()||await ownerVerified(s);
     if(!alive)return;
+    setUser({uid:s.uid,email:s.email});
     setProfile(owner?asOwner(loaded):loaded);
     await refreshEntitlements();
     announceSession();
@@ -131,8 +131,9 @@ export function useCactusByteId(){
  async function login(email:string,password:string){
   setBusy(true);
   try{
-   const s=await emailLogin(email,password);await track(s,"login");setUser({uid:s.uid,email:s.email});
-   const loaded=await profileFor(s);const owner=hasOwnerBackup()||await ownerVerified(s);if(owner)ownerSessionActive=true;setProfile(owner?asOwner(loaded):loaded);
+   const s=await emailLogin(email,password);await track(s,"login");
+   const loaded=await profileFor(s);const owner=hasOwnerBackup()||await ownerVerified(s);if(owner)ownerSessionActive=true;
+   setUser({uid:s.uid,email:s.email});setProfile(owner?asOwner(loaded):loaded);
    await refreshEntitlements();announceSession();return{uid:s.uid,email:s.email}
   }finally{setBusy(false)}
  }
@@ -140,8 +141,9 @@ export function useCactusByteId(){
  async function register(email:string,password:string){
   setBusy(true);
   try{
-   const s=await emailRegister(email,password);await track(s,"register");setUser({uid:s.uid,email:s.email});
-   const loaded=await profileFor(s);const owner=hasOwnerBackup()||await ownerVerified(s);if(owner)ownerSessionActive=true;setProfile(owner?asOwner(loaded):loaded);
+   const s=await emailRegister(email,password);await track(s,"register");
+   const loaded=await profileFor(s);const owner=hasOwnerBackup()||await ownerVerified(s);if(owner)ownerSessionActive=true;
+   setUser({uid:s.uid,email:s.email});setProfile(owner?asOwner(loaded):loaded);
    await refreshEntitlements();announceSession();return{uid:s.uid,email:s.email}
   }finally{setBusy(false)}
  }
