@@ -130,6 +130,10 @@
   const name=names[app]||app;
   const track=tracks[app]||[];
   if(!track.length)return;
+  const maleNarration=new Audio(`https://cactusbyte-studios.vercel.app/demo-audio/${app}-en-us-male.mp3?v=20260828-male1`);
+  maleNarration.preload='auto';
+  let maleNarrationActive=false;
+  maleNarration.addEventListener('error',()=>{maleNarrationActive=false;});
 
   const css=String.raw`
   .cb60-btn{position:fixed;right:14px;bottom:74px;z-index:9996;border:1px solid rgba(93,235,245,.58);background:rgba(4,13,20,.46);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#efffff;border-radius:15px;padding:10px 13px;font:800 13px system-ui,-apple-system,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.28);cursor:pointer;min-height:44px}
@@ -187,6 +191,7 @@
     return voices.sort((a,b)=>score(b)-score(a))[0]||null;
   }
   function speak(text){
+    if(maleNarrationActive)return;
     if(!('speechSynthesis'in window))return;
     speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.94;u.pitch=.98;
@@ -230,12 +235,16 @@
   function start(){
     if(running)return;
     running=true;index=0;button.style.display='none';
+    maleNarrationActive=true;maleNarration.currentTime=0;
+    const malePlay=maleNarration.play();
+    if(malePlay&&malePlay.catch)malePlay.catch(()=>{maleNarrationActive=false;speak(track[0].copy);});
     cursor=document.createElement('div');cursor.className='cb60-cursor';cursor.setAttribute('aria-hidden','true');cursor.innerHTML='<svg viewBox="0 0 28 36"><path d="M3 2l20 20-10 1 5 10-5 2-5-10-7 7z" fill="#fff" stroke="#061219" stroke-width="2"/></svg>';
     caption=document.createElement('section');caption.className='cb60-caption';caption.setAttribute('role','status');caption.innerHTML='<small></small><strong></strong><p></p><button class="cb60-stop" type="button" aria-label="Stop demo">×</button>';
     document.body.append(cursor,caption);caption.querySelector('.cb60-stop').onclick=stop;showStep();
   }
   function stop(){
     running=false;clearTimeout(timer);clearHighlight();
+    maleNarration.pause();maleNarration.currentTime=0;maleNarrationActive=false;
     try{speechSynthesis.cancel()}catch(_){}
     cursor&&cursor.remove();caption&&caption.remove();cursor=caption=null;button.style.display='';
   }
