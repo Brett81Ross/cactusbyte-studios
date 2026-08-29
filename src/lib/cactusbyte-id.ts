@@ -1,5 +1,5 @@
 import {useEffect,useState}from"react";
-import {customTokenLogin,emailLogin,emailRegister,getDocument,setDocument,getFreshSession,getSession,logoutRest,type Session}from"./firebase-rest";
+import {customTokenLogin,emailLogin,emailRegister,getDocument,setDocument,getFreshSession,logoutRest,type Session}from"./firebase-rest";
 import {entitlementIsActive,myEntitlements,type EntitlementRecord}from"./entitlements-cloud";
 
 export type CactusByteRole="user"|"tester"|"moderator"|"owner";
@@ -21,6 +21,8 @@ function ownerDeviceHeaders(){
 }
 
 function asOwner(p:CactusByteProfile){return {...p,role:"owner" as const}}
+function ownerShell(s:Session):CactusByteProfile{return{uid:s.uid,email:s.email,displayName:(s.email||"CactusByte Owner").split("@")[0],role:"owner"}}
+const wait=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms));
 
 async function ownerVerified(s:Session){
  try{
@@ -51,7 +53,7 @@ async function track(s:Session,event:"login"|"register"|"owner_auto"){
  try{await fetch("/api/auth/track",{method:"POST",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({event})})}catch{}
 }
 
-async function ownerAutoSession(){
+async function ownerAutoSessionOnce(){
  try{
   const r=await fetch("/api/owner/session",{cache:"no-store",credentials:"include",headers:ownerDeviceHeaders()});
   if(!r.ok)return null;
@@ -64,6 +66,16 @@ async function ownerAutoSession(){
  }catch{return null}
 }
 
+async function restoreTrustedOwner(){
+ const attempts=hasOwnerBackup()?3:2;
+ for(let i=0;i<attempts;i++){
+  const s=await ownerAutoSessionOnce();
+  if(s)return s;
+  if(i<attempts-1)await wait(i===0?250:650);
+ }
+ return null;
+}
+
 function announceSession(){if(typeof window!=="undefined")window.dispatchEvent(new Event("cactusbyte:session"))}
 
 export function useCactusByteId(){
@@ -73,43 +85,44 @@ export function useCactusByteId(){
   try{const rows=await myEntitlements();setEntitlements(rows);return rows}catch{setEntitlements([]);return[]}
  }
 
+ async function applyOwnerSession(s:Session){
+  const loaded=await profileFor(s);
+  setUser({uid:s.uid,email:s.email});
+  setProfile(asOwner(loaded));
+  await refreshEntitlements();
+  announceSession();
+ }
+
  async function syncOwnerRole(){
   let s=await getFreshSession();
-  if(s&&(ownerSessionActive||hasOwnerBackup())){
-   ownerSessionActive=true;
+  if(s&&ownerSessionActive){
    setUser({uid:s.uid,email:s.email});
-   setProfile(p=>p?asOwner(p):{uid:s!.uid,email:s!.email,displayName:(s!.email||"CactusByte Owner").split("@")[0],role:"owner"});
+   setProfile(p=>p?asOwner(p):ownerShell(s!));
    return true;
   }
-  if(!s){
-   s=await ownerAutoSession();
-   if(!s)return false;
-   const loaded=await profileFor(s);
+  if(s&&await ownerVerified(s)){
    setUser({uid:s.uid,email:s.email});
-   setProfile(asOwner(loaded));
-   await refreshEntitlements();
-   announceSession();
+   setProfile(p=>p?asOwner(p):ownerShell(s!));
    return true;
   }
-  const owner=await ownerVerified(s);
-  if(owner){
-   setUser({uid:s.uid,email:s.email});
-   setProfile(p=>p?asOwner(p):{uid:s!.uid,email:s!.email,displayName:(s!.email||"CactusByte Owner").split("@")[0],role:"owner"});
-  }
-  return owner;
+  const restored=await restoreTrustedOwner();
+  if(!restored)return false;
+  await applyOwnerSession(restored);
+  return true;
  }
 
  useEffect(()=>{
   let alive=true;
   void(async()=>{
    try{
-    const ownerSession=await ownerAutoSession();
+    // Trusted-device restoration is the primary owner path. A saved Firebase
+    // session is only a fallback for ordinary CactusByte ID continuity.
+    const ownerSession=await restoreTrustedOwner();
     let s=ownerSession;
     if(!s)s=await getFreshSession();
-    if(!alive)return;
-    if(!s)return;
+    if(!alive||!s)return;
     const loaded=await profileFor(s);
-    const owner=Boolean(ownerSession)||ownerSessionActive||hasOwnerBackup()||await ownerVerified(s);
+    const owner=Boolean(ownerSession)||await ownerVerified(s);
     if(!alive)return;
     setUser({uid:s.uid,email:s.email});
     setProfile(owner?asOwner(loaded):loaded);
@@ -138,7 +151,7 @@ export function useCactusByteId(){
   setBusy(true);
   try{
    const s=await emailLogin(email,password);await track(s,"login");
-   const loaded=await profileFor(s);const owner=hasOwnerBackup()||await ownerVerified(s);if(owner)ownerSessionActive=true;
+   const loaded=await profileFor(s);const owner=await ownerVerified(s);if(owner)ownerSessionActive=true;
    setUser({uid:s.uid,email:s.email});setProfile(owner?asOwner(loaded):loaded);
    await refreshEntitlements();announceSession();return{uid:s.uid,email:s.email}
   }finally{setBusy(false)}
@@ -148,7 +161,7 @@ export function useCactusByteId(){
   setBusy(true);
   try{
    const s=await emailRegister(email,password);await track(s,"register");
-   const loaded=await profileFor(s);const owner=hasOwnerBackup()||await ownerVerified(s);if(owner)ownerSessionActive=true;
+   const loaded=await profileFor(s);const owner=await ownerVerified(s);if(owner)ownerSessionActive=true;
    setUser({uid:s.uid,email:s.email});setProfile(owner?asOwner(loaded):loaded);
    await refreshEntitlements();announceSession();return{uid:s.uid,email:s.email}
   }finally{setBusy(false)}
