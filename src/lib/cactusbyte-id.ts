@@ -1,5 +1,5 @@
 import {useEffect,useState}from"react";
-import {customTokenLogin,emailLogin,emailRegister,getDocument,setDocument,getSession,logoutRest,type Session}from"./firebase-rest";
+import {customTokenLogin,emailLogin,emailRegister,getDocument,setDocument,getFreshSession,getSession,logoutRest,type Session}from"./firebase-rest";
 import {entitlementIsActive,myEntitlements,type EntitlementRecord}from"./entitlements-cloud";
 
 export type CactusByteRole="user"|"tester"|"moderator"|"owner";
@@ -24,8 +24,10 @@ function asOwner(p:CactusByteProfile){return {...p,role:"owner" as const}}
 
 async function ownerVerified(s:Session){
  try{
+  const fresh=await getFreshSession();
+  const session=fresh?.uid===s.uid?fresh:s;
   const r=await fetch("/api/owner/status",{
-   headers:{Authorization:`Bearer ${s.idToken}`,...ownerDeviceHeaders()},
+   headers:{Authorization:`Bearer ${session.idToken}`,...ownerDeviceHeaders()},
    cache:"no-store",
    credentials:"include"
   });
@@ -72,10 +74,11 @@ export function useCactusByteId(){
  }
 
  async function syncOwnerRole(){
-  let s=getSession();
+  let s=await getFreshSession();
   if(s&&(ownerSessionActive||hasOwnerBackup())){
    ownerSessionActive=true;
-   setProfile(p=>p?asOwner(p):p);
+   setUser({uid:s.uid,email:s.email});
+   setProfile(p=>p?asOwner(p):{uid:s!.uid,email:s!.email,displayName:(s!.email||"CactusByte Owner").split("@")[0],role:"owner"});
    return true;
   }
   if(!s){
@@ -89,19 +92,22 @@ export function useCactusByteId(){
    return true;
   }
   const owner=await ownerVerified(s);
-  if(owner)setProfile(p=>p?asOwner(p):p);
+  if(owner){
+   setUser({uid:s.uid,email:s.email});
+   setProfile(p=>p?asOwner(p):{uid:s!.uid,email:s!.email,displayName:(s!.email||"CactusByte Owner").split("@")[0],role:"owner"});
+  }
   return owner;
  }
 
  useEffect(()=>{
   let alive=true;
   void(async()=>{
-   const ownerSession=await ownerAutoSession();
-   let s=ownerSession;
-   if(!s)s=getSession();
-   if(!alive)return;
-   if(!s){setBusy(false);return}
    try{
+    const ownerSession=await ownerAutoSession();
+    let s=ownerSession;
+    if(!s)s=await getFreshSession();
+    if(!alive)return;
+    if(!s)return;
     const loaded=await profileFor(s);
     const owner=Boolean(ownerSession)||ownerSessionActive||hasOwnerBackup()||await ownerVerified(s);
     if(!alive)return;
