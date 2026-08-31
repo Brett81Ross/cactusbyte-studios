@@ -101,10 +101,13 @@ PY
 chmod 600 "$GENERATED_MANIFEST"
 
 # Stream directly into GPG: no plaintext tarball is ever written.
-printf '%s' "$BACKUP_PASSPHRASE" | \
-  tar -C "$ROOT" -czf - keystores credentials.env fingerprints.txt signing-manifest.generated.json | \
-  gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+# FD 3 carries the passphrase so it is not placed in process arguments and
+# cannot accidentally become tar input.
+exec 3<<<"$BACKUP_PASSPHRASE"
+tar -C "$ROOT" -czf - keystores credentials.env fingerprints.txt signing-manifest.generated.json | \
+  gpg --batch --yes --pinentry-mode loopback --passphrase-fd 3 \
       --symmetric --cipher-algo AES256 --output "$BACKUP"
+exec 3<&-
 unset BACKUP_PASSPHRASE
 chmod 600 "$BACKUP"
 
