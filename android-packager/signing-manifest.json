@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "status": "PENDING_PERMANENT_KEYS",
+  "apps": [
+    {
+      "flavor": "cactusbyte",
+      "packageId": "com.cactusbyte.studios",
+      "name": "CactusByte Studios",
+      "vercelUrl": "https://cactusbyte-studios.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.studios",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "noproblem",
+      "packageId": "com.cactusbyte.noproblem",
+      "name": "No Problem Pressure Washing Matrix",
+      "vercelUrl": "https://noproblem-pws.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.noproblem",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "machzero",
+      "packageId": "com.cactusbyte.machzero",
+      "name": "MachZero",
+      "vercelUrl": "https://machzero-beta.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.machzero",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "rapidtakeoff",
+      "packageId": "com.cactusbyte.rapidtakeoff",
+      "name": "Rapid Takeoff",
+      "vercelUrl": "https://blueprint-estimator.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.rapidtakeoff",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "acelynnpro",
+      "packageId": "com.cactusbyte.acelynnpro",
+      "name": "Acelynn Pro",
+      "vercelUrl": "https://acelynn.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.acelynnpro",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "pocketstomp",
+      "packageId": "com.cactusbyte.pocketstomp",
+      "name": "PocketStomp",
+      "vercelUrl": "https://pocketstomp-v2-brett81ross.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.pocketstomp",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "ghostlane",
+      "packageId": "com.cactusbyte.ghostlane",
+      "name": "GhostLane",
+      "vercelUrl": "https://ghostlane-app.vercel.app/radar.html",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.ghostlane",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "firstbearing",
+      "packageId": "com.cactusbyte.firstbearing",
+      "name": "First Bearing",
+      "vercelUrl": "https://first-bearing.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.firstbearing",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "fantasy",
+      "packageId": "com.cactusbyte.fantasyfootballmatrix",
+      "name": "Fantasy Football Matrix",
+      "vercelUrl": "https://fantasy-football-selector-matrix.vercel.app/?v=1.5.4",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.fantasyfootballmatrix",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "scouttrace",
+      "packageId": "com.cactusbyte.scouttrace",
+      "name": "Acelynn's ScoutTrace",
+      "vercelUrl": "https://acelynn-scoutrace.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.scouttrace",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "shadownex",
+      "packageId": "com.cactusbyte.shadownexprime",
+      "name": "ShadowNex Prime",
+      "vercelUrl": "https://shadownex-prime.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.shadownexprime",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "terraflow",
+      "packageId": "com.cactusbyte.terraflow",
+      "name": "TerraFlow Matrix",
+      "vercelUrl": "https://terraflow-matrix.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.terraflow",
+      "expectedSha256Fingerprint": null
+    },
+    {
+      "flavor": "orbitgather",
+      "packageId": "com.cactusbyte.orbitgather",
+      "name": "OrbitGather",
+      "vercelUrl": "https://orbitgather-wahh.vercel.app/",
+      "currentVersionCode": 2,
+      "keyAlias": "com.cactusbyte.orbitgather",
+      "expectedSha256Fingerprint": null
+    }
+  ]
+}
