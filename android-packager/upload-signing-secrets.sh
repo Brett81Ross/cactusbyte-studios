@@ -21,18 +21,9 @@ gh auth status >/dev/null
 # shellcheck disable=SC1090
 source "$ROOT/credentials.env"
 
-mapfile -t FLAVORS < <(python3 - "$MANIFEST" <<'PY'
-import json, sys
-data=json.load(open(sys.argv[1], encoding="utf-8"))
-apps=data.get("apps", [])
-if len(apps) != 13:
-    raise SystemExit(f"Expected 13 signing identities, found {len(apps)}")
-for app in apps:
-    print(app["flavor"])
-PY
-)
-
-for flavor in "${FLAVORS[@]}"; do
+count=0
+while IFS= read -r flavor; do
+  [[ -n "$flavor" ]] || continue
   suffix="$(printf '%s' "$flavor" | tr '[:lower:]-' '[:upper:]_')"
   keystore="$ROOT/keystores/$flavor.jks"
   [[ -f "$keystore" ]] || { echo "Missing keystore for $flavor" >&2; exit 1; }
@@ -57,8 +48,20 @@ PY
   printf '%s' "$alias" | gh secret set "KEY_ALIAS_$suffix" --repo "$REPO"
   unset keystore_b64 store_pass key_pass alias
 
+  count=$((count + 1))
   echo "Uploaded signing secrets for $flavor"
-done
+done < <(python3 - "$MANIFEST" <<'PY'
+import json, sys
+data=json.load(open(sys.argv[1], encoding="utf-8"))
+apps=data.get("apps", [])
+if len(apps) != 13:
+    raise SystemExit(f"Expected 13 signing identities, found {len(apps)}")
+for app in apps:
+    print(app["flavor"])
+PY
+)
+
+[[ "$count" -eq 13 ]] || { echo "Expected to upload 13 signing identities, uploaded $count" >&2; exit 1; }
 
 echo
 echo "Uploaded 52 signing secrets (4 per app) to $REPO."
