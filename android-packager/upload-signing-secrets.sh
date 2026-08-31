@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Upload locally generated permanent signing material to GitHub Actions Secrets.
-# This script never prints secret values. It requires GitHub CLI authentication.
+# Upload locally generated permanent signing material to a protected GitHub
+# Actions Environment. This script never prints secret values. It requires
+# GitHub CLI authentication and an existing environment (default: android-release).
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MANIFEST="$SCRIPT_DIR/signing-manifest.json"
 ROOT="${CACTUSBYTE_SIGNING_ROOT:-}"
 REPO="${CACTUSBYTE_GITHUB_REPO:-Brett81Ross/cactusbyte-studios}"
+ENVIRONMENT="${CACTUSBYTE_GITHUB_ENVIRONMENT:-android-release}"
 
 [[ -n "$ROOT" ]] || { echo "Set CACTUSBYTE_SIGNING_ROOT to the directory created by generate-permanent-keystores.sh" >&2; exit 1; }
 [[ -d "$ROOT/keystores" ]] || { echo "Missing $ROOT/keystores" >&2; exit 1; }
@@ -42,14 +44,14 @@ print(base64.b64encode(pathlib.Path(sys.argv[1]).read_bytes()).decode("ascii"), 
 PY
 )"
 
-  printf '%s' "$keystore_b64" | gh secret set "KEYSTORE_$suffix" --repo "$REPO"
-  printf '%s' "$store_pass" | gh secret set "KEYSTORE_PASSWORD_$suffix" --repo "$REPO"
-  printf '%s' "$key_pass" | gh secret set "KEY_PASSWORD_$suffix" --repo "$REPO"
-  printf '%s' "$alias" | gh secret set "KEY_ALIAS_$suffix" --repo "$REPO"
+  printf '%s' "$keystore_b64" | gh secret set "KEYSTORE_$suffix" --repo "$REPO" --env "$ENVIRONMENT"
+  printf '%s' "$store_pass" | gh secret set "KEYSTORE_PASSWORD_$suffix" --repo "$REPO" --env "$ENVIRONMENT"
+  printf '%s' "$key_pass" | gh secret set "KEY_PASSWORD_$suffix" --repo "$REPO" --env "$ENVIRONMENT"
+  printf '%s' "$alias" | gh secret set "KEY_ALIAS_$suffix" --repo "$REPO" --env "$ENVIRONMENT"
   unset keystore_b64 store_pass key_pass alias
 
   count=$((count + 1))
-  echo "Uploaded signing secrets for $flavor"
+  echo "Uploaded signing secrets for $flavor to environment $ENVIRONMENT"
 done < <(python3 - "$MANIFEST" <<'PY'
 import json, sys
 data=json.load(open(sys.argv[1], encoding="utf-8"))
@@ -64,5 +66,5 @@ PY
 [[ "$count" -eq 13 ]] || { echo "Expected to upload 13 signing identities, uploaded $count" >&2; exit 1; }
 
 echo
-echo "Uploaded 52 signing secrets (4 per app) to $REPO."
-echo "GitHub only exposes secret names after upload; the manual Android v2 Signing Gate will verify the actual keys by building and comparing certificate fingerprints."
+echo "Uploaded 52 signing secrets (4 per app) to GitHub environment '$ENVIRONMENT' in $REPO."
+echo "The manual Android v2 Signing Gate explicitly requests this environment and verifies the actual keys by building and comparing certificate fingerprints."
