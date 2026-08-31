@@ -1,0 +1,3 @@
+/* Shared pointer/touch safety: keep controls comfortably tappable on phones, tablets, and Fold layouts. */
+button,[role="button"],input[type="button"],input[type="submit"]{min-height:44px}
+.mini button,.notice button,.modalHead button{min-width:44px;min-height:44px}
