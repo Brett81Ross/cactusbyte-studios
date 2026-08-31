@@ -1,0 +1,29 @@
+name: CactusByte icon source diagnostic
+
+on:
+  push:
+    branches:
+      - apk-icon-fix-v1
+    paths:
+      - '.github/workflows/icon-source-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch current CactusByte source artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL -H 'Accept-Encoding: identity' -H 'Cache-Control: no-cache' \
+            'https://cactusbyte-studios.vercel.app/logo2.png' -o CactusByte-source.png
+          file CactusByte-source.png
+      - name: Upload source for visual QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: cactusbyte-icon-source
+          path: CactusByte-source.png
+          retention-days: 1
