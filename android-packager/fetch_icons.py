@@ -2,7 +2,9 @@ from pathlib import Path
 from io import BytesIO
 import urllib.request
 import cairosvg
-from PIL import Image
+from PIL import Image, ImageFile
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 ROOT = Path(__file__).resolve().parent / "app" / "src"
 APPS = {
@@ -23,7 +25,14 @@ APPS = {
 DENSITIES = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
 
 def download(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "CactusByte-Android-Builder/1.0"})
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "CactusByte-Android-Builder/1.0",
+            "Accept-Encoding": "identity",
+            "Cache-Control": "no-cache",
+        },
+    )
     with urllib.request.urlopen(req, timeout=30) as response:
         return response.read()
 
