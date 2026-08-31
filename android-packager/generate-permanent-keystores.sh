@@ -36,20 +36,8 @@ echo
 [[ "$BACKUP_PASSPHRASE" == "$BACKUP_PASSPHRASE_CONFIRM" ]] || { echo "Backup passphrases did not match." >&2; exit 1; }
 unset BACKUP_PASSPHRASE_CONFIRM
 
-mapfile -t APPS < <(python3 - "$MANIFEST" <<'PY'
-import json, sys
-p=sys.argv[1]
-data=json.load(open(p, encoding="utf-8"))
-apps=data.get("apps", [])
-if len(apps) != 13:
-    raise SystemExit(f"Expected 13 signing identities, found {len(apps)}")
-for app in apps:
-    print("\t".join([app["flavor"], app["packageId"], app.get("keyAlias") or app["packageId"]]))
-PY
-)
-
-for row in "${APPS[@]}"; do
-  IFS=$'\t' read -r flavor package_id alias <<< "$row"
+while IFS=$'\t' read -r flavor package_id alias; do
+  [[ -n "$flavor" ]] || continue
   suffix="$(printf '%s' "$flavor" | tr '[:lower:]-' '[:upper:]_')"
   keystore="$KEYSTORE_DIR/$flavor.jks"
 
@@ -81,7 +69,17 @@ for row in "${APPS[@]}"; do
   } >> "$CREDENTIALS"
 
   echo "Generated permanent identity for $package_id"
-done
+done < <(python3 - "$MANIFEST" <<'PY'
+import json, sys
+p=sys.argv[1]
+data=json.load(open(p, encoding="utf-8"))
+apps=data.get("apps", [])
+if len(apps) != 13:
+    raise SystemExit(f"Expected 13 signing identities, found {len(apps)}")
+for app in apps:
+    print("\t".join([app["flavor"], app["packageId"], app.get("keyAlias") or app["packageId"]]))
+PY
+)
 
 python3 - "$MANIFEST" "$FINGERPRINTS" "$GENERATED_MANIFEST" <<'PY'
 import json, sys
@@ -91,6 +89,8 @@ fps={}
 for line in open(fp_path, encoding="utf-8"):
     flavor, package_id, fingerprint=line.rstrip("\n").split("\t")
     fps[package_id]=fingerprint
+if len(fps) != 13:
+    raise SystemExit(f"Expected 13 generated fingerprints, found {len(fps)}")
 for app in data["apps"]:
     app["expectedSha256Fingerprint"]=fps[app["packageId"]]
 data["status"]="PERMANENT_KEYS_STAGED"
