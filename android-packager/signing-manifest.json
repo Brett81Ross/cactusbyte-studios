@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "PENDING_PERMANENT_KEYS",
+  "status": "PERMANENT_KEYS_STAGED",
   "apps": [
     {
       "flavor": "cactusbyte",
@@ -9,7 +9,7 @@
       "vercelUrl": "https://cactusbyte-studios.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.studios",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "30:97:CC:9E:64:70:35:7D:51:7D:72:FF:40:B0:0D:18:69:CD:E6:89:B1:A1:62:AF:9E:05:2D:81:5C:47:49:E7"
     },
     {
       "flavor": "noproblem",
@@ -18,7 +18,7 @@
       "vercelUrl": "https://noproblem-pws.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.noproblem",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "74:CD:19:85:20:CB:7F:CC:55:04:CA:19:94:19:E3:7C:66:0F:B7:6A:DE:3D:BB:0C:8E:F9:E3:71:BD:3B:F7:BE"
     },
     {
       "flavor": "machzero",
@@ -27,7 +27,7 @@
       "vercelUrl": "https://machzero-beta.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.machzero",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "9E:2A:26:6F:4F:14:B8:98:52:8C:EC:EB:99:7C:9E:96:88:22:72:CE:A0:0A:00:07:C8:6D:EE:13:53:C1:93:B5"
     },
     {
       "flavor": "rapidtakeoff",
@@ -36,7 +36,7 @@
       "vercelUrl": "https://blueprint-estimator.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.rapidtakeoff",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "87:C3:51:F7:3D:1D:69:E0:C8:E7:E2:E4:97:9B:AD:E1:62:A2:B4:3F:AB:E5:B3:F3:8E:F4:4C:15:0E:23:72:AC"
     },
     {
       "flavor": "acelynnpro",
@@ -45,7 +45,7 @@
       "vercelUrl": "https://acelynn.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.acelynnpro",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "FA:95:6B:B7:61:F5:9A:AD:38:FA:EF:4F:4F:56:1F:BF:8E:B0:5C:1A:7C:B6:DD:0E:30:C1:2D:52:CC:15:32:30"
     },
     {
       "flavor": "pocketstomp",
@@ -54,7 +54,7 @@
       "vercelUrl": "https://pocketstomp-v2-brett81ross.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.pocketstomp",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "48:50:35:73:67:3A:8C:68:0F:06:57:4A:F5:EA:ED:E2:8D:DF:01:96:01:03:3C:B1:73:F3:12:0F:3C:4F:B7:08"
     },
     {
       "flavor": "ghostlane",
@@ -63,7 +63,7 @@
       "vercelUrl": "https://ghostlane-app.vercel.app/radar.html",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.ghostlane",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "06:E5:80:37:9B:4C:8E:AC:F5:08:CD:5C:83:EA:B8:DB:37:CF:1C:83:41:22:79:2D:BF:AB:BB:8D:A3:E5:C3:F2"
     },
     {
       "flavor": "firstbearing",
@@ -72,7 +72,7 @@
       "vercelUrl": "https://first-bearing.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.firstbearing",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "2D:A7:5C:93:A3:45:89:4F:51:2A:AF:C0:5F:68:FD:8D:DA:A4:07:7D:8F:71:95:EB:19:8C:67:C1:A2:24:D0:66"
     },
     {
       "flavor": "fantasy",
@@ -81,7 +81,7 @@
       "vercelUrl": "https://fantasy-football-selector-matrix.vercel.app/?v=1.5.5",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.fantasyfootballmatrix",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "D3:2C:CF:E6:F3:62:BE:6A:4C:FF:C8:94:2C:2C:EE:83:F2:52:E0:CC:92:B0:9E:1E:80:75:7E:24:BE:1C:08:B1"
     },
     {
       "flavor": "scouttrace",
@@ -90,7 +90,7 @@
       "vercelUrl": "https://acelynn-scoutrace.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.scouttrace",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "42:78:27:36:F9:D5:1A:0A:DE:D5:49:8E:C0:1C:A9:62:26:39:7E:EF:5B:16:DE:42:22:83:39:0F:F5:B4:B8:53"
     },
     {
       "flavor": "shadownex",
@@ -99,7 +99,7 @@
       "vercelUrl": "https://shadownex-prime.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.shadownexprime",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "0E:C0:DB:1B:55:ED:45:25:E1:F5:CF:30:B2:25:49:9C:28:79:FE:05:4C:1A:2C:06:67:91:E2:BF:82:BB:30:DB"
     },
     {
       "flavor": "terraflow",
@@ -108,7 +108,7 @@
       "vercelUrl": "https://terraflow-matrix.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.terraflow",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "A1:EF:A6:5E:78:A6:ED:82:43:2B:83:BD:D2:BB:D9:74:43:28:A1:1C:EF:FE:F0:16:45:CA:8E:07:F6:C1:82:B2"
     },
     {
       "flavor": "orbitgather",
@@ -117,7 +117,7 @@
       "vercelUrl": "https://orbitgather-wahh.vercel.app/",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.orbitgather",
-      "expectedSha256Fingerprint": null
+      "expectedSha256Fingerprint": "1B:A8:A8:15:59:E0:80:AA:F8:D7:26:BA:E5:B3:8F:EE:A4:97:70:89:A3:08:80:6D:79:F8:8A:0B:E3:9A:64:EE"
     }
   ]
 }
