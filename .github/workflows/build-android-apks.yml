@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - ecosystem-apk-install-v1
+      - apk-icon-fix-v1
+      - main
     paths:
       - 'android-packager/**'
       - '.github/workflows/build-android-apks.yml'
@@ -36,6 +37,24 @@ jobs:
       - name: Build branded launcher icons
         run: python3 android-packager/fetch_icons.py
 
+      - name: Validate CactusByte adaptive icon safe zone
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s android-packager/icon-previews/CactusByte-adaptive-preview.png
+          python3 - <<'PY'
+          from PIL import Image
+          p='android-packager/app/src/cactusbyte/res/drawable/app_icon_foreground.png'
+          img=Image.open(p).convert('RGBA')
+          bbox=img.getchannel('A').getbbox()
+          assert bbox, 'CactusByte adaptive foreground is empty'
+          w,h=img.size
+          l,t,r,b=bbox
+          margin=min(l,t,w-r,h-b)
+          print('CactusByte foreground:', img.size, 'bbox=', bbox, 'minimum transparent margin=', margin)
+          assert margin >= int(w*0.14), f'Adaptive icon unsafe: only {margin}px margin'
+          PY
+
       - name: Build release APKs
         run: gradle -p android-packager assembleRelease --stacktrace
 
@@ -57,9 +76,11 @@ jobs:
           cp android-packager/app/build/outputs/apk/shadownex/release/app-shadownex-release.apk dist/ShadowNex-Prime.apk
           cp android-packager/app/build/outputs/apk/terraflow/release/app-terraflow-release.apk dist/TerraFlow-Matrix.apk
           cp android-packager/app/build/outputs/apk/orbitgather/release/app-orbitgather-release.apk dist/OrbitGather.apk
+          cp android-packager/icon-previews/CactusByte-adaptive-preview.png dist/CactusByte-adaptive-preview.png
           sha256sum dist/*.apk > dist/SHA256SUMS.txt
 
       - name: Publish stable APK release
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -69,7 +90,7 @@ jobs:
           gh release create android-latest dist/*.apk dist/SHA256SUMS.txt \
             --target "${GITHUB_SHA}" \
             --title "CactusByte Android Apps — Latest" \
-            --notes "Real Android APK packages for the CactusByte Studios ecosystem. These are sideload builds for direct installation; they are not browser shortcuts."
+            --notes "Real Android APK packages for the CactusByte Studios ecosystem. CactusByte v1.0.1 includes corrected adaptive launcher-icon packaging for Samsung/Android launchers. These are sideload builds for direct installation; they are not browser shortcuts."
 
       - name: Upload QA artifact bundle
         uses: actions/upload-artifact@v4

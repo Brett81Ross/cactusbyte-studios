@@ -9,8 +9,8 @@ android {
     defaultConfig {
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
     }
 
     flavorDimensions += "brand"
@@ -18,7 +18,7 @@ android {
         create("cactusbyte") {
             dimension = "brand"
             applicationId = "com.cactusbyte.studios"
-            resValue("string", "app_name", "CactusByte Studios")
+            resValue("string", "app_name", "CactusByte")
             buildConfigField("String", "START_URL", "\"https://cactusbyte-studios.vercel.app/\"")
         }
         create("noproblem") {
