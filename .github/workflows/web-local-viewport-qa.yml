@@ -1,0 +1,61 @@
+name: Web local viewport QA
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'tests/**'
+      - 'qa/**'
+      - 'playwright.config.ts'
+      - 'package.json'
+      - 'scripts/render-system-icons.mjs'
+      - '.github/workflows/web-local-viewport-qa.yml'
+  push:
+    branches:
+      - main
+      - android-release-v2-foundation
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'tests/**'
+      - 'qa/**'
+      - 'playwright.config.ts'
+      - 'package.json'
+      - 'scripts/render-system-icons.mjs'
+      - '.github/workflows/web-local-viewport-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  responsive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run Chromium and WebKit viewport QA
+        run: npm run qa:viewport
+
+      - name: Upload Playwright failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-viewport-qa-failures
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
