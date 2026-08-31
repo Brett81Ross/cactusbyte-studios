@@ -9,6 +9,7 @@ permissions:
 jobs:
   signing-readiness:
     runs-on: ubuntu-latest
+    environment: android-release
     env:
       CACTUSBYTE_PERMANENT_SIGNING: '1'
       KEYSTORE_CACTUSBYTE: ${{ secrets.KEYSTORE_CACTUSBYTE }}
@@ -91,7 +92,7 @@ jobs:
             exit 1
           fi
 
-      - name: Materialize secret-backed keystores
+      - name: Materialize environment-secret-backed keystores
         shell: bash
         run: |
           set -euo pipefail
@@ -103,10 +104,10 @@ jobs:
             store_var="KEYSTORE_PASSWORD_$suffix"
             key_var="KEY_PASSWORD_$suffix"
             alias_var="KEY_ALIAS_$suffix"
-            [[ -n "${!ks_var:-}" ]] || { echo "Missing GitHub secret $ks_var" >&2; exit 1; }
-            [[ -n "${!store_var:-}" ]] || { echo "Missing GitHub secret $store_var" >&2; exit 1; }
-            [[ -n "${!key_var:-}" ]] || { echo "Missing GitHub secret $key_var" >&2; exit 1; }
-            [[ -n "${!alias_var:-}" ]] || { echo "Missing GitHub secret $alias_var" >&2; exit 1; }
+            [[ -n "${!ks_var:-}" ]] || { echo "Missing android-release environment secret $ks_var" >&2; exit 1; }
+            [[ -n "${!store_var:-}" ]] || { echo "Missing android-release environment secret $store_var" >&2; exit 1; }
+            [[ -n "${!key_var:-}" ]] || { echo "Missing android-release environment secret $key_var" >&2; exit 1; }
+            [[ -n "${!alias_var:-}" ]] || { echo "Missing android-release environment secret $alias_var" >&2; exit 1; }
             path="$RUNNER_TEMP/cactusbyte-signing/$flavor.jks"
             printf '%s' "${!ks_var}" | base64 --decode > "$path"
             chmod 600 "$path"
@@ -133,4 +134,4 @@ jobs:
             --apk-root android-packager/app/build/outputs/apk
 
       - name: Permanent signing gate passed
-        run: echo 'All 13 APKs were built from GitHub Secrets and matched the committed SHA-256 certificate fingerprints.'
+        run: echo 'All 13 APKs were built from protected android-release environment secrets and matched the committed SHA-256 certificate fingerprints.'
