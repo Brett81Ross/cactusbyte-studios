@@ -2,6 +2,11 @@ name: Android v2 Signing Gate
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - android-release-v2-foundation
+    paths:
+      - .github/workflows/android-v2-signing-gate.yml
 
 permissions:
   contents: read
