@@ -78,7 +78,7 @@
       "flavor": "fantasy",
       "packageId": "com.cactusbyte.fantasyfootballmatrix",
       "name": "Fantasy Football Matrix",
-      "vercelUrl": "https://fantasy-football-selector-matrix.vercel.app/?v=1.5.4",
+      "vercelUrl": "https://fantasy-football-selector-matrix.vercel.app/?v=1.5.5",
       "currentVersionCode": 2,
       "keyAlias": "com.cactusbyte.fantasyfootballmatrix",
       "expectedSha256Fingerprint": null
