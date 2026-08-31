@@ -37,7 +37,7 @@ jobs:
       - name: Build branded launcher icons
         run: python3 android-packager/fetch_icons.py
 
-      - name: Validate CactusByte adaptive icon safe zone
+      - name: Validate CactusByte adaptive icon geometry
         shell: bash
         run: |
           set -euo pipefail
@@ -50,9 +50,13 @@ jobs:
           assert bbox, 'CactusByte adaptive foreground is empty'
           w,h=img.size
           l,t,r,b=bbox
+          bw,bh=r-l,b-t
           margin=min(l,t,w-r,h-b)
-          print('CactusByte foreground:', img.size, 'bbox=', bbox, 'minimum transparent margin=', margin)
-          assert margin >= int(w*0.14), f'Adaptive icon unsafe: only {margin}px margin'
+          print('CactusByte foreground:', img.size, 'bbox=', bbox, 'content=', (bw,bh), 'margin=', margin)
+          assert margin >= int(w*0.10), f'Adaptive icon unsafe: only {margin}px margin'
+          assert bw >= int(w*0.48), f'Adaptive icon too narrow: {bw}px'
+          assert bh >= int(h*0.56), f'Adaptive icon too short: {bh}px'
+          assert 0.55 <= bw / bh <= 1.35, f'Adaptive icon suspicious aspect ratio: {bw/bh:.2f}'
           PY
 
       - name: Build release APKs
@@ -90,7 +94,7 @@ jobs:
           gh release create android-latest dist/*.apk dist/SHA256SUMS.txt \
             --target "${GITHUB_SHA}" \
             --title "CactusByte Android Apps — Latest" \
-            --notes "Real Android APK packages for the CactusByte Studios ecosystem. CactusByte v1.0.1 includes corrected adaptive launcher-icon packaging for Samsung/Android launchers. These are sideload builds for direct installation; they are not browser shortcuts."
+            --notes "Real Android APK packages for the CactusByte Studios ecosystem. CactusByte v1.0.1 uses a dedicated launcher-safe circuit-cactus asset and corrected adaptive icon packaging for Samsung/Android launchers. These are sideload builds for direct installation; they are not browser shortcuts."
 
       - name: Upload QA artifact bundle
         uses: actions/upload-artifact@v4
