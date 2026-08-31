@@ -20,6 +20,10 @@ function ownerDeviceHeaders(){
  }catch{return {}}
 }
 
+function saveOwnerBackup(token:unknown){
+ try{if(typeof token==="string"&&token)localStorage.setItem(OWNER_BACKUP_KEY,token)}catch{}
+}
+
 function asOwner(p:CactusByteProfile){return {...p,role:"owner" as const}}
 function ownerShell(s:Session):CactusByteProfile{return{uid:s.uid,email:s.email,displayName:(s.email||"CactusByte Owner").split("@")[0],role:"owner"}}
 const wait=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -33,8 +37,11 @@ async function ownerVerified(s:Session){
    cache:"no-store",
    credentials:"include"
   });
-  if(r.ok)ownerSessionActive=true;
-  return r.ok;
+  if(!r.ok)return false;
+  const j=await r.json().catch(()=>({}));
+  saveOwnerBackup(j?.deviceToken);
+  ownerSessionActive=true;
+  return true;
  }catch{return false}
 }
 
@@ -115,8 +122,6 @@ export function useCactusByteId(){
   let alive=true;
   void(async()=>{
    try{
-    // Trusted-device restoration is the primary owner path. A saved Firebase
-    // session is only a fallback for ordinary CactusByte ID continuity.
     const ownerSession=await restoreTrustedOwner();
     let s=ownerSession;
     if(!s)s=await getFreshSession();
