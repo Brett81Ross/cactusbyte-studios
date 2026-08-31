@@ -1,0 +1,38 @@
+name: Android v2 Signing Gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signing-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify permanent signing manifest
+        run: python3 android-packager/verify_signing_manifest.py
+
+      - name: Reject debug signing in release builds
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n 'signingConfigs.getByName("debug")' android-packager/app/build.gradle.kts; then
+            echo 'Release build is still configured to use the debug signing key.' >&2
+            exit 1
+          fi
+
+      - name: Confirm no keystore files are committed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find . -type f \( -name '*.jks' -o -name '*.keystore' -o -name '*.p12' \) -print -quit | grep -q .; then
+            echo 'Private signing material must never be committed to the repository.' >&2
+            exit 1
+          fi
+
+      - name: Ready for permanent release signing
+        run: echo 'Android v2 signing foundation is ready for secret-backed keystores and certificate verification.'
