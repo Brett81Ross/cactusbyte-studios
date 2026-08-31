@@ -72,7 +72,7 @@ android {
         create("scouttrace") {
             dimension = "brand"
             applicationId = "com.cactusbyte.scouttrace"
-            resValue("string", "app_name", "Acelynn's ScoutTrace")
+            resValue("string", "app_name", "Acelynn’s ScoutTrace")
             buildConfigField("String", "START_URL", "\"https://acelynn-scoutrace.vercel.app/\"")
         }
         create("shadownex") {
