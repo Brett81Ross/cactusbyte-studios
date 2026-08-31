@@ -111,7 +111,7 @@ android {
             dimension = "brand"
             applicationId = "com.cactusbyte.fantasyfootballmatrix"
             resValue("string", "app_name", "Fantasy Football Matrix")
-            buildConfigField("String", "START_URL", "\"https://fantasy-football-selector-matrix.vercel.app/?v=1.5.4\"")
+            buildConfigField("String", "START_URL", "\"https://fantasy-football-selector-matrix.vercel.app/?v=1.5.5\"")
             if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-fantasy")
         }
         create("scouttrace") {
