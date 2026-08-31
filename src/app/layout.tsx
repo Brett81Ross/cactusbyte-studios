@@ -28,13 +28,16 @@ export const metadata: Metadata = {
   applicationName: "Cactus🌵Byte Studios™",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/logo2.png",
-    apple: "/logo2.png",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     title: "Cactus🌵Byte Studios™",
     description: "One command center for the Cactus🌵Byte Studios™ app ecosystem.",
-    images: ["/logo2.png"],
+    images: ["/icon-512.png"],
     type: "website",
   },
 };
