@@ -1,4 +1,4 @@
-import {confirmOrbitLegacyClaim,verifyOrbitBridgeAttestation,validOrbitInstallationId,validOrbitRecoveryToken} from "../../../../../../lib/orbitgather-recovery";
+import {confirmOrbitLegacyClaim,verifyOrbitBridgeAttestation,validOrbitInstallationId,validOrbitRecoveryToken} from "../../../../../lib/orbitgather-recovery";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
