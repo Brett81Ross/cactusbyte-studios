@@ -8,7 +8,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 MANIFEST = ROOT / "signing-manifest.json"
-DIGEST_RE = re.compile(r"Signer #1 certificate SHA-256 digest:\s*([0-9a-fA-F]+)")
+CERT_SHA256_RE = re.compile(
+    r"certificate\s+SHA-?256\s+digest\s*:\s*(.+)$",
+    re.IGNORECASE,
+)
 
 
 def fail(message: str) -> None:
@@ -18,6 +21,22 @@ def fail(message: str) -> None:
 
 def normalize_fingerprint(value: str) -> str:
     return re.sub(r"[^0-9A-Fa-f]", "", value).upper()
+
+
+def signer_sha256_digests(output: str) -> set[str]:
+    digests: set[str] = set()
+    for line in output.splitlines():
+        match = CERT_SHA256_RE.search(line.strip())
+        if not match:
+            continue
+        digest = normalize_fingerprint(match.group(1))
+        if len(digest) != 64:
+            fail(
+                "apksigner returned a certificate SHA-256 digest with an invalid "
+                f"length ({len(digest)} hex chars)"
+            )
+        digests.add(digest)
+    return digests
 
 
 def main() -> None:
@@ -49,7 +68,10 @@ def main() -> None:
         release_dir = apk_root / flavor / "release"
         candidates = sorted(release_dir.glob("*.apk"))
         if len(candidates) != 1:
-            fail(f"expected exactly one release APK for {flavor}, found {len(candidates)} in {release_dir}")
+            fail(
+                f"expected exactly one release APK for {flavor}, found "
+                f"{len(candidates)} in {release_dir}"
+            )
         apk = candidates[0]
 
         proc = subprocess.run(
@@ -62,15 +84,28 @@ def main() -> None:
         if proc.returncode != 0:
             fail(f"apksigner verification failed for {apk.name}: {output.strip()}")
 
-        match = DIGEST_RE.search(output)
-        if not match:
-            fail(f"could not read signer SHA-256 digest from {apk.name}")
+        digests = signer_sha256_digests(output)
+        if not digests:
+            fail(
+                f"could not read a signer certificate SHA-256 digest from {apk.name}; "
+                "apksigner output format was not recognized"
+            )
+        if len(digests) != 1:
+            fail(
+                f"expected exactly one distinct signer certificate for {apk.name}, "
+                f"found {len(digests)}"
+            )
 
-        actual_norm = normalize_fingerprint(match.group(1))
+        actual_norm = next(iter(digests))
         expected_norm = normalize_fingerprint(str(expected))
+        if len(expected_norm) != 64:
+            fail(
+                f"manifest fingerprint for {package_id} is not a 64-hex SHA-256 digest"
+            )
         if actual_norm != expected_norm:
             fail(
-                f"certificate mismatch for {package_id}: expected {expected_norm}, got {actual_norm}"
+                f"certificate mismatch for {package_id}: expected {expected_norm}, "
+                f"got {actual_norm}"
             )
 
         checked += 1
