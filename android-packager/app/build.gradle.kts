@@ -3,11 +3,6 @@ plugins {
 }
 
 val permanentSigningEnabled = providers.environmentVariable("CACTUSBYTE_PERMANENT_SIGNING").orNull == "1"
-val migrationDebuggable = providers.gradleProperty("cactusbyteMigrationDebuggable").orNull == "true"
-if (migrationDebuggable && !permanentSigningEnabled) {
-    error("cactusbyteMigrationDebuggable requires CACTUSBYTE_PERMANENT_SIGNING=1")
-}
-
 val permanentSigningFlavors = listOf(
     "cactusbyte",
     "noproblem",
@@ -164,7 +159,6 @@ android {
         }
         release {
             isMinifyEnabled = false
-            isDebuggable = migrationDebuggable
             if (!permanentSigningEnabled) {
                 signingConfig = signingConfigs.getByName("debug")
             }
