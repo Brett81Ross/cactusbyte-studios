@@ -59,27 +59,27 @@ jobs:
           assert 0.55 <= bw / bh <= 1.35, f'Adaptive icon suspicious aspect ratio: {bw/bh:.2f}'
           PY
 
-      - name: Build release APKs
-        run: gradle -p android-packager assembleRelease --stacktrace
+      - name: Build direct release APKs
+        run: gradle -p android-packager assembleDirectRelease --stacktrace
 
-      - name: Collect stable APK names
+      - name: Collect stable direct APK names
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p dist
-          cp android-packager/app/build/outputs/apk/cactusbyte/release/app-cactusbyte-release.apk dist/CactusByte-Studios.apk
-          cp android-packager/app/build/outputs/apk/noproblem/release/app-noproblem-release.apk dist/No-Problem-Pressure-Washing-Matrix.apk
-          cp android-packager/app/build/outputs/apk/machzero/release/app-machzero-release.apk dist/MachZero.apk
-          cp android-packager/app/build/outputs/apk/rapidtakeoff/release/app-rapidtakeoff-release.apk dist/Rapid-Takeoff.apk
-          cp android-packager/app/build/outputs/apk/acelynnpro/release/app-acelynnpro-release.apk dist/Acelynn-Pro.apk
-          cp android-packager/app/build/outputs/apk/pocketstomp/release/app-pocketstomp-release.apk dist/PocketStomp.apk
-          cp android-packager/app/build/outputs/apk/ghostlane/release/app-ghostlane-release.apk dist/GhostLane.apk
-          cp android-packager/app/build/outputs/apk/firstbearing/release/app-firstbearing-release.apk dist/First-Bearing.apk
-          cp android-packager/app/build/outputs/apk/fantasy/release/app-fantasy-release.apk dist/Fantasy-Football-Matrix.apk
-          cp android-packager/app/build/outputs/apk/scouttrace/release/app-scouttrace-release.apk dist/Acelynn-ScoutTrace.apk
-          cp android-packager/app/build/outputs/apk/shadownex/release/app-shadownex-release.apk dist/ShadowNex-Prime.apk
-          cp android-packager/app/build/outputs/apk/terraflow/release/app-terraflow-release.apk dist/TerraFlow-Matrix.apk
-          cp android-packager/app/build/outputs/apk/orbitgather/release/app-orbitgather-release.apk dist/OrbitGather.apk
+          cp android-packager/app/build/outputs/apk/cactusbyteDirect/release/app-cactusbyte-direct-release.apk dist/CactusByte-Studios.apk
+          cp android-packager/app/build/outputs/apk/noproblemDirect/release/app-noproblem-direct-release.apk dist/No-Problem-Pressure-Washing-Matrix.apk
+          cp android-packager/app/build/outputs/apk/machzeroDirect/release/app-machzero-direct-release.apk dist/MachZero.apk
+          cp android-packager/app/build/outputs/apk/rapidtakeoffDirect/release/app-rapidtakeoff-direct-release.apk dist/Rapid-Takeoff.apk
+          cp android-packager/app/build/outputs/apk/acelynnproDirect/release/app-acelynnpro-direct-release.apk dist/Acelynn-Pro.apk
+          cp android-packager/app/build/outputs/apk/pocketstompDirect/release/app-pocketstomp-direct-release.apk dist/PocketStomp.apk
+          cp android-packager/app/build/outputs/apk/ghostlaneDirect/release/app-ghostlane-direct-release.apk dist/GhostLane.apk
+          cp android-packager/app/build/outputs/apk/firstbearingDirect/release/app-firstbearing-direct-release.apk dist/First-Bearing.apk
+          cp android-packager/app/build/outputs/apk/fantasyDirect/release/app-fantasy-direct-release.apk dist/Fantasy-Football-Matrix.apk
+          cp android-packager/app/build/outputs/apk/scouttraceDirect/release/app-scouttrace-direct-release.apk dist/Acelynn-ScoutTrace.apk
+          cp android-packager/app/build/outputs/apk/shadownexDirect/release/app-shadownex-direct-release.apk dist/ShadowNex-Prime.apk
+          cp android-packager/app/build/outputs/apk/terraflowDirect/release/app-terraflow-direct-release.apk dist/TerraFlow-Matrix.apk
+          cp android-packager/app/build/outputs/apk/orbitgatherDirect/release/app-orbitgather-direct-release.apk dist/OrbitGather.apk
           cp android-packager/icon-previews/CactusByte-adaptive-preview.png dist/CactusByte-adaptive-preview.png
           sha256sum dist/*.apk > dist/SHA256SUMS.txt
 
@@ -94,7 +94,7 @@ jobs:
           gh release create android-latest dist/*.apk dist/SHA256SUMS.txt \
             --target "${GITHUB_SHA}" \
             --title "CactusByte Android Apps — Latest" \
-            --notes "Real Android APK packages for the CactusByte Studios ecosystem. CactusByte v1.0.1 uses a dedicated launcher-safe circuit-cactus asset and corrected adaptive icon packaging for Samsung/Android launchers. These are sideload builds for direct installation; they are not browser shortcuts."
+            --notes "Real Android APK packages for the CactusByte Studios ecosystem. These artifacts are the direct-install distribution channel and may include direct-only capabilities such as package installation for self-update. Play-channel APKs are not published by this workflow."
 
       - name: Upload QA artifact bundle
         uses: actions/upload-artifact@v4
