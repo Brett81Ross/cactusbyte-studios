@@ -168,11 +168,11 @@ const fantasyUrl=fantasy.match(/url:"([^"]+)"/)?.[1]||"";
 check(!fantasyVersion||fantasyUrl.includes(`v=${fantasyVersion}`),"Fantasy Matrix launch query matches its registered version");
 
 const pocketstomp=records.find(line=>line.includes('id:"pocketstomp"'))||"";
-check(pocketstomp.includes('repo:"https://github.com/Brett81Ross/pocketstomp-"'),"PocketStomp registry points to the current public app repository");
-check(pocketstomp.includes('syncSource:"https://raw.githubusercontent.com/Brett81Ross/pocketstomp-/main/package.json"'),"PocketStomp version sync uses its current package source");
+check(pocketstomp.includes('repo:"https://github.com/Brett81Ross/pocketstomp"'),"PocketStomp registry points to the advanced V2 source repository");
+check(pocketstomp.includes('syncSource:"https://pocketstomp-v2-brett81ross.vercel.app/"'),"PocketStomp version sync stays on its verified production surface");
 
 const terraflow=records.find(line=>line.includes('id:"terraflow-matrix"'))||"";
-check(terraflow.includes('version:"v1.13.1"'),"TerraFlow registry tracks the current v1.13.1 branding release");
+check(terraflow.includes('version:"v1.15.0"'),"TerraFlow registry tracks the current v1.15.0 branding release");
 check(terraflow.includes('syncSource:"https://raw.githubusercontent.com/Brett81Ross/terraflow-matrix/main/cloud-release.js"'),"TerraFlow version sync is connected to its release surface");
 check(terraflow.includes('logo:"/terraflow-mark.svg"'),"TerraFlow uses its approved Concept 2 brand mark");
 check(exists("public/terraflow-mark.svg"),"Approved TerraFlow local brand asset exists");
