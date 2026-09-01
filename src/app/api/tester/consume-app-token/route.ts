@@ -5,7 +5,7 @@ import {adminDb} from "../../../../lib/firebase-admin";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 
-const ALLOWED_APPS=new Set(["noproblem","machzero"]);
+const ALLOWED_APPS=new Set(["noproblem","machzero","rapid-takeoff"]);
 function tokenHash(token:string){return createHash("sha256").update(token).digest("hex")}
 
 export async function POST(request:Request){
