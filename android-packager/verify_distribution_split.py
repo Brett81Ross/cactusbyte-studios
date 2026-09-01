@@ -45,17 +45,49 @@ def find_variant_apk(apk_root: Path, brand: str, distribution: str) -> Path:
     return candidates[0]
 
 
-def read_permissions(aapt2: Path, apk: Path) -> str:
+def run_aapt2(aapt2: Path, args: list[str], apk: Path, label: str) -> str:
     proc = subprocess.run(
-        [str(aapt2), "dump", "permissions", str(apk)],
+        [str(aapt2), "dump", *args, str(apk)],
         check=False,
         text=True,
         capture_output=True,
     )
     output = proc.stdout + "\n" + proc.stderr
     if proc.returncode != 0:
-        fail(f"aapt2 permission dump failed for {apk.name}: {output.strip()}")
+        fail(f"aapt2 {label} dump failed for {apk.name}: {output.strip()}")
     return output
+
+
+def read_permissions(aapt2: Path, apk: Path) -> str:
+    return run_aapt2(aapt2, ["permissions"], apk, "permission")
+
+
+def read_manifest_tree(aapt2: Path, apk: Path) -> str:
+    proc = subprocess.run(
+        [str(aapt2), "dump", "xmltree", str(apk), "--file", "AndroidManifest.xml"],
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    output = proc.stdout + "\n" + proc.stderr
+    if proc.returncode != 0:
+        fail(f"aapt2 manifest xmltree dump failed for {apk.name}: {output.strip()}")
+    return output
+
+
+def verify_not_debuggable(aapt2: Path, apk: Path) -> None:
+    manifest = read_manifest_tree(aapt2, apk)
+    debug_lines = [line.strip() for line in manifest.splitlines() if "android:debuggable" in line]
+    if not debug_lines:
+        return
+
+    for line in debug_lines:
+        lower = line.lower()
+        if "0xffffffff" in lower or re.search(r"(?:=|\s)true(?:\s|$)", lower):
+            fail(f"release APK is debuggable: {apk.name}: {line}")
+        if "0x00000000" in lower or "0x0" in lower or re.search(r"(?:=|\s)false(?:\s|$)", lower):
+            continue
+        fail(f"could not prove android:debuggable=false for {apk.name}: {line}")
 
 
 def find_build_config(build_config_root: Path, brand: str, distribution: str) -> Path:
@@ -124,19 +156,24 @@ def main() -> None:
             if distribution == "play" and has_install_permission:
                 fail(f"Play APK unexpectedly contains {INSTALL_PERMISSION}: {apk.name}")
 
+            verify_not_debuggable(aapt2, apk)
+
             build_config = find_build_config(build_config_root, brand, distribution)
             verify_channel(build_config, distribution)
 
             checked += 1
             print(
                 f"OK {brand}/{distribution}: permission={'present' if has_install_permission else 'absent'}, "
-                f"CHANNEL={distribution}"
+                f"CHANNEL={distribution}, debuggable=false"
             )
 
     if checked != 26:
         fail(f"expected 26 validated variants, checked {checked}")
 
-    print(f"Verified {checked} brand × distribution release variants; UA remains {UA_MARKER}.")
+    print(
+        f"Verified {checked} brand × distribution release variants; "
+        f"UA remains {UA_MARKER}; all release APKs are non-debuggable."
+    )
 
 
 if __name__ == "__main__":
