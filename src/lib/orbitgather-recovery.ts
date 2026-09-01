@@ -14,6 +14,7 @@ const USER_COLLECTION="orbitGatherRecoveryUsers";
 const AUDIT_COLLECTION="orbitGatherRecoveryEvents";
 
 export type OrbitRecoveryPurpose="claim"|"restore";
+export type OrbitRestoreLeaseState="processing"|"consumed";
 
 function bridgeSecret(){
  const value=(process.env.ORBITGATHER_RECOVERY_BRIDGE_SECRET||"").trim();
@@ -108,9 +109,11 @@ export async function beginOrbitRestore(token:string){
  const db=adminDb();
  const tokenRef=db.collection(TOKEN_COLLECTION).doc(orbitRecoveryTokenHash(token));
  const now=Date.now();
- const operationId=randomBytes(18).toString("base64url");
+ let operationId="";
  let installationId="";
  let uid="";
+ let state:OrbitRestoreLeaseState="processing";
+ let leaseExpiresAtMs=0;
  await db.runTransaction(async tx=>{
   const tokenSnap=await tx.get(tokenRef);
   const data=tokenSnap.data();
@@ -118,16 +121,35 @@ export async function beginOrbitRestore(token:string){
   installationId=String(data?.installationId||"");
   if(!validOrbitInstallationId(installationId))throw new Error("NO_BOUND_INSTALLATION");
   const status=String(data?.status||"");
-  const leaseExpiresAtMs=Number(data?.leaseExpiresAtMs||0);
-  if(status==="consumed")throw new Error("TOKEN_USED");
-  if(status==="processing"&&leaseExpiresAtMs>now)throw new Error("TOKEN_BUSY");
-  if(status!=="active"&&status!=="processing")throw new Error("TOKEN_USED");
+  const existingOperationId=String(data?.operationId||"");
+  const existingLeaseExpiresAtMs=Number(data?.leaseExpiresAtMs||0);
   const owner=await tx.get(db.collection(OWNER_COLLECTION).doc(installationId));
   if(!owner.exists||String(owner.data()?.userId||"")!==uid)throw new Error("BINDING_MISMATCH");
-  tx.update(tokenRef,{status:"processing",operationId,leaseExpiresAtMs:now+RESTORE_LEASE_MS,processingAt:FieldValue.serverTimestamp()});
+
+  if(status==="consumed"){
+   if(!validOrbitOperationId(existingOperationId))throw new Error("TOKEN_USED");
+   operationId=existingOperationId;
+   state="consumed";
+   leaseExpiresAtMs=0;
+   return;
+  }
+
+  if(status==="processing"&&existingLeaseExpiresAtMs>now){
+   if(!validOrbitOperationId(existingOperationId))throw new Error("RESTORE_OPERATION_MISMATCH");
+   operationId=existingOperationId;
+   state="processing";
+   leaseExpiresAtMs=existingLeaseExpiresAtMs;
+   return;
+  }
+
+  if(status!=="active"&&status!=="processing")throw new Error("TOKEN_USED");
+  operationId=randomBytes(18).toString("base64url");
+  state="processing";
+  leaseExpiresAtMs=now+RESTORE_LEASE_MS;
+  tx.update(tokenRef,{status:"processing",operationId,leaseExpiresAtMs,processingAt:FieldValue.serverTimestamp()});
   tx.create(db.collection(AUDIT_COLLECTION).doc(),{userId:uid,appId:ORBITGATHER_APP_ID,installationId,action:"restore_begin",operationId,createdAt:FieldValue.serverTimestamp()});
  });
- return{uid,installationId,operationId,leaseExpiresAtMs:now+RESTORE_LEASE_MS};
+ return{uid,installationId,operationId,state,leaseExpiresAtMs};
 }
 
 export async function finishOrbitRestore(token:string,operationId:string,success:boolean){
@@ -135,15 +157,19 @@ export async function finishOrbitRestore(token:string,operationId:string,success
  const db=adminDb();
  const tokenRef=db.collection(TOKEN_COLLECTION).doc(orbitRecoveryTokenHash(token));
  let uid="",installationId="";
+ let idempotent=false;
  await db.runTransaction(async tx=>{
   const snap=await tx.get(tokenRef);
   const data=snap.data();
   uid=tokenUid(data,"restore");
   installationId=String(data?.installationId||"");
-  if(String(data?.status||"")!=="processing"||String(data?.operationId||"")!==operationId)throw new Error("RESTORE_OPERATION_MISMATCH");
+  const status=String(data?.status||"");
+  const storedOperationId=String(data?.operationId||"");
+  if(status==="consumed"&&success&&storedOperationId===operationId){idempotent=true;return}
+  if(status!=="processing"||storedOperationId!==operationId)throw new Error("RESTORE_OPERATION_MISMATCH");
   const next=success?{status:"consumed",consumedAt:FieldValue.serverTimestamp(),leaseExpiresAtMs:0}:{status:Number(data?.expiresAtMs||0)>Date.now()?"active":"expired",operationId:null,leaseExpiresAtMs:0};
   tx.update(tokenRef,next);
   tx.create(db.collection(AUDIT_COLLECTION).doc(),{userId:uid,appId:ORBITGATHER_APP_ID,installationId,action:success?"restore_complete":"restore_failed",operationId,createdAt:FieldValue.serverTimestamp()});
  });
- return{uid,installationId,success};
+ return{uid,installationId,success,idempotent};
 }
