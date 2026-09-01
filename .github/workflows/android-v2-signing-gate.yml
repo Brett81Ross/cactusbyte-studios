@@ -2,6 +2,12 @@ name: Android v2 Signing Gate
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - android-release-v2-foundation
+    paths:
+      - 'android-packager/**'
+      - '.github/workflows/android-v2-signing-gate.yml'
 
 permissions:
   contents: read
@@ -120,10 +126,22 @@ jobs:
       - name: Build branded launcher icons
         run: python3 android-packager/fetch_icons.py
 
-      - name: Build all 13 permanently signed APKs
+      - name: Build all 26 permanently signed release APKs
         run: gradle -p android-packager assembleRelease --stacktrace
 
-      - name: Verify APK signatures against manifest
+      - name: Verify direct and Play distribution split
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT2="$(find "$ANDROID_HOME/build-tools" -type f -name aapt2 | sort -V | tail -1)"
+          test -x "$AAPT2"
+          python3 android-packager/verify_distribution_split.py \
+            --aapt2 "$AAPT2" \
+            --apk-root android-packager/app/build/outputs/apk \
+            --build-config-root android-packager/app/build/generated/source/buildConfig \
+            --main-activity android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java
+
+      - name: Verify all 26 APK signatures against permanent identities
         shell: bash
         run: |
           set -euo pipefail
@@ -133,5 +151,45 @@ jobs:
             --apksigner "$APKSIGNER" \
             --apk-root android-packager/app/build/outputs/apk
 
-      - name: Permanent signing gate passed
-        run: echo 'All 13 APKs were built from protected android-release environment secrets and matched the committed SHA-256 certificate fingerprints.'
+      - name: Upload 26 signed QA artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cactusbyte-brand-distribution-signed-apks
+          path: android-packager/app/build/outputs/apk/**/release/*.apk
+          retention-days: 7
+
+      - name: Permanent signing and distribution gate passed
+        run: echo 'All 26 APKs passed brand × distribution, permission, CHANNEL, UA 1.0, and permanent-signing verification.'
+
+  web-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CACTUSBYTE_PRODUCTION_QA: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Sweep all 13 production brands in Chromium and WebKit
+        run: npm run qa:viewport
+
+      - name: Upload Playwright failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brand-distribution-web-qa-failures
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
