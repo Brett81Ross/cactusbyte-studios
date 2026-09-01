@@ -7,6 +7,7 @@ on:
       - android-release-v2-foundation
     paths:
       - .github/workflows/android-v2-signing-gate.yml
+      - android-packager/verify_apk_signatures.py
 
 permissions:
   contents: read
