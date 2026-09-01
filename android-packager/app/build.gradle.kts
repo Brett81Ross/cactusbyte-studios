@@ -49,7 +49,7 @@ android {
         }
     }
 
-    flavorDimensions += "brand"
+    flavorDimensions += listOf("brand", "distribution")
     productFlavors {
         create("cactusbyte") {
             dimension = "brand"
@@ -141,6 +141,15 @@ android {
             resValue("string", "app_name", "OrbitGather")
             buildConfigField("String", "START_URL", "\"https://orbitgather-wahh.vercel.app/\"")
             if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-orbitgather")
+        }
+
+        create("direct") {
+            dimension = "distribution"
+            buildConfigField("String", "CHANNEL", "\"direct\"")
+        }
+        create("play") {
+            dimension = "distribution"
+            buildConfigField("String", "CHANNEL", "\"play\"")
         }
     }
 
