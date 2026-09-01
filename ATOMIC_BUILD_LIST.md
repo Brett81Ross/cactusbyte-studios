@@ -157,3 +157,31 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Reconcile the intended v1.15.0 release with the v1.7.0 version currently rendered by GitHub `main` and the production domain
 - [ ] Remove the `sw.js` registration and service-worker file before the next approved release, then verify stale caches no longer control the Android app
 - [ ] Run Android field workflow QA for mowing, lawn care, irrigation, photos, reports, and offline/error behavior
+
+## Android permanent-signing cutover phases
+
+- [x] Phase 1 — web-layer native-readiness fixes completed without changing production signing identity.
+- [x] Phase 2 — 13 permanent Android signing identities staged and verified.
+- [x] Phase 3 — compile/target SDK 36 migration completed.
+- [x] Phase 4 — brand × distribution split completed: 13 brands × Direct/Play = 26 variants; Direct/Play share the same permanent key per brand; UA remains `CactusByteNative/1.0`.
+- [x] Phase 5 — clean-install CactusByte recovery QA passed in Actions run `33532382244`; viewport QA passed in run `33532382258`.
+- [x] Phase 6 — app-by-app data/access audit completed and locked in `android-packager/SIGNING_CUTOVER_DATA_AUDIT.md`.
+- [x] Permanent-signing gate passed in Actions run `33531865795`: all 26 APKs built, correct Direct/Play permission split, all signatures matched, and every compiled release was non-debuggable.
+- [x] Keep the one-brand cutover procedure in `android-packager/SIGNING_CUTOVER_RUNBOOK.md`.
+- [ ] Phase 7 — First Bearing: add validated, merge-only JSON restore/import with automatic pre-import backup and duplicate-safe recovery.
+- [ ] Phase 7 — PocketStomp: reconcile the advanced V2 canonical source, then add archive export/import.
+- [ ] Phase 7 — No Problem Matrix: add saved-project + settings export/import.
+- [ ] Phase 7 — Rapid Takeoff: add clean-install lifetime-Pro recovery independent of the device cookie/single-use coupon.
+- [ ] Phase 7 — OrbitGather: add clean-install installation-identity recovery/transfer for existing cloud records.
+- [ ] Phase 7 — Acelynn Pro: add validated snapshot import/restore.
+- [ ] Phase 7 — ScoutTrace: add JSON scan-history export/import.
+- [ ] Phase 7 — GhostLane: add a privacy-preserving ledger migration choice or explicit start-fresh path.
+- [ ] Phase 7 — Fantasy Football Matrix: preserve active-draft state or require a clearly warned no-active-draft cutover.
+- [ ] Phase 7 — TerraFlow: prove Upload This Device → clean install → Merge From Cloud with record verification.
+- [ ] Phase 7 — MachZero: verify Recovery Key before uninstall whenever durable paid access exists.
+- [ ] Phase 7 — ShadowNex Prime: provide safe API-key re-entry/transfer without ordinary plaintext secret export.
+- [x] CactusByte hub clean-install recovery architecture is proven in CI; actual device execution still requires explicit approval.
+- [ ] Phase 8 — prepare migration banner/instructions targeted at the legacy `CactusByteNative/1.0` population only after every applicable Phase 7 recovery gate passes.
+- [ ] Phase 8 — execute cutover one brand at a time only after explicit user approval.
+
+**HARD GATE: NO UNINSTALL / NO CUTOVER for any brand until that brand’s recovery gate in `android-packager/SIGNING_CUTOVER_DATA_AUDIT.md` has passed on the exact source intended for release. No item in this ABL authorizes a Vercel deployment, PR merge, Play publication, APK installation, or phone uninstall by itself.**
