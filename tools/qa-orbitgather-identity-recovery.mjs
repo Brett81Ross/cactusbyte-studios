@@ -23,8 +23,12 @@ must(lib,'timingSafeEqual',"timing-safe HMAC comparison");
 must(lib,'INSTALLATION_ALREADY_BOUND',"cross-account ownership rejection");
 must(lib,'FieldValue.arrayUnion(installationId)',"multi-installation account binding");
 must(lib,'status:"processing"',"restore processing lease state");
+must(lib,'if(status==="processing"&&existingLeaseExpiresAtMs>now)',"same-operation processing retry");
+must(lib,'if(status==="consumed")',"consumed restore replay state");
+must(lib,'status==="consumed"&&success&&storedOperationId===operationId',"idempotent completion acknowledgement");
 must(lib,'RESTORE_OPERATION_MISMATCH',"restore operation lock");
 must(lib,'legacy_installation_claim',"claim audit source");
+must(begin,'state:result.state',"restore lease state response");
 
 before(issue,'testerIdentity(request)','issueOrbitRecoveryToken(',"authenticated issuance");
 before(claim,'verifyOrbitBridgeAttestation("claim"','confirmOrbitLegacyClaim(',"claim HMAC before binding");
