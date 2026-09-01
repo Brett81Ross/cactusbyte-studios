@@ -1,0 +1,52 @@
+name: Rapid Takeoff Pro Recovery Authority QA
+
+on:
+  push:
+    branches:
+      - rapid-takeoff-pro-recovery-authority
+    paths:
+      - 'src/lib/rapid-takeoff-recovery.ts'
+      - 'src/app/api/rapid-takeoff/recovery/**'
+      - 'src/app/rapid-takeoff-recovery/**'
+      - 'src/app/api/coupons/rapid-takeoff/issue/route.ts'
+      - 'tools/qa-rapid-takeoff-pro-recovery.mjs'
+      - 'vercel.json'
+      - '.github/workflows/rapid-takeoff-pro-recovery-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-authority-qa:
+    if: github.ref == 'refs/heads/rapid-takeoff-pro-recovery-authority'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout authority branch
+        uses: actions/checkout@v4
+        with:
+          ref: rapid-takeoff-pro-recovery-authority
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install project dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Recovery authority source QA
+        run: node tools/qa-rapid-takeoff-pro-recovery.mjs
+
+      - name: Existing CactusByte core QA
+        run: npm run qa
+
+      - name: Production build
+        run: npm run build
+
+      - name: Reject deployment side effects
+        run: |
+          if ! grep -q '"deploymentEnabled":false' vercel.json; then
+            echo 'Git auto-deployment was unexpectedly enabled.' >&2
+            exit 1
+          fi
