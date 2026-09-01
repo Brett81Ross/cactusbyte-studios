@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Deterministic Rapid Takeoff Phase 7 records patch. Safe to rerun after settlement.
 FILES = {
     "abl": Path("ATOMIC_BUILD_LIST.md"),
     "audit": Path("android-packager/SIGNING_CUTOVER_DATA_AUDIT.md"),
