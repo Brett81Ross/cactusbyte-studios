@@ -1,4 +1,4 @@
-import {finishOrbitRestore,verifyOrbitBridgeAttestation,validOrbitOperationId,validOrbitRecoveryToken} from "../../../../../../lib/orbitgather-recovery";
+import {finishOrbitRestore,verifyOrbitBridgeAttestation,validOrbitOperationId,validOrbitRecoveryToken} from "../../../../../lib/orbitgather-recovery";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
