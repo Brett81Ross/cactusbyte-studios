@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 MANIFEST = ROOT / "signing-manifest.json"
+DISTRIBUTIONS = ("direct", "play")
 CERT_SHA256_RE = re.compile(
     r"certificate\s+SHA-?256\s+digest\s*:\s*(.+)$",
     re.IGNORECASE,
@@ -39,6 +40,17 @@ def signer_sha256_digests(output: str) -> set[str]:
     return digests
 
 
+def find_variant_apk(apk_root: Path, flavor: str, distribution: str) -> Path:
+    expected_name = f"app-{flavor}-{distribution}-release.apk"
+    candidates = sorted(apk_root.rglob(expected_name))
+    if len(candidates) != 1:
+        fail(
+            f"expected exactly one release APK for {flavor}/{distribution}, found "
+            f"{len(candidates)} matching {expected_name}"
+        )
+    return candidates[0]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--apksigner", required=True)
@@ -55,7 +67,7 @@ def main() -> None:
     data = json.loads(MANIFEST.read_text(encoding="utf-8"))
     apps = data.get("apps", [])
     if len(apps) != 13:
-        fail(f"expected 13 apps, found {len(apps)}")
+        fail(f"expected 13 signing identities, found {len(apps)}")
 
     checked = 0
     for app in apps:
@@ -65,53 +77,56 @@ def main() -> None:
         if not expected:
             fail(f"missing expected fingerprint for {package_id}")
 
-        release_dir = apk_root / flavor / "release"
-        candidates = sorted(release_dir.glob("*.apk"))
-        if len(candidates) != 1:
-            fail(
-                f"expected exactly one release APK for {flavor}, found "
-                f"{len(candidates)} in {release_dir}"
-            )
-        apk = candidates[0]
-
-        proc = subprocess.run(
-            [str(apksigner), "verify", "--verbose", "--print-certs", str(apk)],
-            check=False,
-            text=True,
-            capture_output=True,
-        )
-        output = proc.stdout + "\n" + proc.stderr
-        if proc.returncode != 0:
-            fail(f"apksigner verification failed for {apk.name}: {output.strip()}")
-
-        digests = signer_sha256_digests(output)
-        if not digests:
-            fail(
-                f"could not read a signer certificate SHA-256 digest from {apk.name}; "
-                "apksigner output format was not recognized"
-            )
-        if len(digests) != 1:
-            fail(
-                f"expected exactly one distinct signer certificate for {apk.name}, "
-                f"found {len(digests)}"
-            )
-
-        actual_norm = next(iter(digests))
         expected_norm = normalize_fingerprint(str(expected))
         if len(expected_norm) != 64:
             fail(
                 f"manifest fingerprint for {package_id} is not a 64-hex SHA-256 digest"
             )
-        if actual_norm != expected_norm:
-            fail(
-                f"certificate mismatch for {package_id}: expected {expected_norm}, "
-                f"got {actual_norm}"
+
+        for distribution in DISTRIBUTIONS:
+            apk = find_variant_apk(apk_root, flavor, distribution)
+
+            proc = subprocess.run(
+                [str(apksigner), "verify", "--verbose", "--print-certs", str(apk)],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            output = proc.stdout + "\n" + proc.stderr
+            if proc.returncode != 0:
+                fail(f"apksigner verification failed for {apk.name}: {output.strip()}")
+
+            digests = signer_sha256_digests(output)
+            if not digests:
+                fail(
+                    f"could not read a signer certificate SHA-256 digest from {apk.name}; "
+                    "apksigner output format was not recognized"
+                )
+            if len(digests) != 1:
+                fail(
+                    f"expected exactly one distinct signer certificate for {apk.name}, "
+                    f"found {len(digests)}"
+                )
+
+            actual_norm = next(iter(digests))
+            if actual_norm != expected_norm:
+                fail(
+                    f"certificate mismatch for {package_id} ({distribution}): "
+                    f"expected {expected_norm}, got {actual_norm}"
+                )
+
+            checked += 1
+            print(
+                f"OK {flavor}/{distribution}: {package_id} certificate {expected}"
             )
 
-        checked += 1
-        print(f"OK {flavor}: {package_id} certificate {expected}")
+    if checked != 26:
+        fail(f"expected 26 signed APK variants, verified {checked}")
 
-    print(f"Verified {checked} APK signatures against the permanent signing manifest.")
+    print(
+        "Verified 26 APK signatures against the 13 permanent signing identities; "
+        "direct and Play share the same locked key per brand."
+    )
 
 
 if __name__ == "__main__":
