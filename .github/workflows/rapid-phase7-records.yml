@@ -1,0 +1,64 @@
+name: Rapid Takeoff Phase 7 Records
+
+on:
+  push:
+    branches:
+      - android-release-v2-foundation
+    paths:
+      - 'tools/apply-rapid-phase7-records.py'
+      - '.github/workflows/rapid-phase7-records.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  settle-records:
+    if: github.ref == 'refs/heads/android-release-v2-foundation'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: android-release-v2-foundation
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Apply deterministic Phase 7 records
+        run: python tools/apply-rapid-phase7-records.py
+
+      - name: Verify Rapid recovery control markers
+        run: |
+          grep -Fq 'Phase 7 — Rapid Takeoff code/CI + settle gate' ATOMIC_BUILD_LIST.md
+          grep -Fq 'Protect Pro Access' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
+          grep -Fq 'Rapid Takeoff™ — claim legacy lifetime Pro before uninstall' android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          grep -Fq 'Next.js `14.2.4`' ATOMIC_BUILD_LIST.md
+
+      - name: Reject deployment side effects
+        run: |
+          if git diff --name-only | grep -Ev '^(ATOMIC_BUILD_LIST\.md|android-packager/SIGNING_CUTOVER_DATA_AUDIT\.md|android-packager/SIGNING_CUTOVER_RUNBOOK\.md)$'; then
+            echo 'Phase 7 records patcher changed an unexpected file.' >&2
+            git diff --name-only
+            exit 1
+          fi
+          if ! grep -q '"deploymentEnabled":false' vercel.json; then
+            echo 'Git deployment was unexpectedly enabled.' >&2
+            exit 1
+          fi
+
+      - name: Commit records if needed
+        shell: bash
+        run: |
+          git add ATOMIC_BUILD_LIST.md android-packager/SIGNING_CUTOVER_DATA_AUDIT.md android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          if git diff --cached --quiet; then
+            echo 'Rapid Takeoff Phase 7 central records already settled.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs: record Rapid Takeoff Phase 7 recovery gate'
+          git push origin HEAD:android-release-v2-foundation
