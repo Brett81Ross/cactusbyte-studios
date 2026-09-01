@@ -1,6 +1,6 @@
 # Cactus🌵Byte Studios™ Android Signing-Cutover Data / Access Audit
 
-Status: **Phase 6 complete — staged only. NO UNINSTALL / NO CUTOVER is authorized by this document.**
+Status: **Phase 6 complete; Phase 7 recovery tooling in progress — staged only. NO UNINSTALL / NO CUTOVER is authorized by this document.**
 
 This audit exists because the legacy Android APKs and the permanent-signed APKs use different signing certificates. Android cannot update the legacy package in place across that certificate change. The one-time transition requires uninstalling the old package, and uninstalling deletes that package's private WebView/browser state.
 
@@ -38,13 +38,13 @@ These CI results prove the Android foundation and hub recovery mechanisms. They 
 | Brand | Classification | Durable state / access at risk | Required cutover gate |
 | --- | --- | --- | --- |
 | Cactus🌵Byte Studios™ | A | Local Firebase session and trusted-device token are erased, but owner/account authority is server recoverable. | Know CactusByte ID recovery path; clean-install owner recovery CI remains green on cutover commit. |
-| No Problem Pressure Washing Matrix™ | B | Saved project and Matrix settings are browser-local. Staged photos are transient memory. | Add and QA JSON export/import for saved project + settings; verify round trip before uninstall. |
+| No Problem Pressure Washing Matrix™ | B + access blocker | Saved project, Matrix settings, inventory, and customer contact are browser-local. Staged photos are transient memory. HttpOnly access cookie may contain lifetime access or paid/free scan state. | Recovery code/CI + deterministic settle are complete. Still require isolated runtime round trip and the applicable entitlement restoration proof before uninstall; purchased cookie-bound credits/lifetime require durable account-backed restoration for general cutover. |
 | MachZero™ | A/C conditional | Install ID/settings are local; paid plan / unused scan-pack access is transferable through Recovery Key. | If durable paid access exists, create and verify Recovery Key before uninstall; settings may be recreated. |
 | Rapid Takeoff™ | C data + access blocker | Blueprint/report work is transient/output-oriented, but lifetime Pro is represented by a long-lived HttpOnly device cookie after single-use coupon redemption. | Add account/recovery bridge for lifetime Pro and prove clean-install restoration before uninstall. |
 | Acelynn Pro™ | B | Saved analysis snapshots are local. JSON export exists; matching import/restore was not found. | Add validated snapshot import/restore; prove legacy + current backup compatibility. |
-| PocketStomp™ | B — high priority | Production stores calibration profile, session archive, settings, learned corrections locally. Production/source mismatch must be reconciled first. | Locate/reconcile the advanced V2 canonical source, then add archive export/import and prove round trip. |
+| PocketStomp™ | B — high priority | Production stores calibration profile, session archive, settings, learned corrections locally. Reconstructed source is build/QA settled but still has two unresolved production static-image assets. | Recovery code/CI + deterministic settle are complete. Resolve/pin the production image assets and prove isolated runtime export/restore before uninstall/cutover. |
 | GhostLane™ | B — sensitive | Privacy/intercept ledger is local; camera-node cache is recreatable. | Provide privacy-preserving migration choice: opt-in protected export/import or explicit start-fresh acknowledgement. No plaintext secret/cookie dump. |
-| First Bearing™ | B — highest consequence | Recovery history, check-ins, sponsor/support contacts, meetings, step work, family plans/boundaries, reminders and related recovery records are local. Comprehensive JSON export exists; restore/import was not found. | Add validated, merge-only import with automatic pre-import backup and duplicate-safe behavior; prove round trip before uninstall. |
+| First Bearing™ | B — highest consequence | Recovery history, check-ins, sponsor/support contacts, meetings, step work, family plans/boundaries, reminders and related recovery records are local. | Merge-only restore/import and CI are complete. Prove representative interactive export/restore round trip on exact release source before uninstall/cutover. |
 | Fantasy Football Matrix™ | B-light | Active draft state/roster/gap state are local; data feed cache is disposable. | Add lightweight active-draft export/import or require no active draft at cutover and clearly warn what resets. |
 | Acelynn’s ScoutTrace™ | B | Scan history is local (up to 75 entries); settings are recreatable. Existing share text is not a restorable backup. | Add JSON history export/import and prove round trip; verify current v1.2.1 source/version truth before cutover. |
 | ShadowNex Prime™ | B-sensitive/C | Preferences are recreatable; user-entered API keys are local secrets. | Require keys to be available for manual re-entry or implement an explicit protected secret transfer. Do not include secrets in ordinary plaintext migration JSON. |
@@ -61,9 +61,24 @@ The hub stores the Firebase session and trusted-device backup locally, so uninst
 
 ### No Problem Pressure Washing Matrix™
 
-Source uses browser-local persistence for Matrix settings and the most recent saved project. These can represent real estimate/project work and cannot be treated as cache. Staged photos are not durable storage.
+Read-only production inspection verified four persistent local records that matter for recovery:
 
-**Gate status:** blocked until export/import exists and a representative saved project + settings round-trip passes.
+- `no-problem-matrix-last-project`
+- `no-problem-matrix-settings-v1`
+- `no-problem-matrix-inventory-v1`
+- `np_matrix_customer_contact`
+
+The saved project can include customer email/phone, job address, optional GPS location, report data, service/proof selections, discount, and quote notes. Backups are therefore user-sensitive local files and are explicitly labeled to be kept private. Staged photos remain in memory and are not exported. The deprecated `np_matrix_building_level` key from stale GitHub source is not exported or restored.
+
+An isolated recovery branch, `Brett81Ross/noproblem.pws:android-signing-cutover-data-recovery`, now provides schema `no-problem-matrix-backup-v1` with a 5 MB cap, depth/array limits, prototype-key stripping, exact record allowlisting, known inventory-ID allowlisting, merge-only semantics, automatic pre-import backup, and transactional rollback across all four keys. Current-device project/settings values win; backup fills missing contact/inventory values. It never calls `localStorage.clear()` and never exports access cookies, credits, lifetime state, tester tokens, staged photos, caches, service-worker state, or secrets.
+
+The audit also found GitHub `main` lagging current production in two important behaviors. Production already uses the approved automatic access/elevation detection with no one-story/multiple-level selector, and production already unregisters the old service worker instead of registering `/sw.js`. The isolated recovery generator reconciles both live behaviors before applying the backup UI, preventing recovery work from resurrecting those deprecated paths.
+
+Actions run `33557169191` passed the full recovery gate. Attempt 1 generated source commit `997a35dc82826ce9d1dc5bf7223fa34c12a1e505`. Attempt 2 checked out that generated head, passed functional backup/restore QA, source-contract QA, JavaScript syntax checks, and the deployment-side-effect guard, then reported `Generated recovery source already settled.` The branch head remained unchanged, proving deterministic generation.
+
+Access remains a separate gate. `np_matrix_access` is an HttpOnly, server-signed cookie that can carry monthly free usage, paid credits, and lifetime access, and uninstall erases it. CactusByte tester/VIP access is repeatably recoverable without copying the cookie: an authenticated CactusByte ID with an active lifetime tester pass can request a fresh short-lived No Problem token, which the app consumes to issue a fresh lifetime cookie. Purchased scan credits or purchased lifetime access that exist only in the cookie do not yet have a proven account-backed clean-install restoration mechanism.
+
+**Gate status:** code/CI + deterministic settle complete. Still blocked from uninstall/cutover until an isolated browser/Android export → restore/merge runtime round trip passes and the exact device's entitlement re-activation path is verified. General cutover for purchased cookie-bound credits/lifetime remains blocked until durable account-backed purchase restoration exists.
 
 ### MachZero™
 
@@ -85,9 +100,15 @@ Saved snapshots are local. Existing JSON export protects a copy but without an i
 
 ### PocketStomp™
 
-The verified production app stores profile/calibration data, session history, learned correction/settings state locally. The connected Vercel project points at a GitHub repository whose `main` surface did not match the advanced production bundle during this audit.
+The verified production app stores profile/calibration data, session history, learned correction/settings state locally under `pocketstomp.profile.v2`, `pocketstomp.sessions.v2`, and `pocketstomp.settings.v2`, with production retaining up to 100 sessions. Neither accessible GitHub `main` matched the advanced production V2 source, so recovery was staged on isolated branch `Brett81Ross/pocketstomp-:production-v2-source-recovery` with explicit provenance limits rather than pretending an older source was canonical.
 
-**Gate status:** blocked. First reconcile the advanced V2 source; then add versioned archive export/import. Do not edit an older/basic source under the assumption that it is the production code.
+The reconstructed editable V2 now includes a versioned `pocketstomp-backup-v1` engine with validation, pre-import backup, prototype-key stripping, current-device-first merges, learned-correction merging, session dedupe, 100-session retention, safety limits, transactional rollback, and export → empty-device → restore functional QA. Combined source-contract QA, production-parity QA, backup/restore functional QA, pinned Next.js 16.2.12 dependency installation, and production build all pass.
+
+Generated recovery source is pinned at `1d15d8d2a19a5a641e5239270892ab82458a3a10`. Settle run `33549162028` attempt 2 reran the generator/QA against that generated head successfully and left the branch head unchanged, closing the deterministic settle checkpoint.
+
+Two production static image binaries, `/pocketstomp-icon.png` and `/pocketstomp-boar.jpg`, are still referenced by the verified production contract but have not been pinned into the recovered editable source. They remain a source-canonicalization blocker rather than grounds to invent replacement art.
+
+**Gate status:** code/CI + deterministic settle complete, but not cutover-ready. Resolve or deliberately approve replacements for the two production static assets and complete an isolated interactive browser/Android export → restore runtime round trip before uninstall/cutover.
 
 ### GhostLane™
 
@@ -97,9 +118,11 @@ The privacy/intercept ledger is durable local state. Because GhostLane is privac
 
 ### First Bearing™
 
-First Bearing carries the highest-consequence local-only dataset in the portfolio: recovery check-ins/history, sponsor/support relationships, meeting records, step work, family plans/boundaries, reminders and related recovery state. A comprehensive JSON backup download already exists, but no matching restore/import path was found.
+First Bearing carries the highest-consequence local-only dataset in the portfolio: recovery check-ins/history, sponsor/support relationships, meeting records, step work, family plans/boundaries, reminders and related recovery state. The isolated Phase 7 branch now adds validated merge-only restore/import for the existing backup with automatic pre-import backup, duplicate-safe arrays, non-destructive object merge, schema/version validation, safety limits, prototype sanitization, and transactional rollback. Legacy v2.6.0 backups, including legitimate null optional fields, remain supported.
 
-**Gate status:** blocked until restore exists. Phase 7 begins here. Requirements: versioned validation, automatic pre-import backup, merge-only default, duplicate-safe arrays, object/settings merge without deleting unknown existing fields, clear failure/success reporting, and no silent data loss.
+Actions run `33536545004` passed source-contract and functional recovery QA, including simulated mid-import storage failure and rollback.
+
+**Gate status:** code/CI complete. Still blocked from uninstall/cutover until a representative interactive browser/Android export → restore round trip passes on the exact release source.
 
 ### Fantasy Football Matrix™
 
@@ -133,9 +156,9 @@ OrbitGather's cloud backend authenticates device-scoped records using a locally 
 
 ## Phase 7 recovery-tooling order
 
-1. First Bearing — validated restore/import for the existing comprehensive backup.
-2. PocketStomp — reconcile canonical advanced V2 source, then archive export/import.
-3. No Problem Matrix — saved project + settings export/import.
+1. First Bearing — **code/CI complete; interactive runtime round trip pending**.
+2. PocketStomp — **code/CI + deterministic settle complete; static-image source parity + interactive runtime round trip pending**.
+3. No Problem Matrix — **code/CI + deterministic settle complete; isolated runtime/entitlement proof pending**.
 4. Rapid Takeoff — lifetime Pro clean-install recovery bridge.
 5. OrbitGather — installation identity/account recovery or transfer.
 6. Acelynn Pro — snapshot import/restore.
