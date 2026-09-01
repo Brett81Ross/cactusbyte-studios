@@ -1,3 +1,4 @@
+# Human-authored trigger; CactusByte intentionally has no committed npm lockfile on this lineage.
 name: OrbitGather Identity Recovery Authority QA
 
 on:
@@ -12,7 +13,6 @@ on:
       - '.env.example'
       - '.github/workflows/orbitgather-identity-recovery-qa.yml'
       - 'package.json'
-      - 'package-lock.json'
       - 'vercel.json'
   workflow_dispatch:
 
@@ -23,21 +23,22 @@ jobs:
   recovery-authority:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout authority branch
+        uses: actions/checkout@v5
         with:
           ref: orbitgather-identity-recovery-authority
-      - uses: actions/setup-node@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v5
         with:
-          node-version: '22'
-          cache: npm
+          node-version: '24'
       - name: Verify recovery security contract
         run: node tools/qa-orbitgather-identity-recovery.mjs
-      - name: Install pinned dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Build CactusByte authority
-        run: npm run build
+      - name: Install dependencies using canonical CactusByte method
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run existing CactusByte QA and production build
+        run: npm run preflight
       - name: Reject deployment side effects
         run: |
           grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
-          test ! -f .vercel/output/config.json
+          test ! -d .vercel/output
           echo 'No Vercel deployment executed by this workflow.'
