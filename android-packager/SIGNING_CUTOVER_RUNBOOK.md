@@ -57,6 +57,27 @@ After install:
 - Verify owner-only surfaces and CactusByte ID restoration.
 - Verify launch links for the portfolio before continuing to the next brand.
 
+### Rapid Takeoff™ — claim legacy lifetime Pro before uninstall
+
+Rapid Takeoff has a two-phase recovery requirement. A legacy lifetime-Pro cookie is not itself account-bound and will be erased by uninstall.
+
+Before uninstall:
+
+1. Confirm Rapid Takeoff currently reports lifetime Pro active on the legacy install.
+2. Use **Protect Pro Access** from that same Rapid Takeoff WebView.
+3. Sign in to the CactusByte ID that should permanently own the lifetime entitlement.
+4. Complete the short-lived claim handoff back to Rapid Takeoff while the existing Pro cookie is still present.
+5. Verify the claim succeeds and the CactusByte lifetime Rapid entitlement exists. Do **not** uninstall on a failed, expired, or unverified claim.
+
+After the permanent-signed install:
+
+1. Sign in to the same CactusByte ID.
+2. Use **Restore Pro Access**.
+3. Verify Rapid Takeoff reports lifetime Pro active from the freshly issued HttpOnly cookie.
+4. Run the normal app smoke test before marking Rapid Takeoff complete.
+
+The claim/restore bridge also requires the exact same server-only `RAPID_RECOVERY_BRIDGE_SECRET` in CactusByte and Rapid Takeoff. Configuration and deployment require separate explicit approval. Never copy the old Pro cookie, reuse a redeemed coupon, expose the bridge secret to browser code, or skip the pre-uninstall claim for a legacy cookie-only Pro install.
+
 ### Other wrappers
 
 For every other brand, treat WebView cookies and app-private browser storage as disposable unless an app-specific audit proves otherwise. Before uninstall:
@@ -81,6 +102,7 @@ All of the following must be true before the first uninstall:
 - [ ] August 31 legacy APK artifact bundle is retained for reference.
 - [ ] MachZero recovery-key path is verified before MachZero uninstall if durable paid access exists.
 - [ ] CactusByte ID/owner restoration path is verified before hub uninstall.
+- [ ] Rapid Takeoff legacy lifetime-Pro claim is verified before Rapid uninstall, and same-ID clean-install restore is proven after approved bridge-secret configuration.
 - [ ] The user explicitly approves beginning the device cutover.
 
 ## One-brand cutover sequence

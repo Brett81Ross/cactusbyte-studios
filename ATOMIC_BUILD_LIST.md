@@ -104,8 +104,18 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Test Quick Scan with one photo and Advanced Scan on Android
 - [ ] Show price evidence and confidence instead of presenting uncertain appraisal data as fact
 
-## Rapid Takeoff™ v0.2.0
+## Rapid Takeoff™ v0.3.0
 
+- [x] Pin canonical production to Vercel project `blueprint-estimator`, repo `Brett81Ross/blueprint_estimator-`, production release commit `e1122d785b116ba6b571d43a5ba2fd1efa106a40`, and current staged `main` lineage.
+- [x] Audit lifetime-Pro authority and prove that historical single-use coupon redemption is not account-bound; the 10-year HttpOnly `rapid_takeoff_pro` cookie cannot by itself survive an Android uninstall.
+- [x] Stage the two-phase recovery bridge: **Protect Pro Access** claims the still-valid legacy cookie into a verified CactusByte ID lifetime entitlement before uninstall; **Restore Pro Access** consumes a short-lived account-authorized restore token after clean install and issues a fresh HttpOnly cookie.
+- [x] Enforce recovery security: authenticated CactusByte ID issuance, app/purpose-scoped 5-minute random one-time tokens, per-ID throttling, SHA-256 token storage, HMAC legacy-cookie claim attestation, timing-safe comparison, lifetime-only entitlement checks, and claim/restore audit events.
+- [x] Pass Rapid Takeoff source-contract QA and Next.js production build in Actions run `33559959159`; attempt 3 checked out exact staged head `8436145666e97436da973ad45e8a86e7e5b74e5d` and reported `Generated Rapid Takeoff Pro recovery UI already settled.`
+- [x] Pass CactusByte recovery-authority QA, existing 185 core + 37 owner/billing checks, owner/auth regressions, full Next.js production build, and no-deployment guard in Actions run `33560234902` attempt 2 against exact authority head `362c89a401acc3523b0ce9743771a5c55bbc764e`.
+- [x] Document the server-only `RAPID_RECOVERY_BRIDGE_SECRET` requirement in both repos; the exact same long random value must be configured in both projects before an approved deployment, and it must never use a `NEXT_PUBLIC_` name.
+- [ ] Before any Rapid Takeoff uninstall, deploy/configure only with explicit approval, then complete a real legacy-device **Protect Pro Access** claim while the old Pro cookie still exists and verify the CactusByte lifetime entitlement was created.
+- [ ] On an isolated clean install, sign into the same CactusByte ID, run **Restore Pro Access**, verify a fresh Pro cookie/access state, and complete the normal Rapid Takeoff smoke test before authorizing device cutover.
+- [ ] Upgrade the existing Next.js `14.2.4` dependency to a currently patched supported release before the next production deployment; keep that framework/security update separate from the signing-recovery bridge.
 - [ ] Audit blueprint upload, analysis, estimate output, print/PDF, and mobile layout
 - [ ] Expand trade coverage only after validating the current takeoff path
 
@@ -201,7 +211,8 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Phase 7 — PocketStomp runtime/canonical-source gate: complete isolated export/restore runtime verification and resolve the two production static-image assets before any uninstall/cutover.
 - [x] Phase 7 — No Problem Matrix code/CI + settle gate: four-record merge-only recovery, production automatic-access parity, no-service-worker parity, rollback/security QA, syntax QA, and deterministic settle passed; generated branch head is `997a35dc…`, settle run `33557169191` attempt 2.
 - [ ] Phase 7 — No Problem Matrix runtime/entitlement gate: complete isolated export/restore runtime verification; tester/VIP can re-activate through fresh CactusByte tokens, but purchased cookie-bound scan credits/lifetime still require durable account-backed restoration before general cutover.
-- [ ] Phase 7 — Rapid Takeoff: add clean-install lifetime-Pro recovery independent of the device cookie/single-use coupon.
+- [x] Phase 7 — Rapid Takeoff code/CI + settle gate: two-phase legacy-cookie claim + CactusByte ID restore bridge is staged; Rapid run `33559959159` attempt 3 and CactusByte authority run `33560234902` attempt 2 are green on the exact staged heads.
+- [ ] Phase 7 — Rapid Takeoff runtime/config gate: configure the shared server-only bridge secret only with deployment approval, successfully claim existing legacy Pro before uninstall, then prove same-ID clean-install restore and smoke test. No uninstall is authorized before both runtime halves pass.
 - [ ] Phase 7 — OrbitGather: add clean-install installation-identity recovery/transfer for existing cloud records.
 - [ ] Phase 7 — Acelynn Pro: add validated snapshot import/restore.
 - [ ] Phase 7 — ScoutTrace: add JSON scan-history export/import.
