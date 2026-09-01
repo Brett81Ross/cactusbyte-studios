@@ -74,6 +74,13 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Define lead expiration, dispute, refund, invalid-lead, and source-outage behavior before monetizing private leads
 - [ ] Verify each lead source’s allowed-use terms before enabling it in production
 
+- [x] Pin the Android signing-cutover identity design to the existing OrbitGather installation UUID; no Supabase DDL/schema migration or cloud-row re-parenting is required.
+- [x] Stage CactusByte account↔installation authority plus the isolated `orbitgather-recovery` Edge Function with short-lived tokens, HMAC bridge attestation, restore leases, same-UUID secret rotation, retry-safe pending-secret handling, and no automatic email-only fallback.
+- [x] Pass CactusByte OrbitGather recovery-authority QA and full existing hub preflight/build in Actions run `33563934200` against authority head `1dc0e4a2fffe8934e01faff20a92e1653719bb01`.
+- [x] Pass OrbitGather recovery contract QA, Next.js production build, scoped Deno 2 Edge Function type-check, and no-deployment guard in Actions run `33563971968`; generated UI source is pinned at `5702fa7db0b8183743ab029e857e8b1071edd087`.
+- [x] Prove deterministic settle in Actions run `33563971968` attempt 2: the generated head reran green and reported `Generated OrbitGather identity recovery UI already settled.` with no additional commit.
+- [ ] After explicit deployment/configuration approval only, configure the same server-only `ORBITGATHER_RECOVERY_BRIDGE_SECRET` in CactusByte and Supabase, protect the legacy installation before uninstall, then prove isolated clean-install restore preserves the exact UUID, rotates the secret, and retains saved searches/opportunity metadata.
+
 ## No Problem Pressure Washing Matrix™ v1.0.0
 
 - [x] Deploy the approved access-decision batch once to canonical production deployment `dpl_5YpdwumeHjePxJhkFry5FqJbbdoa` and verify `noproblem-pws.vercel.app` with no runtime errors
@@ -120,6 +127,12 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Expand trade coverage only after validating the current takeoff path
 
 ## Acelynn Pro™ v1.1.2
+- [x] Pin canonical Acelynn Pro production to Vercel project `acelynn`, repo `Brett81Ross/Acelynn`, production deployment `dpl_BX4tHTSXgh6XqeCBevbm14EdcJT2`, production commit `302c43d029cf975a98e3db20ca9ec5466a9e0dba`, and current `main` `11e4b59139894a194f1eb0342e6a184dda2296df`; the six commits ahead do not modify `index.html`.
+- [x] Verify the durable cutover state is the single `acelynn-snapshots` localStorage record, with production retention capped at 12 snapshots; existing JSON export was legacy-compatible but had no import path.
+- [x] Stage `acelynn-pro-backup-v1` restore on isolated branch `android-signing-cutover-data-recovery` with legacy-report compatibility, 5 MB cap, 1000-input safety cap, field allowlisting/sanitization, current-device-first dedupe merge, 12-snapshot retention, automatic pre-import backup, and storage rollback.
+- [x] Pass functional/source QA, JavaScript syntax checks, live-shell parity, and no-deployment guard in Actions run `33568622698`; generated recovery source is pinned at `00ea3761cff27771f020c194b454b97daae9c168` and attempt 2 reports `Generated Acelynn Pro recovery source already settled.`
+- [ ] Complete an isolated browser/Android legacy export → restore/merge round trip and verify all expected snapshots before authorizing uninstall/cutover.
+- [ ] Remove/disable Acelynn Pro’s existing service worker in a separate release-quality batch; do not mix that behavior change into the signing-recovery patch.
 
 - [ ] Audit diagnostic workflow, microphone permissions, error states, and mobile controls
 - [ ] Verify current logo, version, footer, share, QR, and settings surfaces

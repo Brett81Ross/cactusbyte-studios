@@ -41,7 +41,7 @@ These CI results prove the Android foundation and hub recovery mechanisms. They 
 | No Problem Pressure Washing Matrix™ | B + access blocker | Saved project, Matrix settings, inventory, and customer contact are browser-local. Staged photos are transient memory. HttpOnly access cookie may contain lifetime access or paid/free scan state. | Recovery code/CI + deterministic settle are complete. Still require isolated runtime round trip and the applicable entitlement restoration proof before uninstall; purchased cookie-bound credits/lifetime require durable account-backed restoration for general cutover. |
 | MachZero™ | A/C conditional | Install ID/settings are local; paid plan / unused scan-pack access is transferable through Recovery Key. | If durable paid access exists, create and verify Recovery Key before uninstall; settings may be recreated. |
 | Rapid Takeoff™ | C data + account-recovery gate | Blueprint/report work is transient/output-oriented. Legacy lifetime Pro lives in a 10-year HttpOnly cookie, while historical coupon redemption did not bind that grant to a CactusByte ID. | Recovery code/CI + deterministic settle are complete. Before uninstall, current legacy Pro must be claimed into the intended CactusByte ID while the old cookie still exists; then same-ID clean-install restore must be proven after bridge-secret configuration on an approved deployment. |
-| Acelynn Pro™ | B | Saved analysis snapshots are local. JSON export exists; matching import/restore was not found. | Add validated snapshot import/restore; prove legacy + current backup compatibility. |
+| Acelynn Pro™ | B | Saved analysis snapshots are local under `acelynn-snapshots` with 12-record retention. | Recovery code/CI + deterministic settle are complete. Still require isolated legacy-export → restore/merge runtime proof before uninstall/cutover. |
 | PocketStomp™ | B — high priority | Production stores calibration profile, session archive, settings, learned corrections locally. Reconstructed source is build/QA settled but still has two unresolved production static-image assets. | Recovery code/CI + deterministic settle are complete. Resolve/pin the production image assets and prove isolated runtime export/restore before uninstall/cutover. |
 | GhostLane™ | B — sensitive | Privacy/intercept ledger is local; camera-node cache is recreatable. | Provide privacy-preserving migration choice: opt-in protected export/import or explicit start-fresh acknowledgement. No plaintext secret/cookie dump. |
 | First Bearing™ | B — highest consequence | Recovery history, check-ins, sponsor/support contacts, meetings, step work, family plans/boundaries, reminders and related recovery records are local. | Merge-only restore/import and CI are complete. Prove representative interactive export/restore round trip on exact release source before uninstall/cutover. |
@@ -49,7 +49,7 @@ These CI results prove the Android foundation and hub recovery mechanisms. They 
 | Acelynn’s ScoutTrace™ | B | Scan history is local (up to 75 entries); settings are recreatable. Existing share text is not a restorable backup. | Add JSON history export/import and prove round trip; verify current v1.2.1 source/version truth before cutover. |
 | ShadowNex Prime™ | B-sensitive/C | Preferences are recreatable; user-entered API keys are local secrets. | Require keys to be available for manual re-entry or implement an explicit protected secret transfer. Do not include secrets in ordinary plaintext migration JSON. |
 | TerraFlow Matrix™ | Hybrid A/B | Core business records are local-first but can be uploaded/merged through owner-scoped Supabase sync. | Sign in → Upload This Device → verify cloud record counts/copy → uninstall → fresh sign-in → Merge From Cloud → verify restored records. Unsynced installs remain Category B. |
-| OrbitGather™ | B — critical identity blocker | Cloud records are authenticated by a local installation ID + installation secret. Clean reinstall registers as a new device and can orphan device-scoped saved searches/opportunity metadata. | Add installation identity recovery/transfer, preferably bound to CactusByte ID or a dedicated recovery credential; verify old cloud records are reachable from a clean install. |
+| OrbitGather™ | B — critical identity blocker | Cloud records are authenticated by a local installation UUID + secret; the UUID owns saved-search/scan/opportunity foreign-key relationships. | Recovery code/CI + deterministic settle are complete with same-UUID secret rotation and CactusByte binding. Still require approved bridge-secret configuration plus legacy Protect and isolated clean-install Restore runtime proof before uninstall/cutover. |
 
 ## Detailed evidence and policy
 
@@ -108,9 +108,15 @@ CI also surfaced an existing Rapid Takeoff dependency warning: Next.js `14.2.4` 
 
 ### Acelynn Pro™
 
-Saved snapshots are local. Existing JSON export protects a copy but without an import path it is not a recovery system.
+Canonical production is Vercel project `acelynn` / repo `Brett81Ross/Acelynn`. The current production deployment is `dpl_BX4tHTSXgh6XqeCBevbm14EdcJT2` from commit `302c43d029cf975a98e3db20ca9ec5466a9e0dba`. GitHub `main` is six commits ahead at `11e4b59139894a194f1eb0342e6a184dda2296df`, but that delta does not modify `index.html`, so the snapshot-storage lineage is unchanged.
 
-**Gate status:** blocked until validated import/restore supports existing exported data and current schema without destructive replacement.
+The durable state is one localStorage record, `acelynn-snapshots`, retained at a maximum of 12 checks. The live source already exported `{app, created, snapshots}` JSON but provided no import path. The isolated branch `android-signing-cutover-data-recovery` now adds schema `acelynn-pro-backup-v1` while accepting the legacy report format. Restore enforces a 5 MB file limit, at most 1000 input snapshots, strict field normalization, current-device-first dedupe merge, 12-snapshot retention, automatic pre-import backup download, and rollback if the localStorage write fails. `index.html` and `app-base.html` remain byte-identical so the Vercel demo shell uses the same recovery surface.
+
+Actions run `33568622698` passed functional/source QA, JavaScript syntax validation, demo-shell parity, and the no-deployment guard. Attempt 1 generated only `index.html` + `app-base.html` at commit `00ea3761cff27771f020c194b454b97daae9c168`. Attempt 2 checked out that generated head, reported both files already deterministic, passed every gate again, and printed `Generated Acelynn Pro recovery source already settled.`
+
+The current source still registers `sw.js`. Service-worker removal is intentionally not mixed into this recovery patch and remains a separate release-quality task.
+
+**Gate status:** code/CI + deterministic settle complete. Still blocked from uninstall/cutover until an isolated browser/Android legacy export → restore/merge round trip proves the expected snapshots survive.
 
 ### PocketStomp™
 
@@ -149,6 +155,18 @@ Fast Draft persists active draft selections, the user's roster and gap state loc
 Scan history is stored locally and can represent records the user wants to retain. Settings are recreatable. The existing human-readable share output is not a machine-restorable backup.
 
 **Gate status:** blocked until versioned JSON history export/import is available and source/version drift is reconciled.
+
+### OrbitGather™
+
+OrbitGather’s cloud identity is `orbitgather:cloud-installation-id` + `orbitgather:cloud-installation-secret`. Read-only Supabase audit showed the installation UUID is already the foreign-key owner of saved searches, scan runs, and opportunities, so migrating/re-parenting rows would be unnecessary and riskier. No Supabase schema migration is required.
+
+The staged design binds the existing installation UUID to an authenticated CactusByte ID in server-side Firestore. The legacy secret is verified only inside a new isolated `orbitgather-recovery` Supabase Edge Function. Protect uses a short-lived CactusByte claim token plus server-only HMAC attestation. Restore acquires a CactusByte processing lease, rotates `og_installations.secret_hash` on the same UUID, and finalizes the lease. Retry safety preserves a pending new secret client-side and makes restore acknowledgement idempotent so a lost response cannot strand the device after a successful server rotation. The old destructive `unauthorized_device` path no longer silently deletes the local identity and registers a replacement.
+
+CactusByte authority branch `orbitgather-identity-recovery-authority` passed recovery security QA, all existing CactusByte QA/regressions, production build, and no-deployment guard in Actions run `33563934200` at head `1dc0e4a2fffe8934e01faff20a92e1653719bb01`. OrbitGather branch `android-signing-cutover-identity-recovery` passed recovery contract QA, Next.js production build, scoped Deno 2 type-check, and no-deployment guard in run `33563971968`. The generated UI commit is `5702fa7db0b8183743ab029e857e8b1071edd087`; attempt 2 checked out that head and reported `Generated OrbitGather identity recovery UI already settled.`
+
+No real `ORBITGATHER_RECOVERY_BRIDGE_SECRET` has been generated or configured, no Edge Function has been deployed, and live Supabase rows/schema are unchanged. Automatic recovery of an already-uninstalled, never-protected installation is intentionally unsupported because no cryptographic account↔installation binding exists; any future owner-assisted exception must be separately audited.
+
+**Gate status:** code/CI + deterministic settle complete. Still blocked from uninstall/cutover until approved runtime configuration/deployment exists, the legacy app completes Protect Cloud Identity, an isolated clean install restores the exact same UUID with a different secret, and existing saved-search/opportunity metadata is verified.
 
 ### ShadowNex Prime™
 

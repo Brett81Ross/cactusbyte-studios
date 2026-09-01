@@ -78,6 +78,43 @@ After the permanent-signed install:
 
 The claim/restore bridge also requires the exact same server-only `RAPID_RECOVERY_BRIDGE_SECRET` in CactusByte and Rapid Takeoff. Configuration and deployment require separate explicit approval. Never copy the old Pro cookie, reuse a redeemed coupon, expose the bridge secret to browser code, or skip the pre-uninstall claim for a legacy cookie-only Pro install.
 
+### OrbitGather™ — protect cloud identity before uninstall
+
+OrbitGather must preserve its existing cloud installation UUID; do not allow a clean install to silently register a replacement identity during signing cutover.
+
+Before uninstall:
+
+1. Confirm the legacy OrbitGather install can still reach its existing cloud state.
+2. Use **Protect Cloud Identity** while the existing installation UUID + secret are still present.
+3. Authenticate the CactusByte ID that should own that installation.
+4. Verify protection succeeds for the exact legacy installation UUID.
+5. Do **not** uninstall on an expired/failed claim or if the UUID cannot be verified.
+
+After the permanent-signed install:
+
+1. Authenticate the same CactusByte ID.
+2. Use **Restore Cloud Identity**.
+3. Verify the restored UUID exactly matches the protected legacy UUID.
+4. Verify the new device secret is rotated rather than reused.
+5. Confirm saved searches, scan history, and opportunity metadata remain reachable before marking OrbitGather complete.
+
+The bridge requires the same server-only `ORBITGATHER_RECOVERY_BRIDGE_SECRET` in CactusByte and the Supabase recovery Edge Function, configured only after separate explicit deployment approval. Do not copy the old installation secret into CactusByte or ordinary backup files.
+
+### Acelynn Pro™ — preserve saved mix snapshots
+
+Before uninstall:
+
+1. Export the Acelynn Pro backup from the legacy install.
+2. Keep the JSON file private; it contains saved analysis snapshots.
+3. Do not uninstall until the isolated recovery round-trip gate has already proven the current recovery build can consume both legacy reports and the versioned backup format.
+
+After the permanent-signed install:
+
+1. Open **Restore / merge backup** and choose the saved JSON file.
+2. Confirm Acelynn downloads a pre-import backup before writing.
+3. Verify the restored snapshot count/content and run one new live/file mix check.
+4. Do not treat service-worker cleanup as part of this recovery step; that behavior change is a separate release-quality batch.
+
 ### Other wrappers
 
 For every other brand, treat WebView cookies and app-private browser storage as disposable unless an app-specific audit proves otherwise. Before uninstall:
@@ -103,6 +140,8 @@ All of the following must be true before the first uninstall:
 - [ ] MachZero recovery-key path is verified before MachZero uninstall if durable paid access exists.
 - [ ] CactusByte ID/owner restoration path is verified before hub uninstall.
 - [ ] Rapid Takeoff legacy lifetime-Pro claim is verified before Rapid uninstall, and same-ID clean-install restore is proven after approved bridge-secret configuration.
+- [ ] OrbitGather legacy cloud identity is protected before OrbitGather uninstall, and same-UUID clean-install restore is proven after approved bridge-secret configuration.
+- [ ] Acelynn Pro snapshot export/import runtime round trip is proven before Acelynn Pro uninstall.
 - [ ] The user explicitly approves beginning the device cutover.
 
 ## One-brand cutover sequence
