@@ -115,6 +115,23 @@ After the permanent-signed install:
 3. Verify the restored snapshot count/content and run one new live/file mix check.
 4. Do not treat service-worker cleanup as part of this recovery step; that behavior change is a separate release-quality batch.
 
+### Acelynn’s ScoutTrace™ — preserve scan history
+
+Before uninstall:
+
+1. Open **Scan History** and choose **Export Backup**.
+2. Keep the JSON backup private; it can include file hashes, suspicious-link notes, QR destinations, and scan details.
+3. Do not rely on **Share Summary** as a backup; it is not machine-restorable.
+4. Do not uninstall until the isolated round-trip gate has proven the backup can be restored on the intended release source.
+
+After the permanent-signed install:
+
+1. Open **Scan History → Restore / Merge Backup** and choose the saved JSON file.
+2. Verify a pre-import backup is created before storage is changed.
+3. Confirm representative history records, timestamps, levels, and details survived.
+4. Run one new scan and confirm history retention remains capped at 75.
+5. Verify the intended visible version and service-worker state match the reconciled release source before marking ScoutTrace complete.
+
 ### Other wrappers
 
 For every other brand, treat WebView cookies and app-private browser storage as disposable unless an app-specific audit proves otherwise. Before uninstall:
@@ -142,6 +159,7 @@ All of the following must be true before the first uninstall:
 - [ ] Rapid Takeoff legacy lifetime-Pro claim is verified before Rapid uninstall, and same-ID clean-install restore is proven after approved bridge-secret configuration.
 - [ ] OrbitGather legacy cloud identity is protected before OrbitGather uninstall, and same-UUID clean-install restore is proven after approved bridge-secret configuration.
 - [ ] Acelynn Pro snapshot export/import runtime round trip is proven before Acelynn Pro uninstall.
+- [ ] ScoutTrace history export/import runtime round trip is proven before ScoutTrace uninstall, and its intended v1.2.x/service-worker release truth is reconciled.
 - [ ] The user explicitly approves beginning the device cutover.
 
 ## One-brand cutover sequence

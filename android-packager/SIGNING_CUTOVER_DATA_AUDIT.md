@@ -46,7 +46,7 @@ These CI results prove the Android foundation and hub recovery mechanisms. They 
 | GhostLane™ | B — sensitive | Privacy/intercept ledger is local; camera-node cache is recreatable. | Provide privacy-preserving migration choice: opt-in protected export/import or explicit start-fresh acknowledgement. No plaintext secret/cookie dump. |
 | First Bearing™ | B — highest consequence | Recovery history, check-ins, sponsor/support contacts, meetings, step work, family plans/boundaries, reminders and related recovery records are local. | Merge-only restore/import and CI are complete. Prove representative interactive export/restore round trip on exact release source before uninstall/cutover. |
 | Fantasy Football Matrix™ | B-light | Active draft state/roster/gap state are local; data feed cache is disposable. | Add lightweight active-draft export/import or require no active draft at cutover and clearly warn what resets. |
-| Acelynn’s ScoutTrace™ | B | Scan history is local (up to 75 entries); settings are recreatable. Existing share text is not a restorable backup. | Add JSON history export/import and prove round trip; verify current v1.2.1 source/version truth before cutover. |
+| Acelynn’s ScoutTrace™ | B | Scan history is local under `st-h-v2` (up to 75 entries); settings under `st-s-v2` are recreatable. | Recovery code/CI + deterministic settle are complete. Still require isolated history round trip plus explicit v1.2.0-live / v1.2.1-source-registry reconciliation before uninstall/cutover. |
 | ShadowNex Prime™ | B-sensitive/C | Preferences are recreatable; user-entered API keys are local secrets. | Require keys to be available for manual re-entry or implement an explicit protected secret transfer. Do not include secrets in ordinary plaintext migration JSON. |
 | TerraFlow Matrix™ | Hybrid A/B | Core business records are local-first but can be uploaded/merged through owner-scoped Supabase sync. | Sign in → Upload This Device → verify cloud record counts/copy → uninstall → fresh sign-in → Merge From Cloud → verify restored records. Unsynced installs remain Category B. |
 | OrbitGather™ | B — critical identity blocker | Cloud records are authenticated by a local installation UUID + secret; the UUID owns saved-search/scan/opportunity foreign-key relationships. | Recovery code/CI + deterministic settle are complete with same-UUID secret rotation and CactusByte binding. Still require approved bridge-secret configuration plus legacy Protect and isolated clean-install Restore runtime proof before uninstall/cutover. |
@@ -152,9 +152,17 @@ Fast Draft persists active draft selections, the user's roster and gap state loc
 
 ### Acelynn’s ScoutTrace™
 
-Scan history is stored locally and can represent records the user wants to retain. Settings are recreatable. The existing human-readable share output is not a machine-restorable backup.
+Canonical Vercel project is `acelynn-scoutrace`. Its current production deployment is `dpl_BYVPu6i8Xrbcts697rRCc1Mfpp7Q` from Git commit `9dc845690b865d5694a26166a908450b865e41c2`. Repository `Brett81Ross/acelynn_scoutrace` current `main` is `c4f5eac6190cb9c2d6908d73b50db3483a683d6c`, five commits ahead; that delta is limited to demo-shell/config, native-install, and Vercel metadata rather than the raw app/history implementation.
 
-**Gate status:** blocked until versioned JSON history export/import is available and source/version drift is reconciled.
+The durable browser contract is `st-h-v2` for scan history and `st-s-v2` for settings. History is stored newest-first and production code caps it at 75 records. Settings are simple/recreatable. The existing Share Summary emits human-readable text only and cannot reconstruct storage.
+
+The isolated branch `android-signing-cutover-data-recovery` now adds schema `scouttrace-backup-v1`: 5 MB file cap, 1000-input safety cap, strict field allowlisting, prototype-key stripping by reconstruction, current-device-first dedupe merge, 75-record retention, pre-import backup download, and rollback across history/settings writes. Backup settings only fill a clean install when no current settings record exists. It never calls `localStorage.clear()`.
+
+Actions run `33569169237` passed functional/source QA, JavaScript syntax checks, and the no-deployment guard. Attempt 1 generated only `index.html` + `raw-index.html` at commit `afad881ab2f78903a55b787c3d738bcee8ef8ae3`. Attempt 2 checked out that generated head, reported both files already deterministic, passed every gate, and printed `Generated ScoutTrace recovery source already settled.`
+
+Version/release truth remains a separate blocker. A read-only fetch of `https://acelynn-scoutrace.vercel.app/` on 2026-09-01 rendered v1.2.0. The repository shell contains a v1.2.0→v1.2.1 rewrite and CactusByte lists v1.2.1. This recovery patch does not silently change that release state. The exact raw recovery source also still registers `sw.js`, so service-worker cleanup must be reconciled separately rather than falsely marked complete.
+
+**Gate status:** code/CI + deterministic settle complete. Still blocked from uninstall/cutover until an isolated export → clean/isolated restore round trip passes and version/service-worker source truth is explicitly reconciled on the intended release source.
 
 ### OrbitGather™
 

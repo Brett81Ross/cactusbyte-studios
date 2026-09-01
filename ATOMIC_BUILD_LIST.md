@@ -179,6 +179,14 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Complete browser, Android-size, share, and QR QA before deployment approval
 
 ## Acelynn’s ScoutTrace™ v1.2.1
+- [x] Re-audit canonical production/source truth for signing cutover: Vercel project `acelynn-scoutrace` production deployment `dpl_BYVPu6i8Xrbcts697rRCc1Mfpp7Q` is from commit `9dc845690b865d5694a26166a908450b865e41c2`; current `main` is `c4f5eac6190cb9c2d6908d73b50db3483a683d6c`, five commits ahead only in demo/native-installer/Vercel metadata.
+- [x] Verify durable browser state keys `st-h-v2` (scan history, newest-first, max 75) and `st-s-v2` (recreatable settings). The existing Share Summary is human-readable only and is not a restorable backup.
+- [x] Stage `scouttrace-backup-v1` on isolated branch `android-signing-cutover-data-recovery` with 5 MB/1000-input safety limits, strict history/settings allowlisting, current-device-first history dedupe, 75-record retention, automatic pre-import backup, clean-install-only settings fill, and transactional rollback.
+- [x] Pass recovery functional/source QA, JavaScript syntax checks, and no-deployment guard in Actions run `33569169237`; generated recovery source is pinned at `afad881ab2f78903a55b787c3d738bcee8ef8ae3`.
+- [x] Prove deterministic settle in run `33569169237` attempt 2: generated head reran green and reported `Generated ScoutTrace recovery source already settled.` with no additional commit.
+- [ ] Reconcile release/version truth before deployment: a read-only production-domain fetch currently renders v1.2.0, while the repository demo shell rewrites raw v1.2.0 source to v1.2.1 and the CactusByte registry lists v1.2.1. Do not silently bump or downgrade during recovery.
+- [ ] Complete isolated browser/Android export → restore/merge round trip and verify representative scan-history records before authorizing uninstall/cutover.
+- [ ] Reconcile service-worker truth separately before release; the exact recovery source still contains `navigator.serviceWorker.register('sw.js')`, so do not claim worker removal until the canonical release source actually proves it.
 
 - [x] Remove the invalid service worker and unregister stale browser installations
 - [x] Align the source shell, runtime constant, manifest, demo shell, and footer at v1.2.1
