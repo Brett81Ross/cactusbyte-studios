@@ -15,6 +15,16 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Record the verified production deployment as the new rollback point before beginning the next app
 - [ ] Review the complete app batch, deploy once only with approval, confirm production, then update the roadmap
 
+## Fuel the Next Update — portfolio standard
+
+- [x] Approve and document the staged `Fuel the Next Update` standard in `FUEL_THE_NEXT_UPDATE_STANDARD.md`.
+- [x] Scope the feature to every current CactusByte app except **First Bearing™**, which remains explicitly excluded from shared inheritance.
+- [x] Lock the initial product behavior as optional one-time support with suggested $2 / $5 / $10 choices and no effect on Pro, subscriptions, coupons, credits, owner/tester access, feature flags, or roadmap priority.
+- [x] Lock distribution-aware routing: web/Android Direct → centralized CactusByte commerce/Stripe after the correct live account is connected; Play → Play-compliant billing path; iOS → App Store-compliant in-app purchase/tipping path.
+- [x] Record that the Stripe connection currently exposed to tooling is GhostLane sandbox only and must not be used for live portfolio support payments.
+- [ ] Build and QA the shared Fuel UI/payment contract on exact canonical release sources, app by app, without delaying permanent-signing recovery work.
+- [ ] Activate live payment products only after correct provider/account verification, sandbox QA, entitlement-isolation QA, and explicit deployment approval.
+
 ## Platform and release safety
 
 - [x] CactusByte production project is identified: `cactusbyte-studios`
@@ -101,7 +111,11 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 ## PocketStomp™ v1.0.0
 
 - [x] Select `pocketstomp-v2-brett81ross` as the keeper after reviewing all three Vercel projects and verifying its advanced V2 production UI
-- [x] Reconcile CactusByte’s launch, icon, source repository, release record, and production registry to the same keeper without deploying
+- [x] Reconcile CactusByte’s launch, icon, release record, production domain, and production registry to the same keeper without deploying
+- [x] Inspect both accessible GitHub candidates (`Brett81Ross/pocketstomp` and `Brett81Ross/pocketstomp-`) and confirm neither committed `main` matches the advanced V2 production source
+- [x] Record the production/source evidence in `android-packager/POCKETSTOMP_SOURCE_RECONCILIATION.md`, including exact production localStorage keys and the 100-session retention behavior
+- [ ] Recover or locate the editable advanced V2 source, review it against the production deployment, and pin the reconciled source to an auditable Git commit before making recovery changes
+- [ ] After source pinning, add versioned archive export/import for `pocketstomp.profile.v2`, `pocketstomp.sessions.v2`, and `pocketstomp.settings.v2` with validation, pre-import backup, dedupe, safe merge, and rollback
 - [ ] Preserve `pocketstomp` and `pocketstomp-z6yl` as rollback candidates until the approved release is confirmed
 - [ ] Audit session flow, camera/sensor permissions, coaching output, and Android layout
 
@@ -114,8 +128,11 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 
 ## First Bearing™ v2.6.1
 
-- [ ] Load the private source into the app workspace through the connected GitHub path
-- [ ] Audit recovery flows, notification behavior, share flow, and Android accessibility
+- [x] Load and patch the private source on isolated branch `android-signing-cutover-data-recovery` without production deployment
+- [x] Add validated merge-only JSON restore/import, automatic pre-import backup, duplicate-safe arrays, non-destructive object merge, sanitization, safety limits, and transactional rollback
+- [x] Preserve legacy v2.6.0 backup compatibility, including legitimate null optional fields
+- [x] Pass source-contract and functional recovery QA in Actions run `33536545004`, including simulated mid-import localStorage failure and rollback
+- [ ] Complete representative interactive browser/Android export → restore round trip on the exact release source before authorizing uninstall/cutover
 
 ## Fantasy Football Matrix™ v1.5.4 (staged)
 
@@ -168,8 +185,10 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [x] Phase 6 — app-by-app data/access audit completed and locked in `android-packager/SIGNING_CUTOVER_DATA_AUDIT.md`.
 - [x] Permanent-signing gate passed in Actions run `33531865795`: all 26 APKs built, correct Direct/Play permission split, all signatures matched, and every compiled release was non-debuggable.
 - [x] Keep the one-brand cutover procedure in `android-packager/SIGNING_CUTOVER_RUNBOOK.md`.
-- [ ] Phase 7 — First Bearing: add validated, merge-only JSON restore/import with automatic pre-import backup and duplicate-safe recovery.
-- [ ] Phase 7 — PocketStomp: reconcile the advanced V2 canonical source, then add archive export/import.
+- [x] Phase 7 — First Bearing recovery code/CI gate: validated merge-only restore/import is implemented and functional QA passed in run `33536545004`.
+- [ ] Phase 7 — First Bearing device/runtime gate: complete a representative interactive export/restore round trip on the exact release source before uninstall/cutover.
+- [x] Phase 7 — PocketStomp source investigation: production V2 and both accessible GitHub repos were compared; neither committed repo matches production; evidence is locked in `android-packager/POCKETSTOMP_SOURCE_RECONCILIATION.md`.
+- [ ] Phase 7 — PocketStomp source/recovery gate: recover and pin the advanced V2 editable source, then add and QA versioned archive export/import.
 - [ ] Phase 7 — No Problem Matrix: add saved-project + settings export/import.
 - [ ] Phase 7 — Rapid Takeoff: add clean-install lifetime-Pro recovery independent of the device cookie/single-use coupon.
 - [ ] Phase 7 — OrbitGather: add clean-install installation-identity recovery/transfer for existing cloud records.
