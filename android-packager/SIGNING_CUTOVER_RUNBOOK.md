@@ -132,6 +132,30 @@ After the permanent-signed install:
 4. Run one new scan and confirm history retention remains capped at 75.
 5. Verify the intended visible version and service-worker state match the reconciled release source before marking ScoutTrace complete.
 
+### GhostLane™ — encrypted private-ledger choice
+
+GhostLane is privacy-sensitive. Its intercept ledger can contain location/time history and must not be copied in plaintext. The camera-node cache is regeneratable and should start fresh. Supabase remains intentionally paused and is not required for this recovery.
+
+Before uninstall, choose one path:
+
+**Preserve ledger**
+1. Open the Ledger tab and select **Private Backup**.
+2. Enter a recovery passphrase of at least 10 characters and export the encrypted ledger file.
+3. Keep the passphrase separate from the backup file; GhostLane does not store or transmit it.
+4. Do not uninstall until the isolated encrypted round-trip gate has already passed.
+
+**Start fresh**
+1. Explicitly choose not to preserve the ledger.
+2. Accept that intercept history is intentionally discarded.
+3. The camera-node mesh/cache will rebuild independently; do not migrate `ghostlane_nodes`.
+
+After a clean install when preserving:
+1. Open **Private Backup → Restore / Merge Encrypted Ledger**.
+2. Select the encrypted JSON and enter the same passphrase.
+3. Verify GhostLane creates an encrypted pre-import backup before changing local storage.
+4. Confirm representative ledger records and the 50-record retention cap.
+5. Confirm radar/camera data can rebuild without relying on migrated node-cache data or an unpaused Supabase project.
+
 ### Other wrappers
 
 For every other brand, treat WebView cookies and app-private browser storage as disposable unless an app-specific audit proves otherwise. Before uninstall:
@@ -160,6 +184,7 @@ All of the following must be true before the first uninstall:
 - [ ] OrbitGather legacy cloud identity is protected before OrbitGather uninstall, and same-UUID clean-install restore is proven after approved bridge-secret configuration.
 - [ ] Acelynn Pro snapshot export/import runtime round trip is proven before Acelynn Pro uninstall.
 - [ ] ScoutTrace history export/import runtime round trip is proven before ScoutTrace uninstall, and its intended v1.2.x/service-worker release truth is reconciled.
+- [ ] GhostLane encrypted ledger round trip or explicit start-fresh choice is completed before GhostLane uninstall; Supabase remains intentionally paused and outside this gate.
 - [ ] The user explicitly approves beginning the device cutover.
 
 ## One-brand cutover sequence

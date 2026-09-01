@@ -132,9 +132,15 @@ Two production static image binaries, `/pocketstomp-icon.png` and `/pocketstomp-
 
 ### GhostLane™
 
-The privacy/intercept ledger is durable local state. Because GhostLane is privacy-sensitive, normal plaintext export of sensitive navigation/privacy records is not an acceptable default migration mechanism.
+Canonical source is `Brett81Ross/ghostlane-app`. Current GitHub `main` is `6c60ffaf43a981c30d4a2e1e793353877996b92c`; the latest verified Vercel production deployment is `dpl_5BZVwAY5cYQPaxqGGSbCyRygABpE` from production commit `0616baac5fd5e6972b6e759334a126717a5554c7`. The production→main delta does not change `app.js`, so the local-storage lineage is stable. The Android wrapper surface `/radar.html` embeds same-origin `/index.html?v=1.7.4`, so the staged recovery UI mounted in `index.html` is reachable from the wrapper.
 
-**Gate status:** blocked until the user can either perform a protected/explicit local export+restore or intentionally choose to start fresh. Supabase remains intentionally paused and is not part of this cutover gate.
+The durable privacy state is `ghostlane_ledger`, capped at 50 intercept records containing time, hardware, and four-decimal coordinates. `ghostlane_nodes` is a regeneratable camera-mesh cache and is intentionally excluded. Supabase remains intentionally paused because of the two-project constraint; this recovery path neither depends on nor changes Supabase.
+
+Isolated branch `android-signing-cutover-data-recovery` adds opt-in encrypted migration only. Envelope schema `ghostlane-encrypted-backup-v1` encrypts payload schema `ghostlane-ledger-v1` using AES-256-GCM with a random 12-byte IV and PBKDF2-SHA256 (210,000 iterations) with a random 16-byte salt. The user supplies a minimum 10-character passphrase that is never stored or transmitted. Recovery enforces 5 MB/500-input limits, strict record reconstruction, current-device-first dedupe, 50-record retention, encrypted pre-import backup, and localStorage rollback. Starting fresh remains an explicit valid choice.
+
+Actions run `33569797954` passed encrypted round-trip, wrong-passphrase rejection, ciphertext privacy assertions, input/retention limits, prototype stripping, rollback, source/syntax checks, and explicit no-Vercel/no-Supabase-change guards. Attempt 1 generated only the `index.html` script mount at `1ad46ad6df12e5843e8f76581a8ac472b7d2553f`. Attempt 2 checked out that generated head, printed `index.html: already deterministic`, reran all QA green, and reported `Generated GhostLane recovery source already settled.`
+
+**Gate status:** code/CI + deterministic settle complete. Still blocked from uninstall/cutover until an isolated encrypted export → restore/merge round trip is verified on the intended wrapper, or the user explicitly chooses to start fresh. Supabase stays paused and is not a cutover dependency.
 
 ### First Bearing™
 

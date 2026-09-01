@@ -152,6 +152,13 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Audit session flow, camera/sensor permissions, coaching output, and Android layout
 
 ## GhostLane™ v1.7.4
+- [x] Pin GhostLane signing-cutover storage truth on canonical repo `Brett81Ross/ghostlane-app`: `ghostlane_ledger` is durable private intercept history capped at 50 records; `ghostlane_nodes` is a regeneratable camera-mesh cache and is excluded from migration.
+- [x] Preserve the intentional Supabase pause/two-project constraint. The signing-cutover recovery path has no Supabase dependency and does not unpause, mutate schema, or deploy functions.
+- [x] Stage opt-in encrypted ledger recovery on isolated branch `android-signing-cutover-data-recovery`: AES-256-GCM payload encryption, PBKDF2-SHA256 with 210,000 iterations, random salt/IV, minimum 10-character user passphrase, 5 MB/500-input safety limits, strict field reconstruction, current-device-first dedupe, 50-record retention, encrypted pre-import backup, and rollback.
+- [x] Keep passphrases client-only and ephemeral; never store or transmit them, never emit plaintext ledger backups, and allow the user to intentionally start fresh by skipping restore.
+- [x] Pass encrypted round-trip/wrong-passphrase/rollback/source/privacy/syntax/no-deployment QA in Actions run `33569797954`; generated recovery mount is pinned at `1ad46ad6df12e5843e8f76581a8ac472b7d2553f`.
+- [x] Prove deterministic settle in run `33569797954` attempt 2: generated head reran green and reported `Generated GhostLane recovery source already settled.` with no additional commit.
+- [ ] Complete isolated browser/Android encrypted export → restore/merge verification using representative ledger records, confirm the camera-node cache rebuilds independently, or explicitly choose a start-fresh cutover before uninstall authorization.
 
 - [x] Record Supabase as intentionally paused to preserve the two available active project slots for TerraFlow and OrbitGather; do not treat this as an outage or attempt automatic restoration
 - [ ] Audit current navigation/radar data handling and privacy claims against actual behavior
