@@ -11,11 +11,10 @@ export async function POST(request:Request){
   if(!validOrbitRecoveryToken(token))return Response.json({ok:false,error:"Invalid OrbitGather restore token."},{status:400});
   if(!verifyOrbitBridgeAttestation("begin-restore",[token],attestation))return Response.json({ok:false,error:"OrbitGather restore attestation rejected."},{status:401});
   const result=await beginOrbitRestore(token);
-  return Response.json({ok:true,installationId:result.installationId,operationId:result.operationId,leaseExpiresAtMs:result.leaseExpiresAtMs},{headers:{"Cache-Control":"no-store"}});
+  return Response.json({ok:true,installationId:result.installationId,operationId:result.operationId,state:result.state,leaseExpiresAtMs:result.leaseExpiresAtMs},{headers:{"Cache-Control":"no-store"}});
  }catch(error){
   const message=error instanceof Error?error.message:String(error);
-  if(message==="TOKEN_BUSY")return Response.json({ok:false,error:"This restore is already being processed. Try again shortly."},{status:409});
-  if(message.includes("TOKEN_")||message==="BINDING_MISMATCH")return Response.json({ok:false,error:"This OrbitGather restore link is invalid, expired, or already used."},{status:409});
+  if(message.includes("TOKEN_")||message==="BINDING_MISMATCH"||message==="RESTORE_OPERATION_MISMATCH")return Response.json({ok:false,error:"This OrbitGather restore link is invalid, expired, or already used."},{status:409});
   console.error("OrbitGather restore begin failed",error);
   return Response.json({ok:false,error:"OrbitGather restore could not be started."},{status:500});
  }
