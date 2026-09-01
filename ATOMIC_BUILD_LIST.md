@@ -86,6 +86,12 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [x] Align server fallback, device settings, and quote output on the approved $99.99 minimum service call while retaining owner configuration
 - [x] Pass 13 quote regressions covering default/configured minimums, repository-shell fallback, timeout recovery, worker removal, and customer estimate limitations
 - [x] Add clear quote/inspection limitations where photos cannot establish final measurements, access, safety conditions, or scope
+- [x] Build versioned merge-only recovery for the four verified production records: saved project, Matrix settings, inventory, and customer contact; exclude staged photos, cookies, credits, lifetime state, caches, service workers, and the deprecated building-level key.
+- [x] Reconcile the isolated recovery source with current production behavior so the old manual story selector and old service-worker registration cannot be resurrected from stale GitHub `main`.
+- [x] Pass backup/restore functional QA, source-contract QA, JavaScript syntax checks, and deployment-side-effect guards; deterministic generated source is pinned at `997a35dc82826ce9d1dc5bf7223fa34c12a1e505`.
+- [x] Prove deterministic settle in Actions run `33557169191` attempt 2: the generated head reran green and reported `Generated recovery source already settled.` with no additional commit.
+- [ ] Complete isolated browser/Android export → restore/merge runtime verification and verify the applicable entitlement re-activation path before uninstall/cutover.
+- [ ] Add durable account-backed restoration for purchased scan credits or purchased lifetime access before treating those cookie-bound states as generally clean-install recoverable.
 
 ## MachZero™ v1.4.1
 
@@ -114,8 +120,11 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [x] Reconcile CactusByte’s launch, icon, release record, production domain, and production registry to the same keeper without deploying
 - [x] Inspect both accessible GitHub candidates (`Brett81Ross/pocketstomp` and `Brett81Ross/pocketstomp-`) and confirm neither committed `main` matches the advanced V2 production source
 - [x] Record the production/source evidence in `android-packager/POCKETSTOMP_SOURCE_RECONCILIATION.md`, including exact production localStorage keys and the 100-session retention behavior
-- [ ] Recover or locate the editable advanced V2 source, review it against the production deployment, and pin the reconciled source to an auditable Git commit before making recovery changes
-- [ ] After source pinning, add versioned archive export/import for `pocketstomp.profile.v2`, `pocketstomp.sessions.v2`, and `pocketstomp.settings.v2` with validation, pre-import backup, dedupe, safe merge, and rollback
+- [x] Recover an editable advanced V2 source on isolated branch `production-v2-source-recovery`, preserve provenance limits, and pin the generated recovery source at `1d15d8d2a19a5a641e5239270892ab82458a3a10` without deployment or merge.
+- [x] Add versioned archive export/import for `pocketstomp.profile.v2`, `pocketstomp.sessions.v2`, and `pocketstomp.settings.v2` with validation, pre-import backup, dedupe, current-device-first merge, 100-session retention, sanitization, safety limits, rollback, and functional round-trip QA.
+- [x] Pass the combined source-contract, live-production parity, backup/restore functional, pinned dependency, and Next.js 16.2.12 production-build gate; then prove deterministic settle in run `33549162028` attempt 2 with branch head unchanged at `1d15d8d…`.
+- [ ] Resolve/pin the exact production static image binaries `pocketstomp-icon.png` and `pocketstomp-boar.jpg` or deliberately document an approved replacement before calling the reconstructed source canonical.
+- [ ] Complete isolated interactive browser/Android export → restore runtime verification before authorizing uninstall/cutover.
 - [ ] Preserve `pocketstomp` and `pocketstomp-z6yl` as rollback candidates until the approved release is confirmed
 - [ ] Audit session flow, camera/sensor permissions, coaching output, and Android layout
 
@@ -188,8 +197,10 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [x] Phase 7 — First Bearing recovery code/CI gate: validated merge-only restore/import is implemented and functional QA passed in run `33536545004`.
 - [ ] Phase 7 — First Bearing device/runtime gate: complete a representative interactive export/restore round trip on the exact release source before uninstall/cutover.
 - [x] Phase 7 — PocketStomp source investigation: production V2 and both accessible GitHub repos were compared; neither committed repo matches production; evidence is locked in `android-packager/POCKETSTOMP_SOURCE_RECONCILIATION.md`.
-- [ ] Phase 7 — PocketStomp source/recovery gate: recover and pin the advanced V2 editable source, then add and QA versioned archive export/import.
-- [ ] Phase 7 — No Problem Matrix: add saved-project + settings export/import.
+- [x] Phase 7 — PocketStomp source/recovery code/CI + settle gate: reconstructed advanced V2 source is pinned at `1d15d8d…`, combined QA/build passed, and deterministic settle passed in run `33549162028` attempt 2.
+- [ ] Phase 7 — PocketStomp runtime/canonical-source gate: complete isolated export/restore runtime verification and resolve the two production static-image assets before any uninstall/cutover.
+- [x] Phase 7 — No Problem Matrix code/CI + settle gate: four-record merge-only recovery, production automatic-access parity, no-service-worker parity, rollback/security QA, syntax QA, and deterministic settle passed; generated branch head is `997a35dc…`, settle run `33557169191` attempt 2.
+- [ ] Phase 7 — No Problem Matrix runtime/entitlement gate: complete isolated export/restore runtime verification; tester/VIP can re-activate through fresh CactusByte tokens, but purchased cookie-bound scan credits/lifetime still require durable account-backed restoration before general cutover.
 - [ ] Phase 7 — Rapid Takeoff: add clean-install lifetime-Pro recovery independent of the device cookie/single-use coupon.
 - [ ] Phase 7 — OrbitGather: add clean-install installation-identity recovery/transfer for existing cloud records.
 - [ ] Phase 7 — Acelynn Pro: add validated snapshot import/restore.
