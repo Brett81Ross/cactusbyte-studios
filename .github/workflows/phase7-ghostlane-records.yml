@@ -1,0 +1,49 @@
+name: Phase 7 GhostLane Records
+
+on:
+  push:
+    branches: [android-release-v2-foundation]
+    paths:
+      - 'tools/apply-phase7-ghostlane-records.py'
+      - '.github/workflows/phase7-ghostlane-records.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  settle-records:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: android-release-v2-foundation
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Apply deterministic GhostLane records
+        run: python tools/apply-phase7-ghostlane-records.py
+      - name: Verify control markers
+        run: |
+          grep -Fq 'Generated GhostLane recovery source already settled.' ATOMIC_BUILD_LIST.md
+          grep -Fq '1ad46ad6df12e5843e8f76581a8ac472b7d2553f' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
+          grep -Fq '### GhostLane™ — encrypted private-ledger choice' android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          grep -Fq 'Supabase remains intentionally paused' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
+      - name: Reject deployment side effects
+        run: |
+          unexpected="$(git diff --name-only | grep -Ev '^(ATOMIC_BUILD_LIST\.md|android-packager/SIGNING_CUTOVER_DATA_AUDIT\.md|android-packager/SIGNING_CUTOVER_RUNBOOK\.md)$' || true)"
+          test -z "$unexpected" || { echo "$unexpected"; exit 1; }
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+      - name: Commit records if needed
+        shell: bash
+        run: |
+          git add ATOMIC_BUILD_LIST.md android-packager/SIGNING_CUTOVER_DATA_AUDIT.md android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          if git diff --cached --quiet; then
+            echo 'GhostLane Phase 7 central records already settled.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs: record GhostLane Phase 7 recovery gate'
+          git push origin HEAD:android-release-v2-foundation
