@@ -130,6 +130,7 @@
   const name=names[app]||app;
   const track=tracks[app]||[];
   if(!track.length)return;
+  const videoSrc=`https://cactusbyte-studios.vercel.app/demos/${app}-60-second-demo.mp4`;
   const maleNarration=new Audio(`https://cactusbyte-studios.vercel.app/demo-audio/${app}-en-us-male.mp3?v=20260828-male1`);
   maleNarration.preload='auto';
   let maleNarrationActive=false;
@@ -145,14 +146,19 @@
   .cb60-caption small{display:block;color:#5debf5;font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;margin-bottom:4px}.cb60-caption strong{display:block;font-size:16px;line-height:1.2}.cb60-caption p{margin:5px 0 0;color:#d8e7eb;font-size:13px;line-height:1.42}
   .cb60-stop{position:absolute;right:8px;top:8px;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:#fff;font-size:19px;cursor:pointer}
   .cb60-highlight{outline:3px solid #5debf5!important;outline-offset:5px!important;box-shadow:0 0 0 8px rgba(93,235,245,.15)!important;border-radius:10px!important}
+  .cb60-video-backdrop{position:fixed;inset:0;z-index:10100;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.84);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .cb60-video-panel{position:relative;width:min(94vw,540px);max-height:94vh;padding:10px;border:1px solid rgba(93,235,245,.5);border-radius:20px;background:#040d14;box-shadow:0 26px 80px rgba(0,0,0,.62)}
+  .cb60-video-panel video{display:block;width:100%;max-height:76vh;border-radius:13px;background:#000}
+  .cb60-video-title{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 4px 2px;color:#efffff;font:800 13px system-ui,-apple-system,sans-serif}.cb60-video-title small{color:#5debf5;letter-spacing:.08em;text-transform:uppercase}
+  .cb60-video-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 4px 3px}.cb60-video-actions button{min-height:44px;border-radius:11px;border:1px solid rgba(93,235,245,.42);background:rgba(93,235,245,.1);color:#efffff;font:800 12px system-ui,-apple-system,sans-serif;cursor:pointer}.cb60-video-actions button:last-child{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.05)}
   @media(max-width:560px){.cb60-btn{right:12px;bottom:74px}.cb60-caption{bottom:16px;padding-right:44px}.cb60-caption p{font-size:12px}}
   @media(prefers-reduced-motion:reduce){.cb60-cursor{transition:none}}
   `;
   const style=document.createElement('style');style.textContent=css;document.head.appendChild(style);
-  const button=document.createElement('button');button.type='button';button.className='cb60-btn';button.textContent='▶ 60s Demo';button.setAttribute('aria-label','Play '+name+' 60 second demo');
+  const button=document.createElement('button');button.type='button';button.className='cb60-btn';button.textContent='▶ Watch Demo';button.setAttribute('aria-label','Watch '+name+' demo video');
   document.body.appendChild(button);
 
-  let cursor=null,caption=null,timer=null,index=0,running=false,highlight=null;
+  let cursor=null,caption=null,timer=null,index=0,running=false,highlight=null,videoPanel=null;
   const docs=()=>{
     const list=[{doc:document,offsetX:0,offsetY:0}];
     document.querySelectorAll('iframe').forEach(frame=>{
@@ -242,12 +248,27 @@
     caption=document.createElement('section');caption.className='cb60-caption';caption.setAttribute('role','status');caption.innerHTML='<small></small><strong></strong><p></p><button class="cb60-stop" type="button" aria-label="Stop demo">×</button>';
     document.body.append(cursor,caption);caption.querySelector('.cb60-stop').onclick=stop;showStep();
   }
+  function closeVideo(){
+    const video=videoPanel&&videoPanel.querySelector('video');
+    if(video){video.pause();video.removeAttribute('src');video.load();}
+    videoPanel&&videoPanel.remove();videoPanel=null;
+  }
+  function openVideo(){
+    if(videoPanel)return;
+    videoPanel=document.createElement('div');videoPanel.className='cb60-video-backdrop';videoPanel.setAttribute('role','dialog');videoPanel.setAttribute('aria-modal','true');videoPanel.setAttribute('aria-label',name+' demo video');
+    videoPanel.innerHTML=`<section class="cb60-video-panel"><div class="cb60-video-title"><span>${name}</span><small>Demo video · 60 sec</small></div><video controls playsinline preload="metadata"><source src="${videoSrc}" type="video/mp4"/>Your browser cannot play this demo video.</video><div class="cb60-video-actions"><button type="button" data-cb-tour>Guided screen tour</button><button type="button" data-cb-close>Close</button></div></section>`;
+    videoPanel.addEventListener('click',event=>{if(event.target===videoPanel)closeVideo()});
+    videoPanel.querySelector('[data-cb-close]').onclick=closeVideo;
+    videoPanel.querySelector('[data-cb-tour]').onclick=()=>{closeVideo();start()};
+    document.body.appendChild(videoPanel);
+    const video=videoPanel.querySelector('video');const play=video.play();if(play&&play.catch)play.catch(()=>{});
+  }
   function stop(){
     running=false;clearTimeout(timer);clearHighlight();
     maleNarration.pause();maleNarration.currentTime=0;maleNarrationActive=false;
     try{speechSynthesis.cancel()}catch(_){}
     cursor&&cursor.remove();caption&&caption.remove();cursor=caption=null;button.style.display='';
   }
-  button.onclick=start;
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&running)stop()});
+  button.onclick=openVideo;
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(videoPanel)closeVideo();if(running)stop()}});
 })();
