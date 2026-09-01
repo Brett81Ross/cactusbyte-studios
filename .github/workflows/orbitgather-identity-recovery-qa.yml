@@ -1,0 +1,43 @@
+name: OrbitGather Identity Recovery Authority QA
+
+on:
+  push:
+    branches: [orbitgather-identity-recovery-authority]
+    paths:
+      - 'src/lib/orbitgather-recovery.ts'
+      - 'src/app/api/orbitgather/recovery/**'
+      - 'src/app/orbitgather-recovery/**'
+      - 'android-packager/ORBITGATHER_IDENTITY_RECOVERY_DESIGN.md'
+      - 'tools/qa-orbitgather-identity-recovery.mjs'
+      - '.env.example'
+      - '.github/workflows/orbitgather-identity-recovery-qa.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vercel.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-authority:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: orbitgather-identity-recovery-authority
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify recovery security contract
+        run: node tools/qa-orbitgather-identity-recovery.mjs
+      - name: Install pinned dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build CactusByte authority
+        run: npm run build
+      - name: Reject deployment side effects
+        run: |
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -f .vercel/output/config.json
+          echo 'No Vercel deployment executed by this workflow.'
