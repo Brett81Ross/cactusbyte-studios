@@ -121,7 +121,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          build_config="$(find android-packager/app/build/generated -type f -name BuildConfig.java -path '*acelynnpro*qa*debug*' -print -quit)"
+          build_config="$(find android-packager/app/build/generated -type f -name BuildConfig.java -ipath '*acelynnpro*qa*debug*' -print -quit)"
           test -n "$build_config"
           cat "$build_config"
           grep -Fq 'CHANNEL = "qa"' "$build_config"
@@ -137,7 +137,7 @@ jobs:
         run: |
           set -euo pipefail
           gradle -p android-packager :app:generateAcelynnproDirectDebugBuildConfig
-          direct_config="$(find android-packager/app/build/generated -type f -name BuildConfig.java -path '*acelynnpro*direct*debug*' -print -quit)"
+          direct_config="$(find android-packager/app/build/generated -type f -name BuildConfig.java -ipath '*acelynnpro*direct*debug*' -print -quit)"
           test -n "$direct_config"
           grep -Fq 'CHANNEL = "direct"' "$direct_config"
           grep -Fq 'START_URL = "https://acelynn.vercel.app/"' "$direct_config"
