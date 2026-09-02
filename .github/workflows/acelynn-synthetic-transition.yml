@@ -7,6 +7,9 @@ on:
         description: Certified signing artifact ID
         required: true
         default: '9850425582'
+  push:
+    branches:
+      - phase7-acelynn-synthetic-transition
 
 permissions:
   contents: read
@@ -74,7 +77,11 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -no-audio -no-snapshot -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash tests/synthetic-transition/run-transition.sh
+          script: |
+            echo '=== Harness precondition: dismiss Chrome first-run if present ==='
+            adb shell am instrument -w -r -e class com.cactusbyte.synthetictransition.ChromeFirstRunSetupTest com.cactusbyte.synthetictransition.test/androidx.test.runner.AndroidJUnitRunner
+            echo '=== Run exact Acelynn legacy-to-permanent transition ==='
+            bash tests/synthetic-transition/run-transition.sh
 
       - name: Upload synthetic transition evidence
         if: always()
