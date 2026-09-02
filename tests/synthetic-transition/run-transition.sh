@@ -60,6 +60,14 @@ set -e
 if [ "$legacy_instrument_rc" -ne 0 ] \
   || grep -Fq 'FAILURES!!!' synthetic-diagnostics/legacy-instrumentation.txt \
   || grep -Fq 'INSTRUMENTATION_STATUS_CODE: -2' synthetic-diagnostics/legacy-instrumentation.txt; then
+  if grep -Fq 'LEGACY_BRIDGE_FAILURE:' synthetic-diagnostics/legacy-instrumentation.txt; then
+    echo 'LEGACY BRIDGE GATE RED: the literal legacy app did not reach the HTTPS migration handoff.' >&2
+    exit 20
+  fi
+  if grep -Fq 'LEGACY_BROWSER_FAILURE:' synthetic-diagnostics/legacy-instrumentation.txt; then
+    echo 'TEST ENVIRONMENT GATE RED: the emulator could not complete the external-browser migration handoff.' >&2
+    exit 12
+  fi
   echo 'HARNESS/UI GATE RED: UiAutomator failed before a valid legacy-export result could be evaluated. This is not classified as an Acelynn Export failure.' >&2
   exit 11
 fi
@@ -73,7 +81,7 @@ for _ in $(seq 1 30); do
   sleep 1
 done
 if [ "$found" -ne 1 ]; then
-  echo 'LEGACY EXPORT GATE RED: UiAutomator completed successfully and clicked Export session report, but no JSON backup appeared in /sdcard/Download/.' >&2
+  echo 'LEGACY EXPORT GATE RED: the real migration page was exercised but no JSON backup appeared in /sdcard/Download/.' >&2
   exit 21
 fi
 
