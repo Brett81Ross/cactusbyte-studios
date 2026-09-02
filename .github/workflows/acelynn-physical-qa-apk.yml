@@ -10,6 +10,7 @@ on:
       - 'android-packager/app/build.gradle.kts'
       - 'android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java'
       - 'android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/**'
+      - 'android-packager/app/src/acelynnproQaDebug/res/**'
       - 'tools/apply-acelynn-physical-qa-assets.py'
       - 'tools/qa-acelynn-physical-qa.mjs'
       - '.github/workflows/acelynn-physical-qa-apk.yml'
@@ -99,7 +100,7 @@ jobs:
           grep -Fq "application-label:'Acelynn Pro QA'" "$RUNNER_TEMP/acelynn-qa-badging.txt"
           "$APKSIGNER" verify --verbose --print-certs "$QA_APK" > "$RUNNER_TEMP/acelynn-qa-signature.txt"
           cat "$RUNNER_TEMP/acelynn-qa-signature.txt"
-          grep -Fq 'Signer #1 certificate DN: CN=Android Debug' "$RUNNER_TEMP/acelynn-qa-signature.txt"
+          grep -Eq 'certificate DN: .*CN=Android Debug' "$RUNNER_TEMP/acelynn-qa-signature.txt"
           echo 'QA APK uses the separate package ID and Android debug signing identity.'
 
       - name: Verify pinned local assets inside APK
