@@ -3,35 +3,50 @@ package com.cactusbyte.wrapper;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Acelynn Pro physical-QA launcher.
  *
  * This activity deliberately leaves the shared production MainActivity untouched. It layers a
- * strict microphone permission bridge, JSON restore chooser, and QA-only recovery diagnostics over
+ * strict microphone permission bridge, native JSON restore validation, and QA-only diagnostics over
  * the self-contained QA WebView.
  */
 public final class QaMainActivity extends MainActivity {
     private static final int REQUEST_QA_AUDIO = 6101;
     private static final int REQUEST_QA_FILE = 6102;
+    private static final int QA_MAX_BACKUP_BYTES = 5 * 1024 * 1024;
     private static final String QA_ASSET_HOST = "appassets.androidplatform.net";
 
     private WebView qaWebView;
     private PermissionRequest pendingQaAudioRequest;
     private ValueCallback<Uri[]> qaFileCallback;
+    private TextView qaBackupFeedback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +57,8 @@ public final class QaMainActivity extends MainActivity {
             Toast.makeText(this, "Acelynn QA WebView was not found.", Toast.LENGTH_LONG).show();
             return;
         }
+
+        installNativeQaBackupFeedbackBar();
 
         qaWebView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -65,7 +82,26 @@ public final class QaMainActivity extends MainActivity {
         });
 
         installQaMediaDiagnosticsWhenReady(20);
-        installQaRestoreFeedbackWhenReady(20);
+    }
+
+    private void installNativeQaBackupFeedbackBar() {
+        if (!(qaWebView.getParent() instanceof LinearLayout)) return;
+        LinearLayout parent = (LinearLayout) qaWebView.getParent();
+        TextView feedback = new TextView(this);
+        feedback.setTextColor(Color.WHITE);
+        feedback.setBackgroundColor(Color.rgb(58, 16, 28));
+        feedback.setGravity(Gravity.CENTER_VERTICAL);
+        feedback.setTextSize(14f);
+        int horizontal = Math.round(14 * getResources().getDisplayMetrics().density);
+        int vertical = Math.round(11 * getResources().getDisplayMetrics().density);
+        feedback.setPadding(horizontal, vertical, horizontal, vertical);
+        feedback.setVisibility(View.GONE);
+        feedback.setContentDescription("Acelynn Pro QA backup validation result");
+        int webViewIndex = parent.indexOfChild(qaWebView);
+        parent.addView(feedback, webViewIndex, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        qaBackupFeedback = feedback;
     }
 
     private void handleQaPermissionRequest(PermissionRequest request) {
@@ -130,6 +166,15 @@ public final class QaMainActivity extends MainActivity {
         Uri[] result = null;
         if (resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
+            String rejectionReason = validateQaBackupUri(uri);
+            if (rejectionReason != null) {
+                qaFileCallback.onReceiveValue(null);
+                qaFileCallback = null;
+                showQaBackupRejected(rejectionReason);
+                return;
+            }
+
+            hideQaBackupFeedback();
             try {
                 getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             } catch (SecurityException ignored) {
@@ -139,6 +184,59 @@ public final class QaMainActivity extends MainActivity {
         }
         qaFileCallback.onReceiveValue(result);
         qaFileCallback = null;
+    }
+
+    private String validateQaBackupUri(Uri uri) {
+        if (uri == null) return "No backup file was selected.";
+        try (InputStream input = getContentResolver().openInputStream(uri)) {
+            if (input == null) return "The selected file could not be read.";
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int total = 0;
+            int read;
+            while ((read = input.read(buffer)) != -1) {
+                total += read;
+                if (total > QA_MAX_BACKUP_BYTES) return "Backup file is larger than 5 MB.";
+                output.write(buffer, 0, read);
+            }
+
+            String raw = new String(output.toByteArray(), StandardCharsets.UTF_8);
+            JSONObject payload = new JSONObject(raw);
+            if (!"Acelynn Pro".equals(payload.optString("app", ""))) {
+                return "This backup belongs to a different app.";
+            }
+            if (payload.has("schema")) {
+                if (!"acelynn-pro-backup-v1".equals(payload.optString("schema", ""))) {
+                    return "Unsupported Acelynn Pro backup schema.";
+                }
+                if (payload.optInt("version", Integer.MIN_VALUE) != 1) {
+                    return "Unsupported Acelynn Pro backup version.";
+                }
+            }
+            if (payload.has("snapshots") && !(payload.opt("snapshots") instanceof JSONArray)) {
+                return "Backup snapshots must be an array.";
+            }
+            return null;
+        } catch (JSONException ex) {
+            return "Backup is not valid JSON.";
+        } catch (IOException | SecurityException ex) {
+            return "The selected file could not be read.";
+        }
+    }
+
+    private void showQaBackupRejected(String reason) {
+        String message = "Backup rejected — " + reason + " Your saved checks were not changed.";
+        if (qaBackupFeedback != null) {
+            qaBackupFeedback.setText(message);
+            qaBackupFeedback.setVisibility(View.VISIBLE);
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    }
+
+    private void hideQaBackupFeedback() {
+        if (qaBackupFeedback == null) return;
+        qaBackupFeedback.setText("");
+        qaBackupFeedback.setVisibility(View.GONE);
     }
 
     @Override
@@ -198,51 +296,6 @@ public final class QaMainActivity extends MainActivity {
                 "if(t)t.textContent='Microphone access failed in Android QA';" +
                 "if(c)c.textContent='Android app permission is enabled, but WebView audio capture failed: '+name+' — '+msg;" +
                 "},0);throw err;});};" +
-                "})();";
-        qaWebView.evaluateJavascript(script, null);
-    }
-
-    private void installQaRestoreFeedbackWhenReady(int attemptsRemaining) {
-        if (qaWebView == null || attemptsRemaining <= 0) return;
-        qaWebView.evaluateJavascript("document.readyState", state -> {
-            if (state != null && (state.contains("complete") || state.contains("interactive"))) {
-                installQaRestoreFeedback();
-            } else {
-                qaWebView.postDelayed(() -> installQaRestoreFeedbackWhenReady(attemptsRemaining - 1), 150L);
-            }
-        });
-    }
-
-    private void installQaRestoreFeedback() {
-        String script = "(function(){" +
-                "if(window.__cactusQaRestoreFeedbackInstalled)return;" +
-                "var input=document.getElementById('restoreInput');" +
-                "if(!input)return;" +
-                "window.__cactusQaRestoreFeedbackInstalled=true;" +
-                "var notice=document.createElement('div');" +
-                "notice.id='cactusQaRestoreFeedback';notice.setAttribute('role','alert');notice.setAttribute('aria-live','assertive');" +
-                "notice.style.display='none';notice.style.margin='10px 0 0';notice.style.padding='12px';" +
-                "notice.style.border='1px solid #ff6a98';notice.style.borderRadius='11px';notice.style.background='#2a101b';" +
-                "notice.style.color='#fff';notice.style.fontSize='.76rem';notice.style.lineHeight='1.4';notice.style.fontWeight='800';" +
-                "input.insertAdjacentElement('afterend',notice);" +
-                "function reject(reason){setTimeout(function(){notice.textContent='Backup rejected — '+reason+' Your saved checks were not changed.';notice.style.display='block';notice.scrollIntoView({block:'nearest'});},250);}" +
-                "input.addEventListener('change',function(){" +
-                "var file=input.files&&input.files[0];if(!file)return;" +
-                "notice.style.display='none';notice.textContent='';" +
-                "var reader=new FileReader();" +
-                "reader.onerror=function(){reject('The selected file could not be read.');};" +
-                "reader.onload=function(){" +
-                "var reason='';var payload=null;" +
-                "try{payload=JSON.parse(String(reader.result||''));}catch(e){reason='Backup is not valid JSON.';}" +
-                "if(!reason&&(!payload||typeof payload!=='object'||Array.isArray(payload)))reason='Backup must be a JSON object.';" +
-                "if(!reason&&payload.app!=='Acelynn Pro')reason='This backup belongs to a different app.';" +
-                "if(!reason&&payload.schema!==undefined&&payload.schema!=='acelynn-pro-backup-v1')reason='Unsupported Acelynn Pro backup schema.';" +
-                "if(!reason&&payload.schema!==undefined&&Number(payload.version)!==1)reason='Unsupported Acelynn Pro backup version.';" +
-                "if(!reason&&!Array.isArray(payload.snapshots))reason='Backup snapshots must be an array.';" +
-                "if(reason)reject(reason);" +
-                "};" +
-                "reader.readAsText(file);" +
-                "},true);" +
                 "})();";
         qaWebView.evaluateJavascript(script, null);
     }
