@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 public class AcelynnTransitionTest {
@@ -27,6 +28,8 @@ public class AcelynnTransitionTest {
     private static final String ACELYNN_ACTIVITY = "com.cactusbyte.wrapper.MainActivity";
     private static final String FIXTURE_NAME = "check.wav";
     private static final String LEGACY_BACKUP_NAME = "acelynn-session-report.json";
+    private static final String GOOGLE_DOCUMENTS_UI = "com.google.android.documentsui";
+    private static final String AOSP_DOCUMENTS_UI = "com.android.documentsui";
     private static final long PAGE_TIMEOUT_MS = 25_000;
     private static final long UI_TIMEOUT_MS = 12_000;
 
@@ -130,47 +133,46 @@ public class AcelynnTransitionTest {
     private void chooseDocument(String fileName) {
         SystemClock.sleep(900);
 
-        // Android 16 DocumentsUI can leave Recent empty even though the fixture is present and
-        // indexed. Prefer exact filename search, then fall back to the Downloads filesystem root.
-        UiObject2 file = waitForTextOrContains(fileName, 2_000);
+        // Only accept a real document row. The Android 16 DocumentsUI search field can contain the
+        // exact filename text, so generic By.text()/textContains() matching is unsafe here.
+        UiObject2 file = waitForDocumentCandidate(fileName, 2_000);
         if (file == null) {
             file = searchDocumentsUi(fileName);
         }
 
         if (file == null) {
             openDownloadsRoot();
-            file = waitForTextOrContains(fileName, UI_TIMEOUT_MS);
+            file = waitForDocumentCandidate(fileName, UI_TIMEOUT_MS);
         }
 
         if (file == null) {
-            captureDiagnostics("documentsui-missing-" + safeName(fileName));
-            fail("HARNESS_FAILURE: Android document picker could not find indexed file " + fileName);
+            captureDiagnostics("documentsui-missing-real-file-" + safeName(fileName));
+            fail("HARNESS_FAILURE: Android document picker could not find a real file row for " + fileName);
             return;
         }
 
         file.click();
         device.waitForIdle();
+        waitForDocumentPickerToClose(fileName);
     }
 
     private UiObject2 searchDocumentsUi(String fileName) {
         UiObject2 search = device.wait(Until.findObject(By.desc("Search")), 4_000);
         if (search == null) {
-            search = device.findObject(By.res("com.google.android.documentsui:id/option_menu_search"));
+            search = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
         }
         if (search == null) {
-            search = device.findObject(By.res("com.android.documentsui:id/option_menu_search"));
+            search = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
         }
         if (search == null) return null;
 
         search.click();
         device.waitForIdle();
 
-        // Google DocumentsUI on Android 16 exposes its query box as AutoCompleteTextView, not
-        // EditText. Prefer the stable resource id, with class fallbacks for AOSP variants.
         UiObject2 input = device.wait(
-                Until.findObject(By.res("com.google.android.documentsui:id/search_src_text")), 4_000);
+                Until.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/search_src_text")), 4_000);
         if (input == null) {
-            input = device.findObject(By.res("com.android.documentsui:id/search_src_text"));
+            input = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/search_src_text"));
         }
         if (input == null) {
             input = device.findObject(By.clazz("android.widget.AutoCompleteTextView"));
@@ -190,16 +192,88 @@ public class AcelynnTransitionTest {
         device.pressEnter();
         device.waitForIdle();
 
-        UiObject2 result = waitForTextOrContains(fileName, UI_TIMEOUT_MS);
+        UiObject2 result = waitForDocumentCandidate(fileName, UI_TIMEOUT_MS);
         if (result != null) return result;
 
-        // Back out of search before trying the roots drawer fallback.
         device.pressBack();
         device.waitForIdle();
         return null;
     }
 
+    private UiObject2 findDocumentCandidate(String fileName) {
+        List<UiObject2> exact = device.findObjects(By.text(fileName));
+        for (UiObject2 candidate : exact) {
+            if (isRealDocumentCandidate(candidate)) return candidate;
+        }
+
+        List<UiObject2> contains = device.findObjects(By.textContains(fileName));
+        for (UiObject2 candidate : contains) {
+            if (isRealDocumentCandidate(candidate)) return candidate;
+        }
+        return null;
+    }
+
+    private UiObject2 waitForDocumentCandidate(String fileName, long timeoutMs) {
+        long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 candidate = findDocumentCandidate(fileName);
+            if (candidate != null) return candidate;
+            SystemClock.sleep(250);
+        }
+        return null;
+    }
+
+    private boolean isRealDocumentCandidate(UiObject2 candidate) {
+        if (candidate == null) return false;
+
+        String resource = candidate.getResourceName();
+        String clazz = candidate.getClassName();
+
+        if (resource != null && (
+                resource.endsWith(":id/search_src_text") ||
+                resource.endsWith(":id/option_menu_search") ||
+                resource.endsWith(":id/search_view") ||
+                resource.endsWith(":id/toolbar"))) {
+            return false;
+        }
+
+        if ("android.widget.AutoCompleteTextView".equals(clazz) ||
+                "android.widget.EditText".equals(clazz)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void waitForDocumentPickerToClose(String fileName) {
+        long deadline = SystemClock.uptimeMillis() + UI_TIMEOUT_MS;
+        while (SystemClock.uptimeMillis() < deadline) {
+            String currentPackage = device.getCurrentPackageName();
+            if (ACELYNN_PACKAGE.equals(currentPackage)) return;
+            if (!isDocumentsUiPackage(currentPackage) && currentPackage != null) {
+                SystemClock.sleep(250);
+            } else {
+                SystemClock.sleep(250);
+            }
+        }
+
+        captureDiagnostics("documentsui-did-not-close-" + safeName(fileName));
+        fail("HARNESS_FAILURE: selected " + fileName + " but Android document picker did not return to Acelynn");
+    }
+
+    private boolean isDocumentsUiPackage(String packageName) {
+        return GOOGLE_DOCUMENTS_UI.equals(packageName) || AOSP_DOCUMENTS_UI.equals(packageName);
+    }
+
     private void openDownloadsRoot() {
+        // If search mode is still active, leave it before opening roots.
+        UiObject2 searchInput = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/search_src_text"));
+        if (searchInput == null) searchInput = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/search_src_text"));
+        if (searchInput != null) {
+            device.pressBack();
+            device.waitForIdle();
+        }
+
         UiObject2 roots = device.findObject(By.descContains("Show roots"));
         if (roots == null) roots = device.findObject(By.descContains("Navigate up"));
 
@@ -207,8 +281,6 @@ public class AcelynnTransitionTest {
             roots.click();
             device.waitForIdle();
         } else {
-            // Last-resort fallback for the standard Android 16 hamburger position after semantic
-            // selectors fail. This remains harness-only and is backed by captured API 36 evidence.
             device.click(Math.max(56, device.getDisplayWidth() / 20), Math.max(145, device.getDisplayHeight() / 16));
             device.waitForIdle();
         }
