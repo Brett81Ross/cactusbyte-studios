@@ -130,15 +130,13 @@ public class AcelynnTransitionTest {
     private void chooseDocument(String fileName) {
         SystemClock.sleep(900);
 
-        // Some Android 16 DocumentsUI builds leave Recent visually empty even after MediaStore has
-        // indexed the file. Prefer exact filename search because it is deterministic across that UI.
+        // Android 16 DocumentsUI can leave Recent empty even though the fixture is present and
+        // indexed. Prefer exact filename search, then fall back to the Downloads filesystem root.
         UiObject2 file = waitForTextOrContains(fileName, 2_000);
         if (file == null) {
             file = searchDocumentsUi(fileName);
         }
 
-        // Fallback for DocumentsUI variants where the Search action is unavailable or provider search
-        // is delayed: open the roots drawer and navigate directly to Downloads.
         if (file == null) {
             openDownloadsRoot();
             file = waitForTextOrContains(fileName, UI_TIMEOUT_MS);
@@ -167,13 +165,29 @@ public class AcelynnTransitionTest {
         search.click();
         device.waitForIdle();
 
-        UiObject2 input = device.wait(Until.findObject(By.clazz("android.widget.EditText")), 4_000);
+        // Google DocumentsUI on Android 16 exposes its query box as AutoCompleteTextView, not
+        // EditText. Prefer the stable resource id, with class fallbacks for AOSP variants.
+        UiObject2 input = device.wait(
+                Until.findObject(By.res("com.google.android.documentsui:id/search_src_text")), 4_000);
+        if (input == null) {
+            input = device.findObject(By.res("com.android.documentsui:id/search_src_text"));
+        }
+        if (input == null) {
+            input = device.findObject(By.clazz("android.widget.AutoCompleteTextView"));
+        }
+        if (input == null) {
+            input = device.findObject(By.clazz("android.widget.EditText"));
+        }
         if (input == null) {
             captureDiagnostics("documentsui-search-input-missing");
+            device.pressBack();
+            device.waitForIdle();
             return null;
         }
 
         input.setText(fileName);
+        SystemClock.sleep(500);
+        device.pressEnter();
         device.waitForIdle();
 
         UiObject2 result = waitForTextOrContains(fileName, UI_TIMEOUT_MS);
@@ -188,15 +202,14 @@ public class AcelynnTransitionTest {
     private void openDownloadsRoot() {
         UiObject2 roots = device.findObject(By.descContains("Show roots"));
         if (roots == null) roots = device.findObject(By.descContains("Navigate up"));
-        if (roots == null) {
-            roots = device.findObject(By.res("com.google.android.documentsui:id/toolbar"));
-        }
-        if (roots != null && roots.getContentDescription() != null) {
+
+        if (roots != null) {
             roots.click();
             device.waitForIdle();
-        } else if (roots == null) {
-            // Common Android 16 hamburger position; only used after semantic selectors fail.
-            device.click(Math.max(48, device.getDisplayWidth() / 18), Math.max(120, device.getDisplayHeight() / 16));
+        } else {
+            // Last-resort fallback for the standard Android 16 hamburger position after semantic
+            // selectors fail. This remains harness-only and is backed by captured API 36 evidence.
+            device.click(Math.max(56, device.getDisplayWidth() / 20), Math.max(145, device.getDisplayHeight() / 16));
             device.waitForIdle();
         }
 
