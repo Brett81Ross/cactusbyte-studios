@@ -17,6 +17,7 @@ cleanup() {
   adb pull /sdcard/Android/data/com.cactusbyte.synthetictransition/files/diagnostics synthetic-diagnostics/harness >/dev/null 2>&1
   adb shell ls -la /sdcard/Download > synthetic-diagnostics/downloads-listing.txt 2>&1
   adb shell content query --uri content://media/external/audio/media --projection _display_name > synthetic-diagnostics/media-audio-index.txt 2>&1
+  adb shell content query --uri content://media/external_primary/downloads --projection _display_name:_size:mime_type:relative_path > synthetic-diagnostics/media-downloads-index.txt 2>&1
   set -e
 }
 trap cleanup EXIT
@@ -25,28 +26,70 @@ adb wait-for-device
 adb install -r "$HARNESS_APK"
 adb install -r "$HARNESS_TEST_APK"
 adb install -r "$LEGACY_APK"
-adb push "$FIXTURE_WAV" /sdcard/Download/check.wav
-adb shell test -s /sdcard/Download/check.wav
 
-echo '=== Harness precondition: register deterministic WAV with Android MediaStore ==='
+echo '=== Harness precondition: seed deterministic WAV through Android shared-storage provider ==='
+# Android 16's DocumentsUI Downloads root is provider-backed. A raw adb push can leave a file
+# physically present and MediaStore-audio indexed while still invisible in that root. Seed the
+# same deterministic WAV through MediaStore.Downloads so the real system picker can see it.
+adb shell rm -f /sdcard/Download/check.wav || true
+adb shell content delete \
+  --uri content://media/external_primary/downloads \
+  --where "_display_name='check.wav'" >/dev/null 2>&1 || true
+
+insert_output="$(adb shell content insert \
+  --uri content://media/external_primary/downloads \
+  --bind _display_name:s:check.wav \
+  --bind mime_type:s:audio/wav \
+  --bind relative_path:s:Download/ \
+  --bind is_pending:i:1)"
+printf '%s\n' "$insert_output" | tee synthetic-diagnostics/media-downloads-insert.txt
+fixture_uri="$(printf '%s\n' "$insert_output" | sed -n 's/^Inserted //p' | tr -d '\r')"
+if [ -z "$fixture_uri" ]; then
+  echo 'HARNESS PRECONDITION RED: Android MediaStore.Downloads did not return a URI for check.wav.' >&2
+  exit 10
+fi
+
+adb shell "content write --uri '$fixture_uri'" < "$FIXTURE_WAV"
+adb shell content update --uri "$fixture_uri" --bind is_pending:i:0 >/dev/null
+
+physical_ready=0
+for _ in $(seq 1 10); do
+  if adb shell test -s /sdcard/Download/check.wav; then
+    physical_ready=1
+    break
+  fi
+  sleep 1
+done
+if [ "$physical_ready" -ne 1 ]; then
+  echo 'HARNESS PRECONDITION RED: provider-created check.wav did not materialize at /sdcard/Download/check.wav.' >&2
+  exit 10
+fi
+
+echo '=== Harness precondition: register deterministic WAV with Android MediaStore Audio ==='
 adb shell am broadcast \
   -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
   -d file:///sdcard/Download/check.wav \
   | tee synthetic-diagnostics/media-scan-broadcast.txt
 
 indexed=0
+download_indexed=0
 for _ in $(seq 1 20); do
   if adb shell content query --uri content://media/external/audio/media --projection _display_name 2>/dev/null | grep -Fq 'check.wav'; then
     indexed=1
+  fi
+  if adb shell content query --uri content://media/external_primary/downloads --projection _display_name:mime_type 2>/dev/null | grep -Fq 'check.wav'; then
+    download_indexed=1
+  fi
+  if [ "$indexed" -eq 1 ] && [ "$download_indexed" -eq 1 ]; then
     break
   fi
   sleep 1
 done
-if [ "$indexed" -ne 1 ]; then
-  echo 'HARNESS PRECONDITION RED: check.wav exists on shared storage but was not indexed by Android MediaStore.' >&2
+if [ "$indexed" -ne 1 ] || [ "$download_indexed" -ne 1 ]; then
+  echo 'HARNESS PRECONDITION RED: check.wav was not visible in both MediaStore Audio and Downloads collections.' >&2
   exit 10
 fi
-echo 'Harness media precondition GREEN: check.wav is indexed and eligible for the audio document picker.'
+echo 'Harness storage precondition GREEN: check.wav is physical, audio-indexed, and Downloads-provider visible.'
 
 echo '=== Phase 1: legacy real-user export ==='
 set +e
