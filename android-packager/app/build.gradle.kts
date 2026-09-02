@@ -1,3 +1,6 @@
+import com.android.build.api.variant.BuildConfigField
+import com.android.build.api.variant.ResValue
+
 plugins {
     id("com.android.application")
 }
@@ -151,11 +154,18 @@ android {
             dimension = "distribution"
             buildConfigField("String", "CHANNEL", "\"play\"")
         }
+        create("qa") {
+            dimension = "distribution"
+            applicationIdSuffix = ".qa"
+            buildConfigField("String", "CHANNEL", "\"qa\"")
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
         }
         release {
             isMinifyEnabled = false
@@ -176,6 +186,29 @@ android {
     }
 }
 
+androidComponents {
+    beforeVariants(selector().withFlavor("distribution" to "qa")) { variantBuilder ->
+        val isAcelynnPro = variantBuilder.productFlavors.contains("brand" to "acelynnpro")
+        variantBuilder.enable = isAcelynnPro && variantBuilder.buildType == "debug"
+    }
+
+    onVariants(selector().withFlavor("distribution" to "qa")) { variant ->
+        variant.buildConfigFields.put(
+            "START_URL",
+            BuildConfigField(
+                "String",
+                "\"https://appassets.androidplatform.net/assets/acelynnqa/index.html\"",
+                "Pinned local Acelynn Pro recovery QA entry point",
+            ),
+        )
+        variant.resValues.put(
+            variant.makeResValueKey("string", "app_name"),
+            ResValue("Acelynn Pro QA", "QA-only application label"),
+        )
+    }
+}
+
 dependencies {
     implementation("androidx.core:core:1.15.0")
+    implementation("androidx.webkit:webkit:1.17.0")
 }

@@ -5,32 +5,43 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.SafeBrowsingResponse;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.view.Gravity;
 import android.window.OnBackInvokedDispatcher;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.webkit.WebViewAssetLoader;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +49,8 @@ public class MainActivity extends Activity {
     private static final int REQUEST_WEB_PERMISSIONS = 4101;
     private static final int REQUEST_FILE_CHOOSER = 4102;
     private static final int REQUEST_GEO_PERMISSION = 4103;
+    private static final int QA_MAX_JSON_BYTES = 6 * 1024 * 1024;
+    private static final String QA_ASSET_HOST = "appassets.androidplatform.net";
 
     private WebView webView;
     private PermissionRequest pendingWebPermission;
@@ -45,16 +58,27 @@ public class MainActivity extends Activity {
     private String pendingGeoOrigin;
     private ValueCallback<Uri[]> fileCallback;
     private Uri cameraUri;
+    private boolean qaMode;
+    private WebViewAssetLoader qaAssetLoader;
 
     @Override
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(Color.rgb(5, 8, 7));
         getWindow().setNavigationBarColor(Color.rgb(5, 8, 7));
 
+        qaMode = "qa".equals(BuildConfig.CHANNEL);
         webView = new WebView(this);
-        setContentView(webView);
+        if (qaMode) {
+            setUpQaContentView();
+            qaAssetLoader = new WebViewAssetLoader.Builder()
+                    .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                    .build();
+            webView.addJavascriptInterface(new QaDownloadBridge(), "CactusQaBridge");
+        } else {
+            setContentView(webView);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -77,8 +101,34 @@ public class MainActivity extends Activity {
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                if (qaMode && qaAssetLoader != null) {
+                    WebResourceResponse local = qaAssetLoader.shouldInterceptRequest(request.getUrl());
+                    if (local != null) return local;
+                }
+                return super.shouldInterceptRequest(view, request);
+            }
+
+            @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return openExternalSchemeIfNeeded(request.getUrl());
+                Uri uri = request.getUrl();
+                if (qaMode) {
+                    String scheme = uri.getScheme();
+                    String host = uri.getHost();
+                    if ("https".equalsIgnoreCase(scheme) && QA_ASSET_HOST.equalsIgnoreCase(host)) return false;
+                    if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+                        return openExternalHttp(uri);
+                    }
+                }
+                return openExternalSchemeIfNeeded(uri);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if (qaMode && url != null && url.startsWith("https://" + QA_ASSET_HOST + "/")) {
+                    installQaDownloadBridge();
+                }
             }
 
             @Override
@@ -115,6 +165,10 @@ public class MainActivity extends Activity {
         });
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
+            if (qaMode && url != null && url.startsWith("blob:")) {
+                Toast.makeText(MainActivity.this, "QA export bridge could not capture this download.", Toast.LENGTH_SHORT).show();
+                return;
+            }
             try {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
             } catch (ActivityNotFoundException ex) {
@@ -129,6 +183,40 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void setUpQaContentView() {
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Color.rgb(5, 8, 7));
+
+        TextView banner = new TextView(this);
+        banner.setText("Acelynn Pro — Recovery QA Build · pinned 6363059183ce");
+        banner.setTextColor(Color.rgb(20, 15, 0));
+        banner.setBackgroundColor(Color.rgb(255, 213, 79));
+        banner.setGravity(Gravity.CENTER);
+        banner.setTextSize(13f);
+        int horizontal = Math.round(12 * getResources().getDisplayMetrics().density);
+        int vertical = Math.round(9 * getResources().getDisplayMetrics().density);
+        banner.setPadding(horizontal, vertical, horizontal, vertical);
+
+        root.addView(banner, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        root.addView(webView, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                0,
+                1f));
+        setContentView(root);
+    }
+
+    private boolean openExternalHttp(Uri uri) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, uri));
+        } catch (ActivityNotFoundException ignored) {
+            Toast.makeText(this, "No app is available for this link.", Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
     private boolean openExternalSchemeIfNeeded(Uri uri) {
         String scheme = uri.getScheme();
         if (scheme == null || scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) return false;
@@ -139,6 +227,89 @@ public class MainActivity extends Activity {
             Toast.makeText(this, "No app is available for this link.", Toast.LENGTH_SHORT).show();
         }
         return true;
+    }
+
+    private void installQaDownloadBridge() {
+        String script = "(function(){" +
+                "if(window.__cactusQaDownloadBridgeInstalled)return;" +
+                "var nativeClick=HTMLAnchorElement.prototype.click;" +
+                "HTMLAnchorElement.prototype.click=function(){var a=this;" +
+                "if(a.download&&typeof a.href==='string'&&a.href.indexOf('blob:')===0&&window.CactusQaBridge){" +
+                "fetch(a.href).then(function(r){return r.text();}).then(function(t){window.CactusQaBridge.saveJson(a.download,t);}).catch(function(){nativeClick.call(a);});return;}" +
+                "return nativeClick.call(a);};" +
+                "window.__cactusQaDownloadBridgeInstalled=true;" +
+                "})();";
+        webView.evaluateJavascript(script, null);
+    }
+
+    private final class QaDownloadBridge {
+        @JavascriptInterface
+        public void saveJson(String requestedName, String json) {
+            if (!qaMode || json == null) return;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            if (bytes.length == 0 || bytes.length > QA_MAX_JSON_BYTES) {
+                postToast("QA backup was not saved: invalid file size.");
+                return;
+            }
+            String safeName = sanitizeQaFileName(requestedName);
+            try {
+                String location = writeQaJson(safeName, bytes);
+                postToast("Saved " + safeName + " to " + location);
+            } catch (IOException | SecurityException ex) {
+                postToast("QA backup could not be saved.");
+            }
+        }
+    }
+
+    private String sanitizeQaFileName(String requestedName) {
+        String name = requestedName == null ? "acelynn-pro-backup.json" : requestedName;
+        name = name.replaceAll("[^A-Za-z0-9._-]", "_").replace("..", "_");
+        if (name.length() > 80) name = name.substring(0, 80);
+        if (!name.toLowerCase().endsWith(".json")) name += ".json";
+        return name;
+    }
+
+    private String writeQaJson(String fileName, byte[] bytes) throws IOException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Downloads.MIME_TYPE, "application/json");
+            values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/AcelynnProQA");
+            values.put(MediaStore.Downloads.IS_PENDING, 1);
+            Uri item = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (item == null) throw new IOException("MediaStore insert failed");
+            boolean success = false;
+            try (OutputStream output = getContentResolver().openOutputStream(item, "w")) {
+                if (output == null) throw new IOException("MediaStore output stream unavailable");
+                output.write(bytes);
+                output.flush();
+                success = true;
+            } finally {
+                if (success) {
+                    ContentValues publish = new ContentValues();
+                    publish.put(MediaStore.Downloads.IS_PENDING, 0);
+                    getContentResolver().update(item, publish, null, null);
+                } else {
+                    getContentResolver().delete(item, null, null);
+                }
+            }
+            return "Downloads/AcelynnProQA";
+        }
+
+        File root = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (root == null) throw new IOException("External files directory unavailable");
+        File dir = new File(root, "AcelynnProQA");
+        if (!dir.exists() && !dir.mkdirs()) throw new IOException("Could not create QA download directory");
+        File target = new File(dir, fileName);
+        try (OutputStream output = new FileOutputStream(target, false)) {
+            output.write(bytes);
+            output.flush();
+        }
+        return target.getAbsolutePath();
+    }
+
+    private void postToast(String message) {
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
     }
 
     private void handleWebPermission(PermissionRequest request) {
