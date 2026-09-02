@@ -1,0 +1,162 @@
+name: Android v2 Signing Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - android-release-v2-foundation
+    paths:
+      - 'android-packager/**'
+      - '.github/workflows/android-v2-signing-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  signing-readiness:
+    runs-on: ubuntu-latest
+    environment: android-release
+    env:
+      CACTUSBYTE_PERMANENT_SIGNING: '1'
+      KEYSTORE_CACTUSBYTE: ${{ secrets.KEYSTORE_CACTUSBYTE }}
+      KEYSTORE_PASSWORD_CACTUSBYTE: ${{ secrets.KEYSTORE_PASSWORD_CACTUSBYTE }}
+      KEY_PASSWORD_CACTUSBYTE: ${{ secrets.KEY_PASSWORD_CACTUSBYTE }}
+      KEY_ALIAS_CACTUSBYTE: ${{ secrets.KEY_ALIAS_CACTUSBYTE }}
+      KEYSTORE_NOPROBLEM: ${{ secrets.KEYSTORE_NOPROBLEM }}
+      KEYSTORE_PASSWORD_NOPROBLEM: ${{ secrets.KEYSTORE_PASSWORD_NOPROBLEM }}
+      KEY_PASSWORD_NOPROBLEM: ${{ secrets.KEY_PASSWORD_NOPROBLEM }}
+      KEY_ALIAS_NOPROBLEM: ${{ secrets.KEY_ALIAS_NOPROBLEM }}
+      KEYSTORE_MACHZERO: ${{ secrets.KEYSTORE_MACHZERO }}
+      KEYSTORE_PASSWORD_MACHZERO: ${{ secrets.KEYSTORE_PASSWORD_MACHZERO }}
+      KEY_PASSWORD_MACHZERO: ${{ secrets.KEY_PASSWORD_MACHZERO }}
+      KEY_ALIAS_MACHZERO: ${{ secrets.KEY_ALIAS_MACHZERO }}
+      KEYSTORE_RAPIDTAKEOFF: ${{ secrets.KEYSTORE_RAPIDTAKEOFF }}
+      KEYSTORE_PASSWORD_RAPIDTAKEOFF: ${{ secrets.KEYSTORE_PASSWORD_RAPIDTAKEOFF }}
+      KEY_PASSWORD_RAPIDTAKEOFF: ${{ secrets.KEY_PASSWORD_RAPIDTAKEOFF }}
+      KEY_ALIAS_RAPIDTAKEOFF: ${{ secrets.KEY_ALIAS_RAPIDTAKEOFF }}
+      KEYSTORE_ACELYNNPRO: ${{ secrets.KEYSTORE_ACELYNNPRO }}
+      KEYSTORE_PASSWORD_ACELYNNPRO: ${{ secrets.KEYSTORE_PASSWORD_ACELYNNPRO }}
+      KEY_PASSWORD_ACELYNNPRO: ${{ secrets.KEY_PASSWORD_ACELYNNPRO }}
+      KEY_ALIAS_ACELYNNPRO: ${{ secrets.KEY_ALIAS_ACELYNNPRO }}
+      KEYSTORE_POCKETSTOMP: ${{ secrets.KEYSTORE_POCKETSTOMP }}
+      KEYSTORE_PASSWORD_POCKETSTOMP: ${{ secrets.KEYSTORE_PASSWORD_POCKETSTOMP }}
+      KEY_PASSWORD_POCKETSTOMP: ${{ secrets.KEY_PASSWORD_POCKETSTOMP }}
+      KEY_ALIAS_POCKETSTOMP: ${{ secrets.KEY_ALIAS_POCKETSTOMP }}
+      KEYSTORE_GHOSTLANE: ${{ secrets.KEYSTORE_GHOSTLANE }}
+      KEYSTORE_PASSWORD_GHOSTLANE: ${{ secrets.KEYSTORE_PASSWORD_GHOSTLANE }}
+      KEY_PASSWORD_GHOSTLANE: ${{ secrets.KEY_PASSWORD_GHOSTLANE }}
+      KEY_ALIAS_GHOSTLANE: ${{ secrets.KEY_ALIAS_GHOSTLANE }}
+      KEYSTORE_FIRSTBEARING: ${{ secrets.KEYSTORE_FIRSTBEARING }}
+      KEYSTORE_PASSWORD_FIRSTBEARING: ${{ secrets.KEYSTORE_PASSWORD_FIRSTBEARING }}
+      KEY_PASSWORD_FIRSTBEARING: ${{ secrets.KEY_PASSWORD_FIRSTBEARING }}
+      KEY_ALIAS_FIRSTBEARING: ${{ secrets.KEY_ALIAS_FIRSTBEARING }}
+      KEYSTORE_FANTASY: ${{ secrets.KEYSTORE_FANTASY }}
+      KEYSTORE_PASSWORD_FANTASY: ${{ secrets.KEYSTORE_PASSWORD_FANTASY }}
+      KEY_PASSWORD_FANTASY: ${{ secrets.KEY_PASSWORD_FANTASY }}
+      KEY_ALIAS_FANTASY: ${{ secrets.KEY_ALIAS_FANTASY }}
+      KEYSTORE_SCOUTTRACE: ${{ secrets.KEYSTORE_SCOUTTRACE }}
+      KEYSTORE_PASSWORD_SCOUTTRACE: ${{ secrets.KEYSTORE_PASSWORD_SCOUTTRACE }}
+      KEY_PASSWORD_SCOUTTRACE: ${{ secrets.KEY_PASSWORD_SCOUTTRACE }}
+      KEY_ALIAS_SCOUTTRACE: ${{ secrets.KEY_ALIAS_SCOUTTRACE }}
+      KEYSTORE_SHADOWNEX: ${{ secrets.KEYSTORE_SHADOWNEX }}
+      KEYSTORE_PASSWORD_SHADOWNEX: ${{ secrets.KEYSTORE_PASSWORD_SHADOWNEX }}
+      KEY_PASSWORD_SHADOWNEX: ${{ secrets.KEY_PASSWORD_SHADOWNEX }}
+      KEY_ALIAS_SHADOWNEX: ${{ secrets.KEY_ALIAS_SHADOWNEX }}
+      KEYSTORE_TERRAFLOW: ${{ secrets.KEYSTORE_TERRAFLOW }}
+      KEYSTORE_PASSWORD_TERRAFLOW: ${{ secrets.KEYSTORE_PASSWORD_TERRAFLOW }}
+      KEY_PASSWORD_TERRAFLOW: ${{ secrets.KEY_PASSWORD_TERRAFLOW }}
+      KEY_ALIAS_TERRAFLOW: ${{ secrets.KEY_ALIAS_TERRAFLOW }}
+      KEYSTORE_ORBITGATHER: ${{ secrets.KEYSTORE_ORBITGATHER }}
+      KEYSTORE_PASSWORD_ORBITGATHER: ${{ secrets.KEYSTORE_PASSWORD_ORBITGATHER }}
+      KEY_PASSWORD_ORBITGATHER: ${{ secrets.KEY_PASSWORD_ORBITGATHER }}
+      KEY_ALIAS_ORBITGATHER: ${{ secrets.KEY_ALIAS_ORBITGATHER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Verify staged permanent signing manifest
+        run: python3 android-packager/verify_signing_manifest.py --allow-staged
+
+      - name: Confirm no private signing material is committed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find . -type f \( -name '*.jks' -o -name '*.keystore' -o -name '*.p12' -o -name '*.pfx' \) -print -quit | grep -q .; then
+            echo 'Private signing material must never be committed to the repository.' >&2
+            exit 1
+          fi
+
+      - name: Materialize environment-secret-backed keystores
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cactusbyte-signing"
+          flavors=(cactusbyte noproblem machzero rapidtakeoff acelynnpro pocketstomp ghostlane firstbearing fantasy scouttrace shadownex terraflow orbitgather)
+          for flavor in "${flavors[@]}"; do
+            suffix="$(printf '%s' "$flavor" | tr '[:lower:]-' '[:upper:]_')"
+            ks_var="KEYSTORE_$suffix"
+            store_var="KEYSTORE_PASSWORD_$suffix"
+            key_var="KEY_PASSWORD_$suffix"
+            alias_var="KEY_ALIAS_$suffix"
+            [[ -n "${!ks_var:-}" ]] || { echo "Missing android-release environment secret $ks_var" >&2; exit 1; }
+            [[ -n "${!store_var:-}" ]] || { echo "Missing android-release environment secret $store_var" >&2; exit 1; }
+            [[ -n "${!key_var:-}" ]] || { echo "Missing android-release environment secret $key_var" >&2; exit 1; }
+            [[ -n "${!alias_var:-}" ]] || { echo "Missing android-release environment secret $alias_var" >&2; exit 1; }
+            path="$RUNNER_TEMP/cactusbyte-signing/$flavor.jks"
+            printf '%s' "${!ks_var}" | base64 --decode > "$path"
+            chmod 600 "$path"
+            echo "KEYSTORE_PATH_$suffix=$path" >> "$GITHUB_ENV"
+          done
+
+      - name: Install icon tooling
+        run: python3 -m pip install --disable-pip-version-check pillow cairosvg
+
+      - name: Build branded launcher icons
+        run: python3 android-packager/fetch_icons.py
+
+      - name: Build all 26 permanently signed release APKs
+        run: gradle -p android-packager assembleRelease --stacktrace
+
+      - name: Verify direct and Play distribution split
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT2="$(find "$ANDROID_HOME/build-tools" -type f -name aapt2 | sort -V | tail -1)"
+          test -x "$AAPT2"
+          python3 android-packager/verify_distribution_split.py \
+            --aapt2 "$AAPT2" \
+            --apk-root android-packager/app/build/outputs/apk \
+            --build-config-root android-packager/app/build/generated/source/buildConfig \
+            --main-activity android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java
+
+      - name: Verify all 26 APK signatures against permanent identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -x "$APKSIGNER"
+          python3 android-packager/verify_apk_signatures.py \
+            --apksigner "$APKSIGNER" \
+            --apk-root android-packager/app/build/outputs/apk
+
+      - name: Upload 26 signed QA artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cactusbyte-brand-distribution-signed-apks
+          path: android-packager/app/build/outputs/apk/**/release/*.apk
+          retention-days: 7
+
+      - name: Permanent signing and distribution gate passed
+        run: echo 'All 26 APKs passed brand × distribution, permission, CHANNEL, UA 1.0, and permanent-signing verification.'

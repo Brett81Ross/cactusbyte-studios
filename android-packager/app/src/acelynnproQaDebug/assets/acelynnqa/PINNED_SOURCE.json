@@ -1,0 +1,34 @@
+{
+  "entryPoint": "https://appassets.androidplatform.net/assets/acelynnqa/index.html",
+  "files": [
+    {
+      "bytes": 26117,
+      "gitBlobSha1": "f61201e13b6e001f49d0718b33a4072e6bf7704f",
+      "path": "index.html",
+      "sha256": "3131d01139f02638c069d29caf149a58979baeaad0524a10a7305ef84a1c62da"
+    },
+    {
+      "bytes": 4109,
+      "gitBlobSha1": "2f29bec84322b3e457cf41162ae970d7907b5f31",
+      "path": "acelynn-recovery.js",
+      "sha256": "7416966264f346ff1fdcf7580b67aba3e5e1562d0fa9b4ea6b0429aecf520014"
+    },
+    {
+      "bytes": 451,
+      "gitBlobSha1": "99454bd1f5f822d3cd378f95355d9b345bd965ef",
+      "path": "manifest.json",
+      "sha256": "1bb396c0ff7b70c0f8628e726424a29ef1849b2836b3e1b57ed5df6a80144294"
+    },
+    {
+      "bytes": 941289,
+      "gitBlobSha1": "f915b3a11fc01b94fe80e1d668064b2c3980dc3c",
+      "path": "acelynnpro.png",
+      "sha256": "cf1429d1d84cf9b6bd52c6569d40bc263056e4eba08d2b652a5142430bee6510"
+    }
+  ],
+  "productionUrlPackaged": false,
+  "purpose": "Acelynn Pro Phase 7 physical recovery QA",
+  "serviceWorkerPackaged": false,
+  "sourceCommit": "6363059183cebe650830cc240d275936dc802d34",
+  "sourceRepository": "Brett81Ross/Acelynn"
+}

@@ -1,0 +1,59 @@
+name: Phase 7 OrbitGather + Acelynn Records
+
+on:
+  push:
+    branches:
+      - android-release-v2-foundation
+    paths:
+      - 'tools/apply-phase7-orbit-acelynn-records.py'
+      - '.github/workflows/phase7-orbit-acelynn-records.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  settle-records:
+    if: github.ref == 'refs/heads/android-release-v2-foundation'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v5
+        with:
+          ref: android-release-v2-foundation
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Apply deterministic Phase 7 records
+        run: python tools/apply-phase7-orbit-acelynn-records.py
+      - name: Verify control markers
+        run: |
+          grep -Fq 'Generated OrbitGather identity recovery UI already settled.' ATOMIC_BUILD_LIST.md
+          grep -Fq 'Generated Acelynn Pro recovery source already settled.' ATOMIC_BUILD_LIST.md
+          grep -Fq '### OrbitGather™ — protect cloud identity before uninstall' android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          grep -Fq '### Acelynn Pro™ — preserve saved mix snapshots' android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          grep -Fq '00ea3761cff27771f020c194b454b97daae9c168' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
+          grep -Fq '5702fa7db0b8183743ab029e857e8b1071edd087' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
+      - name: Reject deployment side effects
+        run: |
+          unexpected="$(git diff --name-only | grep -Ev '^(ATOMIC_BUILD_LIST\.md|android-packager/SIGNING_CUTOVER_DATA_AUDIT\.md|android-packager/SIGNING_CUTOVER_RUNBOOK\.md)$' || true)"
+          if [ -n "$unexpected" ]; then
+            echo 'Phase 7 records patcher changed an unexpected file.' >&2
+            echo "$unexpected"
+            exit 1
+          fi
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+      - name: Commit records if needed
+        shell: bash
+        run: |
+          git add ATOMIC_BUILD_LIST.md android-packager/SIGNING_CUTOVER_DATA_AUDIT.md android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          if git diff --cached --quiet; then
+            echo 'OrbitGather + Acelynn Phase 7 central records already settled.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs: record OrbitGather and Acelynn Phase 7 recovery gates'
+          git push origin HEAD:android-release-v2-foundation

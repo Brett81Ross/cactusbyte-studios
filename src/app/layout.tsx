@@ -11,6 +11,7 @@ import "./globals.css";
 import "./mobile.css";
 import "./personalization.css";
 import "./button-polish.css";
+import "./touch-targets.css";
 
 const configuredHost = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
 const metadataBase = new URL(
@@ -28,13 +29,16 @@ export const metadata: Metadata = {
   applicationName: "Cactus🌵Byte Studios™",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/logo2.png",
-    apple: "/logo2.png",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     title: "Cactus🌵Byte Studios™",
     description: "One command center for the Cactus🌵Byte Studios™ app ecosystem.",
-    images: ["/logo2.png"],
+    images: ["/icon-512.png"],
     type: "website",
   },
 };

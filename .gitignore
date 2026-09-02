@@ -6,3 +6,15 @@ out/
 *.log
 .DS_Store
 .vercel/
+
+# Permanent Android signing material must never be committed.
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+private-signing/
+keystores/
+keystores-backup-*/
+*.jks.b64
