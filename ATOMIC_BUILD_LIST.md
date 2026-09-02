@@ -65,6 +65,13 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 
 ## OrbitGather™ v0.5.0
 
+- [x] **SHELVED 2026-09-01:** remove OrbitGather from the active Phase 7 runtime/device queue without deleting its repository, recovery implementation, signing identity, rollback history, or production Supabase project.
+- [x] Hide OrbitGather from customer-facing CactusByte hub/storefront, App Matrix, public registry/manifest, Release Center, Pulse destinations, and public app counts by retaining it only in the internal registry with `lifecycle: "shelved"` and `customerVisible: false`.
+- [x] Preserve the already-built OrbitGather recovery authority and app-side recovery code in source as inactive infrastructure for a future resurrection.
+- [x] Keep the production OrbitGather Supabase project untouched; no recovery Edge Function activation, staging runtime test, uninstall, APK publication, or signing cutover is authorized while shelved.
+- [x] Move the active Phase 7 implementation focus to **Acelynn Pro™**; previously code-ready apps remain pending their own device verification gates.
+- [ ] Re-activate OrbitGather only after explicit product-resurrection approval and a fresh audit of its core lead-generation value, data quality, and canonical runtime architecture.
+
 - [ ] Compare the current private GitHub source against the earlier staged private-lead foundation before merging any features
 - [ ] Restore or implement the homeowner request flow, contractor lead vault, lead details, and secondary source action only in the canonical OrbitGather source
 - [ ] Configure a dedicated Firebase project and server-only lead-contact protection before enabling private leads
@@ -79,7 +86,7 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [x] Pass CactusByte OrbitGather recovery-authority QA and full existing hub preflight/build in Actions run `33563934200` against authority head `1dc0e4a2fffe8934e01faff20a92e1653719bb01`.
 - [x] Pass OrbitGather recovery contract QA, Next.js production build, scoped Deno 2 Edge Function type-check, and no-deployment guard in Actions run `33563971968`; generated UI source is pinned at `5702fa7db0b8183743ab029e857e8b1071edd087`.
 - [x] Prove deterministic settle in Actions run `33563971968` attempt 2: the generated head reran green and reported `Generated OrbitGather identity recovery UI already settled.` with no additional commit.
-- [ ] After explicit deployment/configuration approval only, configure the same server-only `ORBITGATHER_RECOVERY_BRIDGE_SECRET` in CactusByte and Supabase, protect the legacy installation before uninstall, then prove isolated clean-install restore preserves the exact UUID, rotates the secret, and retains saved searches/opportunity metadata.
+- [ ] **DEFERRED WHILE SHELVED:** if OrbitGather is explicitly resurrected, configure the same server-only `ORBITGATHER_RECOVERY_BRIDGE_SECRET` in CactusByte and Supabase only after a fresh approval gate, then protect the legacy installation before uninstall and prove isolated clean-install restore preserves the exact UUID, rotates the secret, and retains saved searches/opportunity metadata.
 
 ## No Problem Pressure Washing Matrix™ v1.0.0
 
