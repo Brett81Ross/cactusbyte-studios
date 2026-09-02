@@ -1,0 +1,55 @@
+name: Acelynn Phase 7 Recovery Record QA
+
+on:
+  push:
+    branches: [phase7-acelynn-recovery-record]
+    paths:
+      - 'ATOMIC_BUILD_LIST.md'
+      - 'tools/apply-acelynn-phase7-record.py'
+      - 'tools/qa-acelynn-phase7-record.mjs'
+      - '.github/workflows/acelynn-phase7-record-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact record branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Apply deterministic Acelynn record
+        run: python3 tools/apply-acelynn-phase7-record.py
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Verify Acelynn Phase 7 record
+        run: node tools/qa-acelynn-phase7-record.mjs
+      - name: Install dependencies without deployment
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run full CactusByte preflight and production build
+        run: npm run preflight
+      - name: Reject deployment side effects
+        run: |
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          echo 'No Vercel, Supabase, APK, uninstall, or signing-cutover action executed.'
+      - name: Commit generated ABL record if needed
+        shell: bash
+        run: |
+          git add ATOMIC_BUILD_LIST.md
+          if git diff --cached --quiet; then
+            echo 'Acelynn Phase 7 recovery record already settled.'
+            exit 0
+          fi
+          changed="$(git diff --cached --name-only)"
+          test "$changed" = 'ATOMIC_BUILD_LIST.md'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'phase7: record Acelynn recovery browser gate'
+          git push origin HEAD:${GITHUB_REF_NAME}
