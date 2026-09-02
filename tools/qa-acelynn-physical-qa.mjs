@@ -11,7 +11,8 @@ const check = (condition, message) => {
 
 const gradlePath = 'android-packager/app/build.gradle.kts';
 const activityPath = 'android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java';
-const assetRoot = 'android-packager/app/src/acelynnproQaDebug/assets/acelynnqa';
+const qaSourceRoot = 'android-packager/app/src/acelynnproQaDebug';
+const assetRoot = path.join(qaSourceRoot, 'assets/acelynnqa');
 const gradle = fs.readFileSync(gradlePath, 'utf8');
 const activity = fs.readFileSync(activityPath, 'utf8');
 
@@ -36,6 +37,19 @@ for (const file of ['index.html', 'acelynn-recovery.js', 'manifest.json', 'acely
   check(fs.existsSync(path.join(assetRoot, file)), `pinned QA asset missing: ${file}`);
 }
 check(!fs.existsSync(path.join(assetRoot, 'sw.js')), 'service worker must not be packaged in the QA asset set');
+
+const qaColorPath = path.join(qaSourceRoot, 'res/values/icon_colors.xml');
+const qaForegroundPath = path.join(qaSourceRoot, 'res/drawable/app_icon_foreground.xml');
+check(fs.existsSync(qaColorPath), 'QA-only adaptive icon background resource is missing');
+check(fs.existsSync(qaForegroundPath), 'QA-only adaptive icon foreground resource is missing');
+if (fs.existsSync(qaColorPath)) {
+  const colors = fs.readFileSync(qaColorPath, 'utf8');
+  check(colors.includes('<color name="icon_bg">#FFD54F</color>'), 'QA launcher background must use the warning color');
+}
+if (fs.existsSync(qaForegroundPath)) {
+  const foreground = fs.readFileSync(qaForegroundPath, 'utf8');
+  check(foreground.includes('android:pathData="M1,21h22L12,2 1,21z'), 'QA launcher warning foreground is missing');
+}
 
 if (fs.existsSync(path.join(assetRoot, 'PINNED_SOURCE.json'))) {
   const metadata = JSON.parse(fs.readFileSync(path.join(assetRoot, 'PINNED_SOURCE.json'), 'utf8'));
