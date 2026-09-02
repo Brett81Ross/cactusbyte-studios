@@ -29,6 +29,9 @@ jobs:
       - name: Install Android 36 build tools
         shell: bash
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'platform-tools'
+      - name: Validate transition shell
+        shell: bash
+        run: bash -n tests/synthetic-transition/run-transition.sh
       - name: Compile external UiAutomator harness
         shell: bash
         run: gradle -p tests/synthetic-transition assembleDebug assembleDebugAndroidTest --no-daemon
