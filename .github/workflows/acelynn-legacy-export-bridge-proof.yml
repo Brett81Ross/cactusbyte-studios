@@ -1,0 +1,101 @@
+name: Acelynn Legacy Export Bridge Proof
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - phase7-acelynn-synthetic-transition
+    paths:
+      - 'tests/synthetic-transition/web-bridge/**'
+      - '.github/workflows/acelynn-legacy-export-bridge-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bridge-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      LIVE_ACELYNN_SHA: '302c43d029cf975a98e3db20ca9ec5466a9e0dba'
+
+    steps:
+      - name: Checkout isolated CactusByte test branch
+        uses: actions/checkout@v5
+
+      - name: Checkout exact live Acelynn source read-only
+        uses: actions/checkout@v5
+        with:
+          repository: Brett81Ross/Acelynn
+          ref: ${{ env.LIVE_ACELYNN_SHA }}
+          path: acelynn-live-source
+          fetch-depth: 1
+
+      - name: Verify exact live baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C acelynn-live-source rev-parse HEAD)" = "$LIVE_ACELYNN_SHA"
+          cmp acelynn-live-source/index.html acelynn-live-source/app-base.html
+          grep -Fq "URL.createObjectURL(blob)" acelynn-live-source/app-base.html
+          grep -Fq "navigator.serviceWorker.register('./sw.js')" acelynn-live-source/app-base.html
+          grep -Fq '"deploymentEnabled":true' acelynn-live-source/vercel.json
+          grep -Fq "destination\":\"/api/demo-shell.js" acelynn-live-source/vercel.json
+          echo 'Exact live Acelynn baseline confirmed.'
+
+      - name: Prove bridge payload contract
+        shell: bash
+        run: node tests/synthetic-transition/web-bridge/bridge-contract.test.cjs
+
+      - name: Stage migration patch in temporary checkout only
+        shell: bash
+        run: node tests/synthetic-transition/web-bridge/stage-live-source.mjs acelynn-live-source
+
+      - name: Verify four-file staged diff and no app rewrite
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C acelynn-live-source add -N legacy-export-bridge.js legacy-export.html
+          git -C acelynn-live-source status --porcelain | sort | tee staged-status.txt
+          cat > expected-status.txt <<'EOF'
+           M api/demo-shell.js
+           M sw.js
+           A legacy-export-bridge.js
+           A legacy-export.html
+          EOF
+          sort expected-status.txt -o expected-status.txt
+          diff -u expected-status.txt staged-status.txt
+
+          git -C acelynn-live-source diff --exit-code -- app-base.html index.html manifest.json vercel.json
+          grep -Fq '/legacy-export-bridge.js?v=cutover1' acelynn-live-source/api/demo-shell.js
+          grep -Fq "self.registration.unregister()" acelynn-live-source/sw.js
+          ! grep -Fq "addEventListener('fetch'" acelynn-live-source/sw.js
+          node --check acelynn-live-source/legacy-export-bridge.js
+          node --check tests/synthetic-transition/web-bridge/stage-live-source.mjs
+
+          git -C acelynn-live-source diff -- api/demo-shell.js sw.js legacy-export-bridge.js legacy-export.html > acelynn-legacy-export-bridge.patch
+          test -s acelynn-legacy-export-bridge.patch
+          echo 'Staged Acelynn migration diff is exactly four files; app-base/index/vercel config remain untouched.'
+
+      - name: Upload staged bridge proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: acelynn-legacy-export-bridge-proof
+          path: |
+            staged-status.txt
+            expected-status.txt
+            acelynn-legacy-export-bridge.patch
+            acelynn-live-source/legacy-export-bridge.js
+            acelynn-live-source/legacy-export.html
+            acelynn-live-source/api/demo-shell.js
+            acelynn-live-source/sw.js
+          retention-days: 14
+
+      - name: Confirm zero production side effects
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          echo 'Proof used only a temporary checkout of Acelynn live source. No Acelynn commit, Vercel deployment, Supabase change, device uninstall, Play action, or main merge occurred.'
