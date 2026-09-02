@@ -21,7 +21,8 @@ import androidx.core.content.ContextCompat;
  * Acelynn Pro physical-QA launcher.
  *
  * This activity deliberately leaves the shared production MainActivity untouched. It layers a
- * strict microphone permission bridge and JSON restore chooser over the self-contained QA WebView.
+ * strict microphone permission bridge, JSON restore chooser, and QA-only recovery diagnostics over
+ * the self-contained QA WebView.
  */
 public final class QaMainActivity extends MainActivity {
     private static final int REQUEST_QA_AUDIO = 6101;
@@ -64,6 +65,7 @@ public final class QaMainActivity extends MainActivity {
         });
 
         installQaMediaDiagnosticsWhenReady(20);
+        installQaRestoreFeedbackWhenReady(20);
     }
 
     private void handleQaPermissionRequest(PermissionRequest request) {
@@ -196,6 +198,51 @@ public final class QaMainActivity extends MainActivity {
                 "if(t)t.textContent='Microphone access failed in Android QA';" +
                 "if(c)c.textContent='Android app permission is enabled, but WebView audio capture failed: '+name+' — '+msg;" +
                 "},0);throw err;});};" +
+                "})();";
+        qaWebView.evaluateJavascript(script, null);
+    }
+
+    private void installQaRestoreFeedbackWhenReady(int attemptsRemaining) {
+        if (qaWebView == null || attemptsRemaining <= 0) return;
+        qaWebView.evaluateJavascript("document.readyState", state -> {
+            if (state != null && (state.contains("complete") || state.contains("interactive"))) {
+                installQaRestoreFeedback();
+            } else {
+                qaWebView.postDelayed(() -> installQaRestoreFeedbackWhenReady(attemptsRemaining - 1), 150L);
+            }
+        });
+    }
+
+    private void installQaRestoreFeedback() {
+        String script = "(function(){" +
+                "if(window.__cactusQaRestoreFeedbackInstalled)return;" +
+                "var input=document.getElementById('restoreInput');" +
+                "if(!input)return;" +
+                "window.__cactusQaRestoreFeedbackInstalled=true;" +
+                "var notice=document.createElement('div');" +
+                "notice.id='cactusQaRestoreFeedback';notice.setAttribute('role','alert');notice.setAttribute('aria-live','assertive');" +
+                "notice.style.display='none';notice.style.margin='10px 0 0';notice.style.padding='12px';" +
+                "notice.style.border='1px solid #ff6a98';notice.style.borderRadius='11px';notice.style.background='#2a101b';" +
+                "notice.style.color='#fff';notice.style.fontSize='.76rem';notice.style.lineHeight='1.4';notice.style.fontWeight='800';" +
+                "input.insertAdjacentElement('afterend',notice);" +
+                "function reject(reason){setTimeout(function(){notice.textContent='Backup rejected — '+reason+' Your saved checks were not changed.';notice.style.display='block';notice.scrollIntoView({block:'nearest'});},250);}" +
+                "input.addEventListener('change',function(){" +
+                "var file=input.files&&input.files[0];if(!file)return;" +
+                "notice.style.display='none';notice.textContent='';" +
+                "var reader=new FileReader();" +
+                "reader.onerror=function(){reject('The selected file could not be read.');};" +
+                "reader.onload=function(){" +
+                "var reason='';var payload=null;" +
+                "try{payload=JSON.parse(String(reader.result||''));}catch(e){reason='Backup is not valid JSON.';}" +
+                "if(!reason&&(!payload||typeof payload!=='object'||Array.isArray(payload)))reason='Backup must be a JSON object.';" +
+                "if(!reason&&payload.app!=='Acelynn Pro')reason='This backup belongs to a different app.';" +
+                "if(!reason&&payload.schema!==undefined&&payload.schema!=='acelynn-pro-backup-v1')reason='Unsupported Acelynn Pro backup schema.';" +
+                "if(!reason&&payload.schema!==undefined&&Number(payload.version)!==1)reason='Unsupported Acelynn Pro backup version.';" +
+                "if(!reason&&!Array.isArray(payload.snapshots))reason='Backup snapshots must be an array.';" +
+                "if(reason)reject(reason);" +
+                "};" +
+                "reader.readAsText(file);" +
+                "},true);" +
                 "})();";
         qaWebView.evaluateJavascript(script, null);
     }
