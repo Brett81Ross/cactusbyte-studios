@@ -1,0 +1,109 @@
+name: Acelynn Synthetic Transition (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      permanent_artifact_id:
+        description: Certified signing artifact ID
+        required: true
+        default: '9850425582'
+  # Temporary isolated-branch trigger. Remove after this workflow is proven.
+  push:
+    branches:
+      - phase7-acelynn-synthetic-transition
+    paths:
+      - 'tests/synthetic-transition/**'
+      - 'tests/fixtures/generate-check-wav.py'
+      - '.github/workflows/acelynn-synthetic-transition.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  transition-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      LEGACY_SOURCE_SHA: '69600ed3561aacb7d415ee0dd4cbec43abf0e477'
+      CERTIFIED_FOUNDATION_SHA: 'c2ea2bd182956b1202f33e499cb54019b358a272'
+      CERTIFIED_SIGNING_RUN_ID: '33639746045'
+      CERTIFIED_ARTIFACT_NAME: 'cactusbyte-brand-distribution-signed-apks'
+      PERMANENT_ARTIFACT_ID: ${{ github.event.inputs.permanent_artifact_id || '9850425582' }}
+
+    steps:
+      - name: Checkout synthetic test branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Checkout exact legacy baseline separately
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.LEGACY_SOURCE_SHA }}
+          path: legacy-source
+          fetch-depth: 1
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 build tools
+        shell: bash
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'platform-tools'
+
+      - name: Prepare and cryptographically verify synthetic test inputs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash tests/synthetic-transition/prepare-ci.sh
+
+      - name: Enable KVM access
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: Run exact legacy to permanent transition on API 36 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -no-audio -no-snapshot -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash tests/synthetic-transition/run-transition.sh
+
+      - name: Upload synthetic transition evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acelynn-synthetic-transition-evidence
+          path: |
+            synthetic-diagnostics/**
+            ${{ runner.temp }}/fixture/manifest.txt
+            ${{ runner.temp }}/permanent-signature.txt
+            ${{ runner.temp }}/legacy-signature.txt
+            ${{ runner.temp }}/permanent-badging.txt
+            ${{ runner.temp }}/legacy-badging.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Confirm no production side effects
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          echo 'No Vercel deployment, Supabase change, real-device uninstall, Play publication, or main merge was performed.'
