@@ -129,24 +129,83 @@ public class AcelynnTransitionTest {
 
     private void chooseDocument(String fileName) {
         SystemClock.sleep(900);
-        UiObject2 file = findTextOrContains(fileName);
+
+        // Some Android 16 DocumentsUI builds leave Recent visually empty even after MediaStore has
+        // indexed the file. Prefer exact filename search because it is deterministic across that UI.
+        UiObject2 file = waitForTextOrContains(fileName, 2_000);
         if (file == null) {
-            UiObject2 roots = device.findObject(By.descContains("Show roots"));
-            if (roots == null) roots = device.findObject(By.descContains("Navigate up"));
-            if (roots != null) {
-                roots.click();
-                device.waitForIdle();
-            }
-            UiObject2 downloads = device.wait(Until.findObject(By.text("Downloads")), 4_000);
-            if (downloads != null) {
-                downloads.click();
-                device.waitForIdle();
-            }
+            file = searchDocumentsUi(fileName);
+        }
+
+        // Fallback for DocumentsUI variants where the Search action is unavailable or provider search
+        // is delayed: open the roots drawer and navigate directly to Downloads.
+        if (file == null) {
+            openDownloadsRoot();
             file = waitForTextOrContains(fileName, UI_TIMEOUT_MS);
         }
-        assertNotNull("Document picker could not find " + fileName, file);
+
+        if (file == null) {
+            captureDiagnostics("documentsui-missing-" + safeName(fileName));
+            fail("HARNESS_FAILURE: Android document picker could not find indexed file " + fileName);
+            return;
+        }
+
         file.click();
         device.waitForIdle();
+    }
+
+    private UiObject2 searchDocumentsUi(String fileName) {
+        UiObject2 search = device.wait(Until.findObject(By.desc("Search")), 4_000);
+        if (search == null) {
+            search = device.findObject(By.res("com.google.android.documentsui:id/option_menu_search"));
+        }
+        if (search == null) {
+            search = device.findObject(By.res("com.android.documentsui:id/option_menu_search"));
+        }
+        if (search == null) return null;
+
+        search.click();
+        device.waitForIdle();
+
+        UiObject2 input = device.wait(Until.findObject(By.clazz("android.widget.EditText")), 4_000);
+        if (input == null) {
+            captureDiagnostics("documentsui-search-input-missing");
+            return null;
+        }
+
+        input.setText(fileName);
+        device.waitForIdle();
+
+        UiObject2 result = waitForTextOrContains(fileName, UI_TIMEOUT_MS);
+        if (result != null) return result;
+
+        // Back out of search before trying the roots drawer fallback.
+        device.pressBack();
+        device.waitForIdle();
+        return null;
+    }
+
+    private void openDownloadsRoot() {
+        UiObject2 roots = device.findObject(By.descContains("Show roots"));
+        if (roots == null) roots = device.findObject(By.descContains("Navigate up"));
+        if (roots == null) {
+            roots = device.findObject(By.res("com.google.android.documentsui:id/toolbar"));
+        }
+        if (roots != null && roots.getContentDescription() != null) {
+            roots.click();
+            device.waitForIdle();
+        } else if (roots == null) {
+            // Common Android 16 hamburger position; only used after semantic selectors fail.
+            device.click(Math.max(48, device.getDisplayWidth() / 18), Math.max(120, device.getDisplayHeight() / 16));
+            device.waitForIdle();
+        }
+
+        UiObject2 downloads = device.wait(Until.findObject(By.text("Downloads")), 5_000);
+        if (downloads == null) downloads = device.findObject(By.textContains("Download"));
+        if (downloads != null) {
+            downloads.click();
+            device.waitForIdle();
+        }
     }
 
     private UiObject2 findTextOrContains(String text) {
