@@ -56,7 +56,7 @@ if (fs.existsSync(qaActivityPath)) {
   check(qaActivity.includes('Unsupported Acelynn Pro backup schema.'), 'QA native validation must detect unsupported schemas');
   check(qaActivity.includes('Unsupported Acelynn Pro backup version.'), 'QA native validation must detect unsupported versions');
   check(qaActivity.includes('Backup is not valid JSON.'), 'QA native validation must detect malformed JSON');
-  check(qaActivity.includes('feedback.setVisibility(View.VISIBLE)'), 'QA rejection feedback must become persistently visible in the native UI');
+  check(qaActivity.includes('qaBackupFeedback.setVisibility(View.VISIBLE)'), 'QA rejection feedback must become persistently visible in the native UI');
   check(!qaActivity.includes('__cactusQaRestoreFeedbackInstalled'), 'fragile DOM-timing restore feedback hook must be removed');
 }
 if (fs.existsSync(qaManifestPath)) {
