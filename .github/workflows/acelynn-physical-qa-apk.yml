@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -61,13 +61,13 @@ jobs:
         run: |
           set -euo pipefail
           gradle -p android-packager tasks --all > "$RUNNER_TEMP/android-tasks.txt"
-          grep -Eq '^assembleAcelynnproQaDebug\b' "$RUNNER_TEMP/android-tasks.txt"
-          if grep -Eq '^assemble.*QaRelease\b' "$RUNNER_TEMP/android-tasks.txt"; then
+          grep -Eq '(^|:)assembleAcelynnproQaDebug\b' "$RUNNER_TEMP/android-tasks.txt"
+          if grep -Eq '(^|:)assemble.*QaRelease\b' "$RUNNER_TEMP/android-tasks.txt"; then
             echo 'QA release task must not exist.' >&2
-            grep -E '^assemble.*QaRelease\b' "$RUNNER_TEMP/android-tasks.txt" >&2
+            grep -E '(^|:)assemble.*QaRelease\b' "$RUNNER_TEMP/android-tasks.txt" >&2
             exit 1
           fi
-          other_qa="$(grep -E '^assemble.*QaDebug\b' "$RUNNER_TEMP/android-tasks.txt" | grep -Ev '^assembleAcelynnproQaDebug\b' || true)"
+          other_qa="$(grep -E '(^|:)assemble.*QaDebug\b' "$RUNNER_TEMP/android-tasks.txt" | grep -Ev '(^|:)assembleAcelynnproQaDebug\b' || true)"
           test -z "$other_qa" || { echo "Unexpected non-Acelynn QA variants: $other_qa" >&2; exit 1; }
           echo 'Only AcelynnproQaDebug is enabled for the QA distribution.'
 
