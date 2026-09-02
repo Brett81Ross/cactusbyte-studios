@@ -1,0 +1,65 @@
+name: OrbitGather Shelving QA
+
+on:
+  push:
+    branches: [phase7-shelve-orbitgather, android-release-v2-foundation]
+    paths:
+      - 'src/data/apps.ts'
+      - 'src/data/releases.ts'
+      - 'PRODUCTION_REGISTRY.md'
+      - 'ATOMIC_BUILD_LIST.md'
+      - 'tools/apply-orbitgather-shelving.py'
+      - 'tools/qa-orbitgather-shelving.mjs'
+      - '.github/workflows/orbitgather-shelving-qa.yml'
+      - 'src/lib/orbitgather-recovery.ts'
+      - 'src/app/orbitgather-recovery/**'
+      - 'src/app/api/orbitgather/recovery/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  shelving:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Apply deterministic shelving state
+        run: python3 tools/apply-orbitgather-shelving.py
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Verify shelving contract
+        run: node tools/qa-orbitgather-shelving.mjs
+      - name: Install dependencies without deployment
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run full CactusByte preflight and production build
+        run: npm run preflight
+      - name: Reject deployment side effects
+        run: |
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          echo 'No Vercel, Supabase, APK, signing-cutover, or production deployment action executed.'
+      - name: Commit generated shelving state if needed
+        shell: bash
+        run: |
+          git add src/data/apps.ts src/data/releases.ts PRODUCTION_REGISTRY.md ATOMIC_BUILD_LIST.md
+          if git diff --cached --quiet; then
+            echo 'OrbitGather shelving state already settled.'
+            exit 0
+          fi
+          for file in $(git diff --cached --name-only); do
+            case "$file" in
+              src/data/apps.ts|src/data/releases.ts|PRODUCTION_REGISTRY.md|ATOMIC_BUILD_LIST.md) ;;
+              *) echo "Unexpected generated file: $file" >&2; exit 1 ;;
+            esac
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'phase7: shelve OrbitGather from customer surfaces'
+          git push origin HEAD:${GITHUB_REF_NAME}
