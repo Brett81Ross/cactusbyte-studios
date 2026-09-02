@@ -1,0 +1,189 @@
+name: Acelynn Pro Physical QA APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - phase7-acelynn-physical-qa
+      - android-release-v2-foundation
+    paths:
+      - 'android-packager/app/build.gradle.kts'
+      - 'android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java'
+      - 'android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/**'
+      - 'tools/apply-acelynn-physical-qa-assets.py'
+      - 'tools/qa-acelynn-physical-qa.mjs'
+      - '.github/workflows/acelynn-physical-qa-apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  physical-qa-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CACTUSBYTE_PERMANENT_SIGNING: '0'
+
+    steps:
+      - name: Checkout exact QA branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Pin exact Acelynn recovery assets
+        run: python3 tools/apply-acelynn-physical-qa-assets.py
+
+      - name: Print SHA-256 asset manifest
+        run: |
+          cat android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/PINNED_SOURCE.json
+          sha256sum \
+            android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/index.html \
+            android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/acelynn-recovery.js \
+            android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/manifest.json \
+            android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/acelynnpro.png
+
+      - name: Verify QA source contract
+        run: node tools/qa-acelynn-physical-qa.mjs
+
+      - name: Verify QA variant matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p android-packager tasks --all > "$RUNNER_TEMP/android-tasks.txt"
+          grep -Eq '^assembleAcelynnproQaDebug\b' "$RUNNER_TEMP/android-tasks.txt"
+          if grep -Eq '^assemble.*QaRelease\b' "$RUNNER_TEMP/android-tasks.txt"; then
+            echo 'QA release task must not exist.' >&2
+            grep -E '^assemble.*QaRelease\b' "$RUNNER_TEMP/android-tasks.txt" >&2
+            exit 1
+          fi
+          other_qa="$(grep -E '^assemble.*QaDebug\b' "$RUNNER_TEMP/android-tasks.txt" | grep -Ev '^assembleAcelynnproQaDebug\b' || true)"
+          test -z "$other_qa" || { echo "Unexpected non-Acelynn QA variants: $other_qa" >&2; exit 1; }
+          echo 'Only AcelynnproQaDebug is enabled for the QA distribution.'
+
+      - name: Build isolated Acelynn Pro QA APK
+        run: gradle -p android-packager :app:assembleAcelynnproQaDebug --stacktrace
+
+      - name: Locate QA APK and Android tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t candidates < <(find android-packager/app/build/outputs/apk -type f -name '*.apk' | sort)
+          printf 'Built APKs:\n%s\n' "${candidates[*]}"
+          test "${#candidates[@]}" -eq 1
+          echo "QA_APK=${candidates[0]}" >> "$GITHUB_ENV"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -x "$AAPT"
+          test -x "$APKSIGNER"
+          echo "AAPT=$AAPT" >> "$GITHUB_ENV"
+          echo "APKSIGNER=$APKSIGNER" >> "$GITHUB_ENV"
+
+      - name: Verify package ID label and debug signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$AAPT" dump badging "$QA_APK" > "$RUNNER_TEMP/acelynn-qa-badging.txt"
+          cat "$RUNNER_TEMP/acelynn-qa-badging.txt"
+          grep -Fq "package: name='com.cactusbyte.acelynnpro.qa'" "$RUNNER_TEMP/acelynn-qa-badging.txt"
+          grep -Fq "application-label:'Acelynn Pro QA'" "$RUNNER_TEMP/acelynn-qa-badging.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$QA_APK" > "$RUNNER_TEMP/acelynn-qa-signature.txt"
+          cat "$RUNNER_TEMP/acelynn-qa-signature.txt"
+          grep -Fq 'Signer #1 certificate DN: CN=Android Debug' "$RUNNER_TEMP/acelynn-qa-signature.txt"
+          echo 'QA APK uses the separate package ID and Android debug signing identity.'
+
+      - name: Verify pinned local assets inside APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$RUNNER_TEMP/apk-assets"
+          mkdir -p "$RUNNER_TEMP/apk-assets"
+          unzip -q "$QA_APK" 'assets/acelynnqa/*' -d "$RUNNER_TEMP/apk-assets"
+          cmp android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/index.html "$RUNNER_TEMP/apk-assets/assets/acelynnqa/index.html"
+          cmp android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/acelynn-recovery.js "$RUNNER_TEMP/apk-assets/assets/acelynnqa/acelynn-recovery.js"
+          cmp android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/manifest.json "$RUNNER_TEMP/apk-assets/assets/acelynnqa/manifest.json"
+          cmp android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/acelynnpro.png "$RUNNER_TEMP/apk-assets/assets/acelynnqa/acelynnpro.png"
+          test ! -e "$RUNNER_TEMP/apk-assets/assets/acelynnqa/sw.js"
+          echo 'APK contains the exact pinned recovery assets and no service worker.'
+
+      - name: Verify QA BuildConfig cannot target production
+        shell: bash
+        run: |
+          set -euo pipefail
+          build_config="$(find android-packager/app/build/generated -type f -name BuildConfig.java -path '*acelynnpro*qa*debug*' -print -quit)"
+          test -n "$build_config"
+          cat "$build_config"
+          grep -Fq 'CHANNEL = "qa"' "$build_config"
+          grep -Fq 'START_URL = "https://appassets.androidplatform.net/assets/acelynnqa/index.html"' "$build_config"
+          ! grep -Fq 'https://acelynn.vercel.app' "$build_config"
+          unzip -p "$QA_APK" classes.dex | strings > "$RUNNER_TEMP/acelynn-qa-dex-strings.txt"
+          ! grep -Fq 'https://acelynn.vercel.app' "$RUNNER_TEMP/acelynn-qa-dex-strings.txt"
+          grep -Fq 'https://appassets.androidplatform.net/assets/acelynnqa/index.html' "$RUNNER_TEMP/acelynn-qa-dex-strings.txt"
+          echo 'Production Acelynn URL is absent from QA BuildConfig and DEX.'
+
+      - name: Verify existing Acelynn Direct debug configuration remains production-targeted
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p android-packager :app:generateAcelynnproDirectDebugBuildConfig
+          direct_config="$(find android-packager/app/build/generated -type f -name BuildConfig.java -path '*acelynnpro*direct*debug*' -print -quit)"
+          test -n "$direct_config"
+          grep -Fq 'CHANNEL = "direct"' "$direct_config"
+          grep -Fq 'START_URL = "https://acelynn.vercel.app/"' "$direct_config"
+          echo 'Existing Direct configuration remains unchanged.'
+
+      - name: Run full CactusByte preflight without deployment
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          npm run preflight
+
+      - name: Reject deployment and cutover side effects
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          test "$CACTUSBYTE_PERMANENT_SIGNING" = '0'
+          if find . -type f \( -name '*.jks' -o -name '*.keystore' -o -name '*.p12' -o -name '*.pfx' \) -print -quit | grep -q .; then
+            echo 'Private signing material must not be present.' >&2
+            exit 1
+          fi
+          echo 'No Vercel deployment, Supabase change, permanent signing, APK install, uninstall, Play publication, or main merge executed.'
+
+      - name: Upload Acelynn Pro QA APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: acelynn-pro-recovery-qa-apk
+          path: |
+            ${{ env.QA_APK }}
+            android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/PINNED_SOURCE.json
+          retention-days: 7
+          compression-level: 0
+
+      - name: Commit deterministic pinned assets if needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset_root='android-packager/app/src/acelynnproQaDebug/assets/acelynnqa'
+          git add "$asset_root"
+          if git diff --cached --quiet; then
+            echo 'Acelynn Pro physical-QA assets already settled.'
+            exit 0
+          fi
+          changed="$(git diff --cached --name-only | sort)"
+          expected=$'android-packager/app/src/acelynnproQaDebug/assets/acelynnqa/PINNED_SOURCE.json\nandroid-packager/app/src/acelynnproQaDebug/assets/acelynnqa/acelynn-recovery.js\nandroid-packager/app/src/acelynnproQaDebug/assets/acelynnqa/acelynnpro.png\nandroid-packager/app/src/acelynnproQaDebug/assets/acelynnqa/index.html\nandroid-packager/app/src/acelynnproQaDebug/assets/acelynnqa/manifest.json'
+          test "$changed" = "$expected" || { echo "Unexpected generated asset set: $changed" >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'phase7: pin Acelynn Pro physical QA assets'
+          git push origin HEAD:${GITHUB_REF_NAME}
