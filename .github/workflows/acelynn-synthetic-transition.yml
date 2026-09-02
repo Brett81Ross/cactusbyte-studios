@@ -7,6 +7,9 @@ on:
         description: Certified signing artifact ID
         required: true
         default: '9850425582'
+  push:
+    branches:
+      - phase7-acelynn-synthetic-transition
 
 permissions:
   contents: read
@@ -75,6 +78,9 @@ jobs:
           emulator-options: -no-window -no-audio -no-snapshot -no-boot-anim -camera-back none
           disable-animations: true
           script: |
+            echo '=== Install external UiAutomator harness for Chrome precondition ==='
+            adb install -r "$HARNESS_APK"
+            adb install -r "$HARNESS_TEST_APK"
             echo '=== Harness precondition: dismiss Chrome first-run if present ==='
             adb shell am instrument -w -r -e class com.cactusbyte.synthetictransition.ChromeFirstRunSetupTest com.cactusbyte.synthetictransition.test/androidx.test.runner.AndroidJUnitRunner
             echo '=== Run exact Acelynn legacy-to-permanent transition ==='
