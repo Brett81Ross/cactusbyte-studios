@@ -77,11 +77,15 @@ public class AcelynnTransitionTest {
         UiObject2 export = scrollToText("Export session report", UI_TIMEOUT_MS);
         waitUntilEnabled(export, UI_TIMEOUT_MS);
         export.click();
+        device.waitForIdle();
+
+        // The production migration bridge deliberately uses the literal legacy wrapper's
+        // ACTION_VIEW handoff. Follow that external-browser path and perform the real second tap;
+        // do not manufacture a backup from the test harness.
+        completeLegacyExternalBackupDownload();
         SystemClock.sleep(2_500);
 
         // File existence and JSON integrity are intentionally verified by adb in the workflow.
-        // If the legacy export cannot escape WebView, the workflow must stop RED rather than
-        // manufacturing a backup inside this harness.
         passed = true;
     }
 
@@ -129,6 +133,71 @@ public class AcelynnTransitionTest {
         assertTrue("Acelynn launch command failed: " + result,
                 result.contains("Status: ok") || result.contains("cmp=" + ACELYNN_PACKAGE));
         device.waitForIdle();
+    }
+
+    private void completeLegacyExternalBackupDownload() {
+        long deadline = SystemClock.uptimeMillis() + PAGE_TIMEOUT_MS;
+        while (SystemClock.uptimeMillis() < deadline) {
+            if (findTextOrContains("No app can open this download.") != null) {
+                captureDiagnostics("legacy-bridge-no-handler");
+                fail("LEGACY_BRIDGE_FAILURE: legacy Export still produced an unopenable download instead of the HTTPS migration handoff");
+                return;
+            }
+
+            if (findTextOrContains("Download Acelynn backup") != null) {
+                clickFreshText("Download Acelynn backup", UI_TIMEOUT_MS);
+                device.waitForIdle();
+                return;
+            }
+
+            // Android resolver and Chrome first-run surfaces vary by API/image. These are bounded
+            // compatibility clicks only; success still requires the real production migration page.
+            if (clickOptionalText("Chrome") ||
+                    clickOptionalText("Just once") ||
+                    clickOptionalText("Only this time") ||
+                    clickOptionalText("Accept & continue") ||
+                    clickOptionalText("Use without an account") ||
+                    clickOptionalText("Continue without an account") ||
+                    clickOptionalText("No thanks") ||
+                    clickOptionalText("Got it")) {
+                device.waitForIdle();
+                SystemClock.sleep(350);
+                continue;
+            }
+
+            SystemClock.sleep(250);
+        }
+
+        captureDiagnostics("legacy-browser-handoff-timeout");
+        fail("LEGACY_BROWSER_FAILURE: HTTPS migration handoff did not reach the external Acelynn backup page");
+    }
+
+    private boolean clickOptionalText(String text) {
+        UiObject2 object = findTextOrContains(text);
+        if (object == null) return false;
+        try {
+            object.click();
+            return true;
+        } catch (StaleObjectException ignored) {
+            return false;
+        }
+    }
+
+    private void clickFreshText(String text, long timeoutMs) {
+        long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 object = findTextOrContains(text);
+            if (object != null) {
+                try {
+                    object.click();
+                    return;
+                } catch (StaleObjectException ignored) {
+                    device.waitForIdle();
+                }
+            }
+            SystemClock.sleep(200);
+        }
+        fail("Could not click fresh UI text: " + text);
     }
 
     private void chooseDocument(String fileName) {
@@ -364,13 +433,21 @@ public class AcelynnTransitionTest {
     private void clickText(String text, long timeoutMs) {
         UiObject2 object = waitForTextOrContains(text, timeoutMs);
         assertNotNull("Could not find UI text: " + text, object);
-        object.click();
+        try {
+            object.click();
+        } catch (StaleObjectException stale) {
+            clickFreshText(text, timeoutMs);
+        }
         device.waitForIdle();
     }
 
     private void clickTextWithScroll(String text, long timeoutMs) {
         UiObject2 object = scrollToText(text, timeoutMs);
-        object.click();
+        try {
+            object.click();
+        } catch (StaleObjectException stale) {
+            clickFreshText(text, timeoutMs);
+        }
         device.waitForIdle();
     }
 
