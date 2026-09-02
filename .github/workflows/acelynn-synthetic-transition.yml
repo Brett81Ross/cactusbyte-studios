@@ -1,12 +1,6 @@
 name: Acelynn Synthetic Transition (Manual)
 
 on:
-  push:
-    branches:
-      - phase7-acelynn-synthetic-transition
-    paths:
-      - 'tests/synthetic-transition/**'
-      - '.github/workflows/acelynn-synthetic-transition.yml'
   workflow_dispatch:
     inputs:
       permanent_artifact_id:
