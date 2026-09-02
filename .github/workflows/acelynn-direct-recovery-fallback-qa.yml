@@ -1,4 +1,5 @@
 name: Acelynn Direct Recovery Fallback QA
+# deterministic settle rerun after generated wrapper commit
 
 on:
   push:
