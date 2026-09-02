@@ -12,6 +12,8 @@ const check = (condition, message) => {
 const gradlePath = 'android-packager/app/build.gradle.kts';
 const activityPath = 'android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java';
 const qaSourceRoot = 'android-packager/app/src/acelynnproQaDebug';
+const qaActivityPath = path.join(qaSourceRoot, 'java/com/cactusbyte/wrapper/QaMainActivity.java');
+const qaManifestPath = path.join(qaSourceRoot, 'AndroidManifest.xml');
 const assetRoot = path.join(qaSourceRoot, 'assets/acelynnqa');
 const gradle = fs.readFileSync(gradlePath, 'utf8');
 const activity = fs.readFileSync(activityPath, 'utf8');
@@ -32,6 +34,25 @@ check(activity.includes('MediaStore.Downloads.RELATIVE_PATH'), 'QA JSON export m
 check(activity.includes('Downloads/AcelynnProQA'), 'QA download destination is not explicit');
 check(activity.includes('window.__cactusQaDownloadBridgeInstalled'), 'blob-download interception is missing');
 check(!activity.includes('https://acelynn.vercel.app'), 'MainActivity must not hardcode the production Acelynn URL');
+
+check(fs.existsSync(qaActivityPath), 'QA-specific Android activity is missing');
+check(fs.existsSync(qaManifestPath), 'QA-specific Android manifest overlay is missing');
+if (fs.existsSync(qaActivityPath)) {
+  const qaActivity = fs.readFileSync(qaActivityPath, 'utf8');
+  check(qaActivity.includes('public final class QaMainActivity extends MainActivity'), 'QA activity must layer over the shared wrapper');
+  check(qaActivity.includes('QA_ASSET_HOST = "appassets.androidplatform.net"'), 'QA microphone origin allowlist is missing');
+  check(qaActivity.includes('request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE})'), 'QA bridge must grant audio capture explicitly');
+  check(!qaActivity.includes('request.grant(request.getResources())'), 'QA bridge must never grant the entire WebView resource request');
+  check(qaActivity.includes('Manifest.permission.RECORD_AUDIO'), 'QA bridge must verify Android RECORD_AUDIO permission');
+  check(qaActivity.includes("WebView audio capture failed:"), 'QA getUserMedia diagnostic must expose the real WebView error');
+  check(qaActivity.includes('Intent.ACTION_OPEN_DOCUMENT'), 'QA restore chooser must remain available after WebChromeClient replacement');
+}
+if (fs.existsSync(qaManifestPath)) {
+  const qaManifest = fs.readFileSync(qaManifestPath, 'utf8');
+  check(qaManifest.includes('android.permission.MODIFY_AUDIO_SETTINGS'), 'QA manifest must include MODIFY_AUDIO_SETTINGS for WebView capture compatibility');
+  check(qaManifest.includes('android:name=".MainActivity"') && qaManifest.includes('tools:node="remove"'), 'QA manifest must remove the shared launcher activity');
+  check(qaManifest.includes('android:name=".QaMainActivity"'), 'QA manifest must launch the QA-specific activity');
+}
 
 for (const file of ['index.html', 'acelynn-recovery.js', 'manifest.json', 'acelynnpro.png', 'PINNED_SOURCE.json']) {
   check(fs.existsSync(path.join(assetRoot, file)), `pinned QA asset missing: ${file}`);
