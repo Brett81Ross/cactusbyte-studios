@@ -46,14 +46,18 @@ if (fs.existsSync(qaActivityPath)) {
   check(qaActivity.includes('Manifest.permission.RECORD_AUDIO'), 'QA bridge must verify Android RECORD_AUDIO permission');
   check(qaActivity.includes("WebView audio capture failed:"), 'QA getUserMedia diagnostic must expose the real WebView error');
   check(qaActivity.includes('Intent.ACTION_OPEN_DOCUMENT'), 'QA restore chooser must remain available after WebChromeClient replacement');
-  check(qaActivity.includes('window.__cactusQaRestoreFeedbackInstalled'), 'QA invalid-backup feedback hook is missing');
-  check(qaActivity.includes("notice.setAttribute('role','alert')"), 'QA invalid-backup feedback must be exposed as an alert');
+  check(qaActivity.includes('installNativeQaBackupFeedbackBar()'), 'QA must install a native backup feedback bar');
+  check(qaActivity.includes('private String validateQaBackupUri(Uri uri)'), 'QA must validate selected backups natively');
+  check(qaActivity.includes('new JSONObject(raw)'), 'QA native validation must parse the selected JSON before WebView import');
+  check(qaActivity.includes('qaFileCallback.onReceiveValue(null)'), 'QA must cancel invalid imports before they reach the WebView');
   check(qaActivity.includes('Backup rejected — '), 'QA invalid-backup feedback must clearly state rejection');
   check(qaActivity.includes('Your saved checks were not changed.'), 'QA invalid-backup feedback must confirm data preservation');
-  check(qaActivity.includes("payload.app!=='Acelynn Pro'"), 'QA feedback must detect wrong-app backups');
-  check(qaActivity.includes("payload.schema!=='acelynn-pro-backup-v1'"), 'QA feedback must detect unsupported schemas');
-  check(qaActivity.includes('Number(payload.version)!==1'), 'QA feedback must detect unsupported versions');
-  check(qaActivity.includes('Backup is not valid JSON.'), 'QA feedback must detect malformed JSON');
+  check(qaActivity.includes('This backup belongs to a different app.'), 'QA native validation must detect wrong-app backups');
+  check(qaActivity.includes('Unsupported Acelynn Pro backup schema.'), 'QA native validation must detect unsupported schemas');
+  check(qaActivity.includes('Unsupported Acelynn Pro backup version.'), 'QA native validation must detect unsupported versions');
+  check(qaActivity.includes('Backup is not valid JSON.'), 'QA native validation must detect malformed JSON');
+  check(qaActivity.includes('qaBackupFeedback.setVisibility(View.VISIBLE)'), 'QA rejection feedback must become persistently visible in the native UI');
+  check(!qaActivity.includes('__cactusQaRestoreFeedbackInstalled'), 'fragile DOM-timing restore feedback hook must be removed');
 }
 if (fs.existsSync(qaManifestPath)) {
   const qaManifest = fs.readFileSync(qaManifestPath, 'utf8');
