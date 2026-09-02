@@ -7,6 +7,12 @@ on:
         description: Certified signing artifact ID
         required: true
         default: '9850425582'
+  # One-shot connector trigger. Remove immediately after this post-deploy run starts.
+  push:
+    branches:
+      - phase7-acelynn-synthetic-transition
+    paths:
+      - '.github/workflows/acelynn-synthetic-transition.yml'
 
 permissions:
   contents: read
