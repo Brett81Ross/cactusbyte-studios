@@ -39,24 +39,36 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Apply Acelynn Direct same-origin recovery fallback
-        run: python3 tools/apply-acelynn-direct-recovery-fallback.py
+      - name: Apply or verify Acelynn Direct same-origin recovery fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          main='android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java'
+          if grep -Fq 'ACELYNN_RECOVERY_PATH = "/__cactusbyte_recovery__/"' "$main" && \
+             grep -Fq 'Built-in Recovery · certified 6363059183ce' "$main"; then
+            echo 'Acelynn Direct same-origin recovery fallback already settled.'
+          else
+            python3 tools/apply-acelynn-direct-recovery-fallback.py
+          fi
 
       - name: Verify source contract and certified asset identity
         run: node tools/qa-acelynn-direct-recovery-fallback.mjs
 
-      - name: Verify generated diff is only shared wrapper logic
+      - name: Verify generated diff is empty or shared wrapper logic only
         shell: bash
         run: |
           set -euo pipefail
           git diff --check
           changed="$(git diff --name-only | sort)"
           expected='android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java'
-          test "$changed" = "$expected" || {
+          if [[ -n "$changed" && "$changed" != "$expected" ]]; then
             echo "Unexpected generated changes:" >&2
             printf '%s\n' "$changed" >&2
             exit 1
-          }
+          fi
+          if [[ -z "$changed" ]]; then
+            echo 'Generated Acelynn Direct fallback already settled.'
+          fi
 
       - name: Install icon tooling
         run: python3 -m pip install --disable-pip-version-check pillow cairosvg
