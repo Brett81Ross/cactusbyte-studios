@@ -1,5 +1,6 @@
 name: Acelynn Pro Physical QA APK
 
+# The isolated QA branch reruns this workflow after pinned assets are generated to prove deterministic settle.
 on:
   workflow_dispatch:
   push:
