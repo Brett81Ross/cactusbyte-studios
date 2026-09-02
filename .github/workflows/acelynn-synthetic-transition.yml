@@ -7,14 +7,6 @@ on:
         description: Certified signing artifact ID
         required: true
         default: '9850425582'
-  # Temporary isolated-branch trigger. Remove after this workflow is proven.
-  push:
-    branches:
-      - phase7-acelynn-synthetic-transition
-    paths:
-      - 'tests/synthetic-transition/**'
-      - 'tests/fixtures/generate-check-wav.py'
-      - '.github/workflows/acelynn-synthetic-transition.yml'
 
 permissions:
   contents: read
