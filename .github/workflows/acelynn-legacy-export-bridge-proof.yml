@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: node tests/synthetic-transition/web-bridge/stage-live-source.mjs acelynn-live-source
 
-      - name: Verify four-file staged diff and no app rewrite
+      - name: Verify four-file staged diff and migration routing
         shell: bash
         run: |
           set -euo pipefail
@@ -68,14 +68,23 @@ jobs:
 
           git -C acelynn-live-source diff --exit-code -- app-base.html index.html manifest.json vercel.json
           grep -Fq '/legacy-export-bridge.js?v=cutover1' acelynn-live-source/api/demo-shell.js
-          grep -Fq "self.registration.unregister()" acelynn-live-source/sw.js
-          ! grep -Fq "addEventListener('fetch'" acelynn-live-source/sw.js
+          grep -Fq "const MIGRATION_SHELL='/api/demo-shell.js'" acelynn-live-source/sw.js
+          grep -Fq "addEventListener('fetch'" acelynn-live-source/sw.js
+          grep -Fq "request.mode!=='navigate'" acelynn-live-source/sw.js
+          grep -Fq "url.pathname!=='/'&&url.pathname!=='/index.html'" acelynn-live-source/sw.js
+          grep -Fq "fetch(MIGRATION_SHELL,{cache:'no-store',credentials:'same-origin'})" acelynn-live-source/sw.js
+          grep -Fq "self.clients.claim()" acelynn-live-source/sw.js
+          grep -Fq "self.clients.matchAll({type:'window',includeUncontrolled:true})" acelynn-live-source/sw.js
+          ! grep -Fq "caches.open(" acelynn-live-source/sw.js
+          ! grep -Fq "cache.put(" acelynn-live-source/sw.js
+          ! grep -Fq "self.registration.unregister()" acelynn-live-source/sw.js
           node --check acelynn-live-source/legacy-export-bridge.js
+          node --check acelynn-live-source/sw.js
           node --check tests/synthetic-transition/web-bridge/stage-live-source.mjs
 
           git -C acelynn-live-source diff -- api/demo-shell.js sw.js legacy-export-bridge.js legacy-export.html > acelynn-legacy-export-bridge.patch
           test -s acelynn-legacy-export-bridge.patch
-          echo 'Staged Acelynn migration diff is exactly four files; app-base/index/vercel config remain untouched.'
+          echo 'Staged Acelynn migration diff is exactly four files; root migration is routed through the injected no-store shell without cache writes.'
 
       - name: Upload staged bridge proof
         uses: actions/upload-artifact@v4
