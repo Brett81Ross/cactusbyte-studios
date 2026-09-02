@@ -1,0 +1,45 @@
+name: CactusByte Runtime Staging Identity QA
+
+on:
+  push:
+    branches: [phase7-runtime-staging-qa]
+    paths:
+      - 'src/lib/orbitgather-recovery.ts'
+      - '.env.example'
+      - 'tools/qa-orbitgather-identity-recovery.mjs'
+      - '.github/workflows/runtime-staging-identity-qa.yml'
+      - 'package.json'
+      - 'vercel.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  staging-identity:
+    runs-on: ubuntu-24.04
+    env:
+      CACTUSBYTE_IDENTITY_RECOVERY_NAMESPACE: phase7-orbitgather-zfold-qa
+      ORBITGATHER_RECOVERY_BRIDGE_SECRET: qa-only-placeholder-secret-that-is-longer-than-32-bytes
+    steps:
+      - name: Checkout exact staging branch
+        uses: actions/checkout@v5
+      - name: Verify staging namespace contract
+        run: |
+          grep -q 'CACTUSBYTE_IDENTITY_RECOVERY_NAMESPACE' src/lib/orbitgather-recovery.ts
+          grep -q 'identityRecoveryNamespaces' src/lib/orbitgather-recovery.ts
+          grep -q 'CACTUSBYTE_IDENTITY_RECOVERY_NAMESPACE=' .env.example
+          node tools/qa-orbitgather-identity-recovery.mjs
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - name: Install dependencies without deployment
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run CactusByte preflight and production build
+        run: npm run preflight
+      - name: Reject deployment side effects
+        run: |
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          echo 'No Vercel or Supabase deployment executed by staging identity QA.'
