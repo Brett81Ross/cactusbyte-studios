@@ -1,0 +1,291 @@
+name: Acelynn Synthetic Transition (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      permanent_artifact_id:
+        description: Certified signing artifact ID
+        required: true
+        default: '9850425582'
+  # Temporary isolated-branch trigger for proving this manual workflow before integration.
+  # Remove this push block after the branch run settles.
+  push:
+    branches:
+      - phase7-acelynn-synthetic-transition
+    paths:
+      - 'tests/synthetic-transition/**'
+      - 'tests/fixtures/generate-check-wav.py'
+      - '.github/workflows/acelynn-synthetic-transition.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  transition-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      LEGACY_SOURCE_SHA: '69600ed3561aacb7d415ee0dd4cbec43abf0e477'
+      CERTIFIED_FOUNDATION_SHA: 'c2ea2bd182956b1202f33e499cb54019b358a272'
+      CERTIFIED_SIGNING_RUN_ID: '33639746045'
+      CERTIFIED_ARTIFACT_NAME: 'cactusbyte-brand-distribution-signed-apks'
+      PERMANENT_ARTIFACT_ID: ${{ github.event.inputs.permanent_artifact_id || '9850425582' }}
+
+    steps:
+      - name: Checkout synthetic test branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Checkout exact legacy baseline separately
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.LEGACY_SOURCE_SHA }}
+          path: legacy-source
+          fetch-depth: 1
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'platform-tools'
+
+      - name: Build external UiAutomator harness
+        run: gradle -p tests/synthetic-transition assembleDebug assembleDebugAndroidTest --stacktrace
+
+      - name: Locate harness APKs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t app_apks < <(find tests/synthetic-transition/build/outputs/apk -type f -name '*.apk' ! -path '*/androidTest/*' | sort)
+          mapfile -t test_apks < <(find tests/synthetic-transition/build/outputs/apk -type f -name '*.apk' -path '*/androidTest/*' | sort)
+          test "${#app_apks[@]}" -eq 1
+          test "${#test_apks[@]}" -eq 1
+          echo "HARNESS_APK=${app_apks[0]}" >> "$GITHUB_ENV"
+          echo "HARNESS_TEST_APK=${test_apks[0]}" >> "$GITHUB_ENV"
+          printf 'Harness APK: %s\nHarness test APK: %s\n' "${app_apks[0]}" "${test_apks[0]}"
+
+      - name: Build exact legacy Acelynn debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check pillow cairosvg
+          python3 legacy-source/android-packager/fetch_icons.py
+          gradle -p legacy-source/android-packager :app:assembleAcelynnproDebug --stacktrace
+          mapfile -t legacy_apks < <(find legacy-source/android-packager/app/build/outputs/apk -type f -iname '*acelynnpro*debug*.apk' | sort)
+          test "${#legacy_apks[@]}" -eq 1
+          echo "LEGACY_APK=${legacy_apks[0]}" >> "$GITHUB_ENV"
+
+      - name: Download exact certified permanent signing artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/permanent-artifact" "$RUNNER_TEMP/signed-apks"
+          meta="$RUNNER_TEMP/permanent-artifact/metadata.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${PERMANENT_ARTIFACT_ID}" > "$meta"
+          python3 - "$meta" "$CERTIFIED_ARTIFACT_NAME" "$CERTIFIED_SIGNING_RUN_ID" "$CERTIFIED_FOUNDATION_SHA" <<'PY'
+          import json, sys
+          path, expected_name, expected_run, expected_sha = sys.argv[1:]
+          data = json.load(open(path, encoding='utf-8'))
+          assert str(data['id']) == str(data.get('id'))
+          assert data['name'] == expected_name, (data['name'], expected_name)
+          assert not data['expired'], 'Certified signing artifact has expired.'
+          run = data.get('workflow_run') or {}
+          assert str(run.get('id')) == expected_run, (run.get('id'), expected_run)
+          assert run.get('head_sha') == expected_sha, (run.get('head_sha'), expected_sha)
+          print('Certified artifact metadata matches the protected signing run and foundation SHA.')
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${PERMANENT_ARTIFACT_ID}/zip" > "$RUNNER_TEMP/permanent-artifact/artifact.zip"
+          unzip -q "$RUNNER_TEMP/permanent-artifact/artifact.zip" -d "$RUNNER_TEMP/signed-apks"
+
+      - name: Locate and verify exact permanent Acelynn Direct APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          test -x "$APKSIGNER"
+          test -x "$AAPT"
+          mapfile -t candidates < <(find "$RUNNER_TEMP/signed-apks" -type f -iname '*.apk' | grep -Ei 'acelynnpro.*direct.*release|acelynnpro-direct-release' | sort)
+          printf 'Acelynn Direct candidates:\n%s\n' "${candidates[*]}"
+          test "${#candidates[@]}" -eq 1
+          permanent="${candidates[0]}"
+          expected="$(python3 - <<'PY'
+          import json
+          data=json.load(open('android-packager/signing-manifest.json',encoding='utf-8'))
+          app=next(x for x in data['apps'] if x['flavor']=='acelynnpro')
+          print(app['expectedSha256Fingerprint'].replace(':','').upper())
+          PY
+          )"
+          "$APKSIGNER" verify --verbose --print-certs "$permanent" > "$RUNNER_TEMP/permanent-signature.txt"
+          cat "$RUNNER_TEMP/permanent-signature.txt"
+          actual="$(awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print toupper($2); exit}' "$RUNNER_TEMP/permanent-signature.txt")"
+          test -n "$actual"
+          test "$actual" = "$expected" || { echo "Permanent certificate mismatch: expected $expected got $actual" >&2; exit 1; }
+          "$AAPT" dump badging "$permanent" > "$RUNNER_TEMP/permanent-badging.txt"
+          grep -Fq "package: name='com.cactusbyte.acelynnpro'" "$RUNNER_TEMP/permanent-badging.txt"
+          ! grep -Fq 'application-debuggable' "$RUNNER_TEMP/permanent-badging.txt"
+          unzip -p "$permanent" assets/index.html > "$RUNNER_TEMP/permanent-index.html"
+          unzip -p "$permanent" assets/acelynn-recovery.js > "$RUNNER_TEMP/permanent-recovery.js"
+          cmp android-packager/app/src/acelynnproDirect/assets/index.html "$RUNNER_TEMP/permanent-index.html"
+          cmp android-packager/app/src/acelynnproDirect/assets/acelynn-recovery.js "$RUNNER_TEMP/permanent-recovery.js"
+          echo "PERMANENT_APK=$permanent" >> "$GITHUB_ENV"
+          echo "APKSIGNER=$APKSIGNER" >> "$GITHUB_ENV"
+          echo "AAPT=$AAPT" >> "$GITHUB_ENV"
+          echo 'Permanent APK package, non-debuggable state, certificate, and certified fallback assets verified.'
+
+      - name: Verify legacy APK represents the pre-cutover signer boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$AAPT" dump badging "$LEGACY_APK" > "$RUNNER_TEMP/legacy-badging.txt"
+          grep -Fq "package: name='com.cactusbyte.acelynnpro'" "$RUNNER_TEMP/legacy-badging.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$LEGACY_APK" > "$RUNNER_TEMP/legacy-signature.txt"
+          cat "$RUNNER_TEMP/legacy-signature.txt"
+          legacy_digest="$(awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print toupper($2); exit}' "$RUNNER_TEMP/legacy-signature.txt")"
+          permanent_digest="$(awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print toupper($2); exit}' "$RUNNER_TEMP/permanent-signature.txt")"
+          test -n "$legacy_digest"
+          test "$legacy_digest" != "$permanent_digest" || { echo 'Legacy and permanent signers unexpectedly match.' >&2; exit 1; }
+          grep -Eq 'certificate DN: .*CN=Android Debug' "$RUNNER_TEMP/legacy-signature.txt"
+          echo 'Legacy package uses the old debug signing boundary and differs from the permanent identity.'
+
+      - name: Generate deterministic WAV fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/fixture"
+          python3 tests/fixtures/generate-check-wav.py "$RUNNER_TEMP/fixture/check.wav" | tee "$RUNNER_TEMP/fixture/manifest.txt"
+          sha256sum "$RUNNER_TEMP/fixture/check.wav" | tee -a "$RUNNER_TEMP/fixture/manifest.txt"
+          echo "FIXTURE_WAV=$RUNNER_TEMP/fixture/check.wav" >> "$GITHUB_ENV"
+
+      - name: Enable KVM access
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: Run exact legacy to permanent transition on API 36 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -no-audio -no-snapshot -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            mkdir -p synthetic-diagnostics
+            cleanup() {
+              set +e
+              adb logcat -d > synthetic-diagnostics/logcat.txt
+              adb shell uiautomator dump /sdcard/window-final.xml >/dev/null 2>&1
+              adb pull /sdcard/window-final.xml synthetic-diagnostics/window-final.xml >/dev/null 2>&1
+              adb pull /sdcard/Android/data/com.cactusbyte.synthetictransition/files/diagnostics synthetic-diagnostics/harness >/dev/null 2>&1
+              adb shell ls -la /sdcard/Download > synthetic-diagnostics/downloads-listing.txt 2>&1
+              set -e
+            }
+            trap cleanup EXIT
+
+            adb wait-for-device
+            adb install -r "$HARNESS_APK"
+            adb install -r "$HARNESS_TEST_APK"
+            adb install -r "$LEGACY_APK"
+            adb push "$FIXTURE_WAV" /sdcard/Download/check.wav
+            adb shell test -s /sdcard/Download/check.wav
+
+            echo '=== Phase 1: legacy real-user export ==='
+            adb shell am instrument -w -r \
+              -e class com.cactusbyte.synthetictransition.AcelynnTransitionTest#testLegacyExport \
+              com.cactusbyte.synthetictransition.test/androidx.test.runner.AndroidJUnitRunner \
+              | tee synthetic-diagnostics/legacy-instrumentation.txt
+
+            found=0
+            for _ in $(seq 1 30); do
+              if adb shell test -s /sdcard/Download/acelynn-session-report.json; then
+                found=1
+                break
+              fi
+              sleep 1
+            done
+            if [ "$found" -ne 1 ]; then
+              echo 'LEGACY EXPORT GATE RED: the real Export session report action did not create /sdcard/Download/acelynn-session-report.json.' >&2
+              exit 21
+            fi
+
+            adb pull /sdcard/Download/acelynn-session-report.json synthetic-diagnostics/legacy-export.json
+            python3 - synthetic-diagnostics/legacy-export.json <<'PY'
+            import json, sys
+            path=sys.argv[1]
+            payload=json.load(open(path,encoding='utf-8'))
+            assert payload.get('app') == 'Acelynn Pro', payload.get('app')
+            snapshots=payload.get('snapshots')
+            assert isinstance(snapshots,list) and len(snapshots) == 1, snapshots
+            snap=snapshots[0]
+            assert snap.get('profile') == 'Balanced mix', snap
+            assert snap.get('focus') == 'Mids', snap
+            assert isinstance(snap.get('bands'),list) and len(snap['bands']) == 5, snap
+            print('Legacy export JSON is valid and contains the expected real UI-created snapshot.')
+            PY
+            before_hash="$(sha256sum synthetic-diagnostics/legacy-export.json | awk '{print $1}')"
+            printf '%s\n' "$before_hash" > synthetic-diagnostics/legacy-export.sha256
+
+            echo '=== Phase 2: uninstall boundary ==='
+            adb uninstall com.cactusbyte.acelynnpro
+            if adb shell pm list packages | grep -Fq 'package:com.cactusbyte.acelynnpro'; then
+              echo 'Legacy package still installed after uninstall.' >&2
+              exit 22
+            fi
+            adb shell test -s /sdcard/Download/acelynn-session-report.json
+            adb pull /sdcard/Download/acelynn-session-report.json synthetic-diagnostics/legacy-export-after-uninstall.json
+            after_hash="$(sha256sum synthetic-diagnostics/legacy-export-after-uninstall.json | awk '{print $1}')"
+            test "$before_hash" = "$after_hash" || { echo 'Backup changed across uninstall.' >&2; exit 23; }
+
+            echo '=== Phase 3: certified permanent restore ==='
+            adb install "$PERMANENT_APK"
+            adb shell pm list packages | grep -Fq 'package:com.cactusbyte.acelynnpro'
+            adb shell am instrument -w -r \
+              -e class com.cactusbyte.synthetictransition.AcelynnTransitionTest#testPermanentRestore \
+              com.cactusbyte.synthetictransition.test/androidx.test.runner.AndroidJUnitRunner \
+              | tee synthetic-diagnostics/permanent-instrumentation.txt
+
+            echo 'ACELYNN SYNTHETIC TRANSITION GATE GREEN.'
+
+      - name: Upload synthetic transition evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acelynn-synthetic-transition-evidence
+          path: |
+            synthetic-diagnostics/**
+            ${{ runner.temp }}/fixture/manifest.txt
+            ${{ runner.temp }}/permanent-signature.txt
+            ${{ runner.temp }}/legacy-signature.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Confirm no production side effects
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          echo 'No Vercel deployment, Supabase change, real-device uninstall, Play publication, or main merge was performed.'
