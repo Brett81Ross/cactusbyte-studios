@@ -31,6 +31,7 @@ public class AcelynnTransitionTest {
     private static final String LEGACY_BACKUP_NAME = "acelynn-session-report.json";
     private static final String GOOGLE_DOCUMENTS_UI = "com.google.android.documentsui";
     private static final String AOSP_DOCUMENTS_UI = "com.android.documentsui";
+    private static final String CHROME_PACKAGE = "com.android.chrome";
     private static final long PAGE_TIMEOUT_MS = 25_000;
     private static final long UI_TIMEOUT_MS = 12_000;
 
@@ -144,6 +145,15 @@ public class AcelynnTransitionTest {
                 return;
             }
 
+            // Chrome can show this promo only after the real HTTPS handoff has already loaded.
+            // Dismiss it by stable Chrome resource ID before looking for the Acelynn page button;
+            // the page controls are hidden from the accessibility tree while the modal is active.
+            if (dismissChromeNotificationsPromptIfPresent()) {
+                device.waitForIdle();
+                SystemClock.sleep(350);
+                continue;
+            }
+
             if (findTextOrContains("Download Acelynn backup") != null) {
                 clickFreshText("Download Acelynn backup", UI_TIMEOUT_MS);
                 device.waitForIdle();
@@ -170,6 +180,31 @@ public class AcelynnTransitionTest {
 
         captureDiagnostics("legacy-browser-handoff-timeout");
         fail("LEGACY_BROWSER_FAILURE: HTTPS migration handoff did not reach the external Acelynn backup page");
+    }
+
+    private boolean dismissChromeNotificationsPromptIfPresent() {
+        UiObject2 prompt = device.findObject(By.text("Chrome notifications make things easier"));
+        if (prompt == null) {
+            prompt = device.findObject(By.textContains("Chrome notifications"));
+        }
+        UiObject2 dismiss = device.findObject(By.res(CHROME_PACKAGE + ":id/negative_button"));
+        if (prompt == null && dismiss == null) return false;
+
+        for (int attempt = 0; attempt < 3; attempt++) {
+            UiObject2 fresh = device.findObject(By.res(CHROME_PACKAGE + ":id/negative_button"));
+            if (fresh == null) fresh = device.findObject(By.text("No thanks"));
+            if (fresh == null) return false;
+            try {
+                fresh.click();
+                return true;
+            } catch (StaleObjectException ignored) {
+                device.waitForIdle();
+                SystemClock.sleep(150);
+            }
+        }
+
+        captureDiagnostics("chrome-notifications-prompt-stuck");
+        return false;
     }
 
     private boolean clickOptionalText(String text) {
