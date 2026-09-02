@@ -10,6 +10,7 @@ import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.StaleObjectException;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
@@ -79,7 +80,7 @@ public class AcelynnTransitionTest {
         SystemClock.sleep(2_500);
 
         // File existence and JSON integrity are intentionally verified by adb in the workflow.
-        // If the legacy blob: URL cannot escape WebView, the workflow must stop RED rather than
+        // If the legacy export cannot escape WebView, the workflow must stop RED rather than
         // manufacturing a backup inside this harness.
         passed = true;
     }
@@ -133,25 +134,22 @@ public class AcelynnTransitionTest {
     private void chooseDocument(String fileName) {
         SystemClock.sleep(900);
 
-        // Only accept a real document row. The Android 16 DocumentsUI search field can contain the
-        // exact filename text, so generic By.text()/textContains() matching is unsafe here.
-        UiObject2 file = waitForDocumentCandidate(fileName, 2_000);
-        if (file == null) {
-            file = searchDocumentsUi(fileName);
+        // Only accept a real document row. Android 16 DocumentsUI redraws aggressively, so
+        // candidates are always re-queried immediately before clicking rather than retained.
+        if (waitForDocumentCandidate(fileName, 2_000) == null) {
+            searchDocumentsUi(fileName);
         }
 
-        if (file == null) {
+        if (waitForDocumentCandidate(fileName, 1_000) == null) {
             openDownloadsRoot();
-            file = waitForDocumentCandidate(fileName, UI_TIMEOUT_MS);
         }
 
-        if (file == null) {
+        if (!clickFreshDocumentCandidate(fileName, UI_TIMEOUT_MS)) {
             captureDiagnostics("documentsui-missing-real-file-" + safeName(fileName));
-            fail("HARNESS_FAILURE: Android document picker could not find a real file row for " + fileName);
+            fail("HARNESS_FAILURE: Android document picker could not click a real file row for " + fileName);
             return;
         }
 
-        file.click();
         device.waitForIdle();
         waitForDocumentPickerToClose(fileName);
     }
@@ -166,7 +164,15 @@ public class AcelynnTransitionTest {
         }
         if (search == null) return null;
 
-        search.click();
+        try {
+            search.click();
+        } catch (StaleObjectException stale) {
+            UiObject2 freshSearch = device.findObject(By.desc("Search"));
+            if (freshSearch == null) freshSearch = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
+            if (freshSearch == null) freshSearch = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
+            if (freshSearch == null) return null;
+            freshSearch.click();
+        }
         device.waitForIdle();
 
         UiObject2 input = device.wait(
@@ -187,7 +193,15 @@ public class AcelynnTransitionTest {
             return null;
         }
 
-        input.setText(fileName);
+        try {
+            input.setText(fileName);
+        } catch (StaleObjectException stale) {
+            UiObject2 freshInput = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/search_src_text"));
+            if (freshInput == null) freshInput = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/search_src_text"));
+            if (freshInput == null) freshInput = device.findObject(By.clazz("android.widget.AutoCompleteTextView"));
+            if (freshInput == null) return null;
+            freshInput.setText(fileName);
+        }
         SystemClock.sleep(500);
         device.pressEnter();
         device.waitForIdle();
@@ -203,12 +217,20 @@ public class AcelynnTransitionTest {
     private UiObject2 findDocumentCandidate(String fileName) {
         List<UiObject2> exact = device.findObjects(By.text(fileName));
         for (UiObject2 candidate : exact) {
-            if (isRealDocumentCandidate(candidate)) return candidate;
+            try {
+                if (isRealDocumentCandidate(candidate)) return candidate;
+            } catch (StaleObjectException ignored) {
+                // DocumentsUI redrew; the next polling iteration will get a fresh node.
+            }
         }
 
         List<UiObject2> contains = device.findObjects(By.textContains(fileName));
         for (UiObject2 candidate : contains) {
-            if (isRealDocumentCandidate(candidate)) return candidate;
+            try {
+                if (isRealDocumentCandidate(candidate)) return candidate;
+            } catch (StaleObjectException ignored) {
+                // DocumentsUI redrew; the next polling iteration will get a fresh node.
+            }
         }
         return null;
     }
@@ -221,6 +243,23 @@ public class AcelynnTransitionTest {
             SystemClock.sleep(250);
         }
         return null;
+    }
+
+    private boolean clickFreshDocumentCandidate(String fileName, long timeoutMs) {
+        long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 candidate = findDocumentCandidate(fileName);
+            if (candidate != null) {
+                try {
+                    candidate.click();
+                    return true;
+                } catch (StaleObjectException ignored) {
+                    device.waitForIdle();
+                }
+            }
+            SystemClock.sleep(200);
+        }
+        return false;
     }
 
     private boolean isRealDocumentCandidate(UiObject2 candidate) {
@@ -250,11 +289,7 @@ public class AcelynnTransitionTest {
         while (SystemClock.uptimeMillis() < deadline) {
             String currentPackage = device.getCurrentPackageName();
             if (ACELYNN_PACKAGE.equals(currentPackage)) return;
-            if (!isDocumentsUiPackage(currentPackage) && currentPackage != null) {
-                SystemClock.sleep(250);
-            } else {
-                SystemClock.sleep(250);
-            }
+            SystemClock.sleep(250);
         }
 
         captureDiagnostics("documentsui-did-not-close-" + safeName(fileName));
@@ -266,7 +301,8 @@ public class AcelynnTransitionTest {
     }
 
     private void openDownloadsRoot() {
-        // If search mode is still active, leave it before opening roots.
+        // Android 16 can invalidate accessibility nodes while search mode/drawer animations settle.
+        // Never retain a UiObject2 across those redraw boundaries; re-query immediately before click.
         UiObject2 searchInput = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/search_src_text"));
         if (searchInput == null) searchInput = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/search_src_text"));
         if (searchInput != null) {
@@ -274,22 +310,39 @@ public class AcelynnTransitionTest {
             device.waitForIdle();
         }
 
-        UiObject2 roots = device.findObject(By.descContains("Show roots"));
-        if (roots == null) roots = device.findObject(By.descContains("Navigate up"));
-
-        if (roots != null) {
-            roots.click();
-            device.waitForIdle();
-        } else {
-            device.click(Math.max(56, device.getDisplayWidth() / 20), Math.max(145, device.getDisplayHeight() / 16));
-            device.waitForIdle();
+        boolean openedRoots = false;
+        for (int attempt = 0; attempt < 3 && !openedRoots; attempt++) {
+            UiObject2 roots = device.findObject(By.descContains("Show roots"));
+            if (roots == null) roots = device.findObject(By.descContains("Navigate up"));
+            if (roots == null) break;
+            try {
+                roots.click();
+                openedRoots = true;
+            } catch (StaleObjectException ignored) {
+                device.waitForIdle();
+                SystemClock.sleep(200);
+            }
         }
 
-        UiObject2 downloads = device.wait(Until.findObject(By.text("Downloads")), 5_000);
-        if (downloads == null) downloads = device.findObject(By.textContains("Download"));
-        if (downloads != null) {
-            downloads.click();
-            device.waitForIdle();
+        if (!openedRoots) {
+            device.click(Math.max(56, device.getDisplayWidth() / 20), Math.max(145, device.getDisplayHeight() / 16));
+        }
+        device.waitForIdle();
+
+        long deadline = SystemClock.uptimeMillis() + 5_000;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 downloads = device.findObject(By.text("Downloads"));
+            if (downloads == null) downloads = device.findObject(By.textContains("Download"));
+            if (downloads != null) {
+                try {
+                    downloads.click();
+                    device.waitForIdle();
+                    return;
+                } catch (StaleObjectException ignored) {
+                    device.waitForIdle();
+                }
+            }
+            SystemClock.sleep(200);
         }
     }
 
@@ -346,7 +399,11 @@ public class AcelynnTransitionTest {
     private void waitUntilEnabled(UiObject2 object, long timeoutMs) {
         long deadline = SystemClock.uptimeMillis() + timeoutMs;
         while (SystemClock.uptimeMillis() < deadline) {
-            if (object.isEnabled()) return;
+            try {
+                if (object.isEnabled()) return;
+            } catch (StaleObjectException stale) {
+                fail("HARNESS_FAILURE: UI element became stale while waiting to enable");
+            }
             SystemClock.sleep(250);
         }
         fail("UI element never became enabled: " + object.getText());
