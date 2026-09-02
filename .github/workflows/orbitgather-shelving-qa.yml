@@ -1,5 +1,6 @@
 name: OrbitGather Shelving QA
 
+# This workflow is intentionally deployment-free and also serves as the deterministic settle gate.
 on:
   push:
     branches: [phase7-shelve-orbitgather, android-release-v2-foundation]
