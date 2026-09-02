@@ -75,6 +75,8 @@ jobs:
           grep -Fq "fetch(MIGRATION_SHELL,{cache:'no-store',credentials:'same-origin'})" acelynn-live-source/sw.js
           grep -Fq "self.clients.claim()" acelynn-live-source/sw.js
           grep -Fq "self.clients.matchAll({type:'window',includeUncontrolled:true})" acelynn-live-source/sw.js
+          grep -Fq "client.navigate(new URL(MIGRATION_SHELL,self.location.origin).href)" acelynn-live-source/sw.js
+          ! grep -Fq "client.navigate(url.href)" acelynn-live-source/sw.js
           ! grep -Fq "caches.open(" acelynn-live-source/sw.js
           ! grep -Fq "cache.put(" acelynn-live-source/sw.js
           ! grep -Fq "self.registration.unregister()" acelynn-live-source/sw.js
@@ -84,7 +86,7 @@ jobs:
 
           git -C acelynn-live-source diff -- api/demo-shell.js sw.js legacy-export-bridge.js legacy-export.html > acelynn-legacy-export-bridge.patch
           test -s acelynn-legacy-export-bridge.patch
-          echo 'Staged Acelynn migration diff is exactly four files; root migration is routed through the injected no-store shell without cache writes.'
+          echo 'Staged Acelynn migration diff is exactly four files; activation routes directly to the injected same-origin shell and future root navigations remain no-store.'
 
       - name: Upload staged bridge proof
         uses: actions/upload-artifact@v4
