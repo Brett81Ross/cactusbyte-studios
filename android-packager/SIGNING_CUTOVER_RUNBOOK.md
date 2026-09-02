@@ -113,7 +113,8 @@ After the permanent-signed install:
 1. Open **Restore / merge backup** and choose the saved JSON file.
 2. Confirm Acelynn downloads a pre-import backup before writing.
 3. Verify the restored snapshot count/content and run one new live/file mix check.
-4. Do not treat service-worker cleanup as part of this recovery step; that behavior change is a separate release-quality batch.
+4. Confirm the exact permanent-signed Direct APK is using a recovery path that is equivalent to the certified recovery implementation. The QA-only pinned local package proves the recovery engine, but does not replace the production-cutover equivalence gate.
+5. Service-worker retirement is already part of the certified recovery source; do not reintroduce the old Acelynn worker during cutover.
 
 ### Acelynn’s ScoutTrace™ — preserve scan history
 
@@ -182,7 +183,7 @@ All of the following must be true before the first uninstall:
 - [ ] CactusByte ID/owner restoration path is verified before hub uninstall.
 - [ ] Rapid Takeoff legacy lifetime-Pro claim is verified before Rapid uninstall, and same-ID clean-install restore is proven after approved bridge-secret configuration.
 - [ ] OrbitGather legacy cloud identity is protected before OrbitGather uninstall, and same-UUID clean-install restore is proven after approved bridge-secret configuration.
-- [ ] Acelynn Pro snapshot export/import runtime round trip is proven before Acelynn Pro uninstall.
+- [ ] Acelynn Pro recovery-engine/device QA is proven **and** the exact permanent-signed Direct APK passes the production-cutover equivalence gate: guaranteed certified recovery access plus a synthetic legacy-signature → export → uninstall → permanent-signature → restore transition on a non-production Android environment.
 - [ ] ScoutTrace history export/import runtime round trip is proven before ScoutTrace uninstall, and its intended v1.2.x/service-worker release truth is reconciled.
 - [ ] GhostLane encrypted ledger round trip or explicit start-fresh choice is completed before GhostLane uninstall; Supabase remains intentionally paused and outside this gate.
 - [ ] The user explicitly approves beginning the device cutover.
