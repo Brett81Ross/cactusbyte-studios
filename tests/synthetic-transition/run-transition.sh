@@ -16,6 +16,7 @@ cleanup() {
   adb pull /sdcard/window-final.xml synthetic-diagnostics/window-final.xml >/dev/null 2>&1
   adb pull /sdcard/Android/data/com.cactusbyte.synthetictransition/files/diagnostics synthetic-diagnostics/harness >/dev/null 2>&1
   adb shell ls -la /sdcard/Download > synthetic-diagnostics/downloads-listing.txt 2>&1
+  adb shell content query --uri content://media/external/audio/media --projection _display_name > synthetic-diagnostics/media-audio-index.txt 2>&1
   set -e
 }
 trap cleanup EXIT
@@ -27,11 +28,41 @@ adb install -r "$LEGACY_APK"
 adb push "$FIXTURE_WAV" /sdcard/Download/check.wav
 adb shell test -s /sdcard/Download/check.wav
 
+echo '=== Harness precondition: register deterministic WAV with Android MediaStore ==='
+adb shell am broadcast \
+  -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
+  -d file:///sdcard/Download/check.wav \
+  | tee synthetic-diagnostics/media-scan-broadcast.txt
+
+indexed=0
+for _ in $(seq 1 20); do
+  if adb shell content query --uri content://media/external/audio/media --projection _display_name 2>/dev/null | grep -Fq 'check.wav'; then
+    indexed=1
+    break
+  fi
+  sleep 1
+done
+if [ "$indexed" -ne 1 ]; then
+  echo 'HARNESS PRECONDITION RED: check.wav exists on shared storage but was not indexed by Android MediaStore.' >&2
+  exit 10
+fi
+echo 'Harness media precondition GREEN: check.wav is indexed and eligible for the audio document picker.'
+
 echo '=== Phase 1: legacy real-user export ==='
+set +e
 adb shell am instrument -w -r \
   -e class com.cactusbyte.synthetictransition.AcelynnTransitionTest#testLegacyExport \
   com.cactusbyte.synthetictransition.test/androidx.test.runner.AndroidJUnitRunner \
   | tee synthetic-diagnostics/legacy-instrumentation.txt
+legacy_instrument_rc=${PIPESTATUS[0]}
+set -e
+
+if [ "$legacy_instrument_rc" -ne 0 ] \
+  || grep -Fq 'FAILURES!!!' synthetic-diagnostics/legacy-instrumentation.txt \
+  || grep -Fq 'INSTRUMENTATION_STATUS_CODE: -2' synthetic-diagnostics/legacy-instrumentation.txt; then
+  echo 'HARNESS/UI GATE RED: UiAutomator failed before a valid legacy-export result could be evaluated. This is not classified as an Acelynn Export failure.' >&2
+  exit 11
+fi
 
 found=0
 for _ in $(seq 1 30); do
@@ -42,7 +73,7 @@ for _ in $(seq 1 30); do
   sleep 1
 done
 if [ "$found" -ne 1 ]; then
-  echo 'LEGACY EXPORT GATE RED: the real Export session report action did not create /sdcard/Download/acelynn-session-report.json.' >&2
+  echo 'LEGACY EXPORT GATE RED: UiAutomator completed successfully and clicked Export session report, but no JSON backup appeared in /sdcard/Download/.' >&2
   exit 21
 fi
 
@@ -77,9 +108,19 @@ test "$before_hash" = "$after_hash" || { echo 'Backup changed across uninstall.'
 echo '=== Phase 3: certified permanent restore ==='
 adb install "$PERMANENT_APK"
 adb shell pm list packages | grep -Fq 'package:com.cactusbyte.acelynnpro'
+set +e
 adb shell am instrument -w -r \
   -e class com.cactusbyte.synthetictransition.AcelynnTransitionTest#testPermanentRestore \
   com.cactusbyte.synthetictransition.test/androidx.test.runner.AndroidJUnitRunner \
   | tee synthetic-diagnostics/permanent-instrumentation.txt
+permanent_instrument_rc=${PIPESTATUS[0]}
+set -e
+
+if [ "$permanent_instrument_rc" -ne 0 ] \
+  || grep -Fq 'FAILURES!!!' synthetic-diagnostics/permanent-instrumentation.txt \
+  || grep -Fq 'INSTRUMENTATION_STATUS_CODE: -2' synthetic-diagnostics/permanent-instrumentation.txt; then
+  echo 'PERMANENT RESTORE GATE RED: the certified permanent APK did not complete the expected restore flow on the emulator.' >&2
+  exit 31
+fi
 
 echo 'ACELYNN SYNTHETIC TRANSITION GATE GREEN.'
