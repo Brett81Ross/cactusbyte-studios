@@ -16,7 +16,9 @@ Verified on 2026-08-29. This registry identifies the one project to update for e
 | Acelynn’s ScoutTrace™ | v1.2.1 | `acelynn-scoutrace` | `acelynn-scoutrace.vercel.app` | `Brett81Ross/acelynn_scoutrace` | `dpl_BYVPu6i8Xrbcts697rRCc1Mfpp7Q` |
 | ShadowNex Prime™ | v2.2.0 | `shadownex-prime` | `shadownex-prime.vercel.app` | `Brett81Ross/shadownex-prime` | `dpl_DEn8svsz4WxeXpp5Pqz2i12JinnC` |
 | TerraFlow Matrix™ | v1.7.0 live; v1.15.0 planned | `terraflow-matrix` | `terraflow-matrix.vercel.app` | `Brett81Ross/terraflow-matrix` | `dpl_784aR3rSMoze7BMFuweYc5fDE6AR` |
-| OrbitGather™ | v0.5.0 | `orbitgather` | `orbitgather-wahh.vercel.app` | `Brett81Ross/orbitgather` | `dpl_7EWSQfWGDyJAGs2hJanjwC7LCt8E` |
+| OrbitGather™ | v0.5.0 · SHELVED | `orbitgather` | `orbitgather-wahh.vercel.app` | `Brett81Ross/orbitgather` | `dpl_7EWSQfWGDyJAGs2hJanjwC7LCt8E` |
+
+> OrbitGather lifecycle: **SHELVED** as of 2026-09-01. Keep its canonical project, repository, rollback deployment, and production Supabase untouched. Customer-facing CactusByte surfaces exclude it until explicit resurrection approval.
 
 ## Duplicate-project hold
 
