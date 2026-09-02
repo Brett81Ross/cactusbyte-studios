@@ -1,0 +1,44 @@
+name: OrbitGather Identity Recovery Integration QA
+
+on:
+  push:
+    branches: [phase7-identity-integration-audit, android-release-v2-foundation]
+    paths:
+      - 'src/lib/orbitgather-recovery.ts'
+      - 'src/app/api/orbitgather/recovery/**'
+      - 'src/app/api/identity/installations/**'
+      - 'src/app/orbitgather-recovery/**'
+      - 'src/app/linked-devices/**'
+      - 'src/app/account-dock.tsx'
+      - 'android-packager/ORBITGATHER_IDENTITY_RECOVERY_DESIGN.md'
+      - 'tools/qa-orbitgather-identity-recovery.mjs'
+      - '.env.example'
+      - '.github/workflows/orbitgather-identity-recovery-qa.yml'
+      - 'package.json'
+      - 'vercel.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-integration:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v5
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - name: Verify identity recovery contract
+        run: node tools/qa-orbitgather-identity-recovery.mjs
+      - name: Install dependencies without deployment
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run CactusByte preflight and production build
+        run: npm run preflight
+      - name: Reject deployment side effects
+        run: |
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          echo 'No Vercel or Supabase deployment executed by this workflow.'
