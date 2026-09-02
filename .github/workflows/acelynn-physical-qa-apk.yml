@@ -127,10 +127,16 @@ jobs:
           grep -Fq 'CHANNEL = "qa"' "$build_config"
           grep -Fq 'START_URL = "https://appassets.androidplatform.net/assets/acelynnqa/index.html"' "$build_config"
           ! grep -Fq 'https://acelynn.vercel.app' "$build_config"
-          unzip -p "$QA_APK" classes.dex | strings > "$RUNNER_TEMP/acelynn-qa-dex-strings.txt"
+          : > "$RUNNER_TEMP/acelynn-qa-dex-strings.txt"
+          mapfile -t dex_files < <(unzip -Z1 "$QA_APK" | grep -E '^classes([0-9]+)?\.dex$' | sort -V)
+          test "${#dex_files[@]}" -ge 1
+          for dex in "${dex_files[@]}"; do
+            echo "Scanning $dex"
+            unzip -p "$QA_APK" "$dex" | strings >> "$RUNNER_TEMP/acelynn-qa-dex-strings.txt"
+          done
           ! grep -Fq 'https://acelynn.vercel.app' "$RUNNER_TEMP/acelynn-qa-dex-strings.txt"
           grep -Fq 'https://appassets.androidplatform.net/assets/acelynnqa/index.html' "$RUNNER_TEMP/acelynn-qa-dex-strings.txt"
-          echo 'Production Acelynn URL is absent from QA BuildConfig and DEX.'
+          echo 'Production Acelynn URL is absent from QA BuildConfig and every DEX file.'
 
       - name: Verify existing Acelynn Direct debug configuration remains production-targeted
         shell: bash
