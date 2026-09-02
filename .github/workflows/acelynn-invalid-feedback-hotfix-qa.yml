@@ -1,0 +1,64 @@
+name: Acelynn Invalid Backup Feedback Hotfix QA
+
+on:
+  push:
+    branches:
+      - phase7-acelynn-invalid-backup-feedback
+
+permissions:
+  contents: read
+
+jobs:
+  invalid-feedback-hotfix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CACTUSBYTE_PERMANENT_SIGNING: '0'
+    steps:
+      - name: Checkout hotfix branch
+        uses: actions/checkout@v5
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Verify Acelynn QA source contract
+        run: node tools/qa-acelynn-physical-qa.mjs
+      - name: Build isolated Acelynn Pro QA APK
+        run: gradle -p android-packager :app:assembleAcelynnproQaDebug --stacktrace
+      - name: Verify isolated package and launcher
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$(find android-packager/app/build/outputs/apk -type f -name '*.apk' -print -quit)"
+          test -n "$APK"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          "$AAPT" dump badging "$APK" > "$RUNNER_TEMP/badging.txt"
+          grep -Fq "package: name='com.cactusbyte.acelynnpro.qa'" "$RUNNER_TEMP/badging.txt"
+          grep -Fq "launchable-activity: name='com.cactusbyte.wrapper.QaMainActivity'" "$RUNNER_TEMP/badging.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$APK" > "$RUNNER_TEMP/signer.txt"
+          grep -Eq 'certificate DN: .*CN=Android Debug' "$RUNNER_TEMP/signer.txt"
+          ! unzip -Z1 "$APK" | grep -Fq 'assets/acelynnqa/sw.js'
+      - name: Run CactusByte preflight
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          npm run preflight
+      - name: Verify no deployment or cutover side effects
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          test "$CACTUSBYTE_PERMANENT_SIGNING" = '0'
+          echo 'No deployment, uninstall, production signing, or main merge executed.'
+      - name: Upload hotfix QA APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: acelynn-invalid-feedback-hotfix-qa-apk
+          path: android-packager/app/build/outputs/apk/acelynnproQa/debug/app-acelynnpro-qa-debug.apk
+          retention-days: 7
