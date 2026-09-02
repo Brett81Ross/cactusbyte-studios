@@ -3,11 +3,13 @@ package com.cactusbyte.wrapper;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -51,6 +53,13 @@ public class MainActivity extends Activity {
     private static final int REQUEST_GEO_PERMISSION = 4103;
     private static final int QA_MAX_JSON_BYTES = 6 * 1024 * 1024;
     private static final String QA_ASSET_HOST = "appassets.androidplatform.net";
+    private static final int ACELYNN_RECOVERY_MAX_JSON_BYTES = 6 * 1024 * 1024;
+    private static final String ACELYNN_DIRECT_PACKAGE = "com.cactusbyte.acelynnpro";
+    private static final String ACELYNN_PRODUCTION_HOST = "acelynn.vercel.app";
+    private static final String ACELYNN_RECOVERY_PATH = "/__cactusbyte_recovery__/";
+    private static final String ACELYNN_RECOVERY_URL = "https://" + ACELYNN_PRODUCTION_HOST + ACELYNN_RECOVERY_PATH + "index.html";
+    private static final String ACELYNN_RECOVERY_PREFS = "acelynn-cutover-recovery";
+    private static final String ACELYNN_RECOVERY_DECISION_KEY = "decision-complete";
 
     private WebView webView;
     private PermissionRequest pendingWebPermission;
@@ -60,6 +69,10 @@ public class MainActivity extends Activity {
     private Uri cameraUri;
     private boolean qaMode;
     private WebViewAssetLoader qaAssetLoader;
+    private boolean acelynnDirectRecoveryMode;
+    private WebViewAssetLoader acelynnRecoveryAssetLoader;
+    private boolean acelynnRecoveryBridgeActive;
+    private boolean acelynnRecoveryPromptVisible;
 
     @Override
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -69,6 +82,9 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(Color.rgb(5, 8, 7));
 
         qaMode = "qa".equals(BuildConfig.CHANNEL);
+        acelynnDirectRecoveryMode = !qaMode
+                && "direct".equals(BuildConfig.CHANNEL)
+                && ACELYNN_DIRECT_PACKAGE.equals(getPackageName());
         webView = new WebView(this);
         if (qaMode) {
             setUpQaContentView();
@@ -78,6 +94,12 @@ public class MainActivity extends Activity {
             webView.addJavascriptInterface(new QaDownloadBridge(), "CactusQaBridge");
         } else {
             setContentView(webView);
+        }
+        if (acelynnDirectRecoveryMode) {
+            acelynnRecoveryAssetLoader = new WebViewAssetLoader.Builder()
+                    .setDomain(ACELYNN_PRODUCTION_HOST)
+                    .addPathHandler(ACELYNN_RECOVERY_PATH, new WebViewAssetLoader.AssetsPathHandler(this))
+                    .build();
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -102,11 +124,23 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                if (acelynnDirectRecoveryMode && acelynnRecoveryAssetLoader != null) {
+                    WebResourceResponse local = acelynnRecoveryAssetLoader.shouldInterceptRequest(request.getUrl());
+                    if (local != null) return local;
+                }
                 if (qaMode && qaAssetLoader != null) {
                     WebResourceResponse local = qaAssetLoader.shouldInterceptRequest(request.getUrl());
                     if (local != null) return local;
                 }
                 return super.shouldInterceptRequest(view, request);
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (acelynnDirectRecoveryMode && !isAcelynnRecoveryUrl(url)) {
+                    disableAcelynnRecoveryBridge();
+                }
             }
 
             @Override
@@ -128,6 +162,9 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 if (qaMode && url != null && url.startsWith("https://" + QA_ASSET_HOST + "/")) {
                     installQaDownloadBridge();
+                }
+                if (acelynnDirectRecoveryMode && isAcelynnRecoveryUrl(url)) {
+                    installAcelynnRecoveryHooks();
                 }
             }
 
@@ -177,10 +214,194 @@ public class MainActivity extends Activity {
         });
 
         if (savedInstanceState == null) {
-            webView.loadUrl(BuildConfig.START_URL);
+            if (shouldOfferAcelynnPreLaunchRecovery()) showAcelynnPreLaunchRecoveryPrompt();
+            else webView.loadUrl(BuildConfig.START_URL);
         } else {
             webView.restoreState(savedInstanceState);
         }
+    }
+
+
+    private boolean shouldOfferAcelynnPreLaunchRecovery() {
+        return acelynnDirectRecoveryMode
+                && !getSharedPreferences(ACELYNN_RECOVERY_PREFS, MODE_PRIVATE)
+                .getBoolean(ACELYNN_RECOVERY_DECISION_KEY, false);
+    }
+
+    private void showAcelynnPreLaunchRecoveryPrompt() {
+        if (!acelynnDirectRecoveryMode || acelynnRecoveryPromptVisible) return;
+        acelynnRecoveryPromptVisible = true;
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Restore Acelynn Pro backup?")
+                .setMessage("This permanent Acelynn Pro install starts with fresh app storage. If you exported saved mix checks before the signing update, restore them now using the certified recovery copy built into this APK.")
+                .setPositiveButton("Restore backup", (ignored, which) -> {
+                    acelynnRecoveryPromptVisible = false;
+                    openAcelynnRecoveryFallback();
+                })
+                .setNegativeButton("Continue without backup", (ignored, which) -> {
+                    acelynnRecoveryPromptVisible = false;
+                    markAcelynnRecoveryDecisionComplete();
+                    webView.loadUrl(BuildConfig.START_URL);
+                })
+                .setNeutralButton("Exit for now", (ignored, which) -> {
+                    acelynnRecoveryPromptVisible = false;
+                    finish();
+                })
+                .create();
+        dialog.setOnCancelListener(ignored -> {
+            acelynnRecoveryPromptVisible = false;
+            finish();
+        });
+        dialog.show();
+    }
+
+    private void markAcelynnRecoveryDecisionComplete() {
+        getSharedPreferences(ACELYNN_RECOVERY_PREFS, MODE_PRIVATE)
+                .edit()
+                .putBoolean(ACELYNN_RECOVERY_DECISION_KEY, true)
+                .apply();
+    }
+
+    private void openAcelynnRecoveryFallback() {
+        if (!acelynnDirectRecoveryMode) return;
+        disableAcelynnRecoveryBridge();
+        webView.addJavascriptInterface(new AcelynnRecoveryDownloadBridge(), "CactusRecoveryBridge");
+        acelynnRecoveryBridgeActive = true;
+        webView.loadUrl(ACELYNN_RECOVERY_URL);
+    }
+
+    private boolean isAcelynnRecoveryUrl(String value) {
+        if (value == null) return false;
+        Uri uri;
+        try {
+            uri = Uri.parse(value);
+        } catch (RuntimeException ex) {
+            return false;
+        }
+        if (!"https".equalsIgnoreCase(uri.getScheme())) return false;
+        if (!ACELYNN_PRODUCTION_HOST.equalsIgnoreCase(uri.getHost())) return false;
+        int port = uri.getPort();
+        return (port == -1 || port == 443)
+                && uri.getPath() != null
+                && uri.getPath().startsWith(ACELYNN_RECOVERY_PATH);
+    }
+
+    private boolean isAllowedAcelynnPermissionOrigin(Uri origin) {
+        if (origin == null || !"https".equalsIgnoreCase(origin.getScheme())) return false;
+        if (!ACELYNN_PRODUCTION_HOST.equalsIgnoreCase(origin.getHost())) return false;
+        int port = origin.getPort();
+        return port == -1 || port == 443;
+    }
+
+    private boolean requestsOnlyAcelynnAudio(PermissionRequest request) {
+        String[] resources = request.getResources();
+        if (resources.length != 1) return false;
+        return PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resources[0]);
+    }
+
+    private void installAcelynnRecoveryHooks() {
+        if (!acelynnRecoveryBridgeActive) return;
+        String script = "(function(){" +
+                "if(!window.CactusRecoveryBridge)return;" +
+                "if(!window.__cactusRecoveryDownloadBridgeInstalled){" +
+                "var nativeClick=HTMLAnchorElement.prototype.click;" +
+                "HTMLAnchorElement.prototype.click=function(){var a=this;" +
+                "if(a.download&&typeof a.href==='string'&&a.href.indexOf('blob:')===0){" +
+                "fetch(a.href).then(function(r){return r.text();}).then(function(t){window.CactusRecoveryBridge.saveJson(a.download,t);}).catch(function(){nativeClick.call(a);});return;}" +
+                "return nativeClick.call(a);};window.__cactusRecoveryDownloadBridgeInstalled=true;}" +
+                "if(window.AcelynnRecovery&&!window.__cactusRecoveryResultBridgeInstalled){" +
+                "var originalRestore=window.AcelynnRecovery.restore;" +
+                "window.AcelynnRecovery.restore=function(storage,backupValues){var result=originalRestore(storage,backupValues);" +
+                "try{window.CactusRecoveryBridge.recoverySucceeded(result.length);}catch(e){}return result;};" +
+                "window.__cactusRecoveryResultBridgeInstalled=true;}" +
+                "if(!document.getElementById('cactusbyte-recovery-banner')){" +
+                "var banner=document.createElement('div');banner.id='cactusbyte-recovery-banner';" +
+                "banner.textContent='Built-in Recovery · certified 6363059183ce';" +
+                "banner.style.cssText='position:sticky;top:0;z-index:2147483647;padding:10px 12px;text-align:center;background:#ffe27a;color:#15120a;font:800 12px system-ui;border-bottom:1px solid #ba9a35';" +
+                "document.body.insertBefore(banner,document.body.firstChild);}" +
+                "if(!document.getElementById('cactusbyte-recovery-continue')){" +
+                "var go=document.createElement('button');go.id='cactusbyte-recovery-continue';go.textContent='Continue to Acelynn Pro';" +
+                "go.style.cssText='display:none;position:fixed;left:16px;right:16px;bottom:18px;z-index:2147483647;min-height:52px;border:0;border-radius:14px;background:#78f0b1;color:#071218;font:900 15px system-ui;box-shadow:0 8px 28px #0008';" +
+                "go.onclick=function(){location.href='" + BuildConfig.START_URL + "';};document.body.appendChild(go);}" +
+                "})();";
+        webView.evaluateJavascript(script, null);
+    }
+
+    private void disableAcelynnRecoveryBridge() {
+        if (!acelynnRecoveryBridgeActive || webView == null) return;
+        webView.removeJavascriptInterface("CactusRecoveryBridge");
+        acelynnRecoveryBridgeActive = false;
+    }
+
+    private final class AcelynnRecoveryDownloadBridge {
+        @JavascriptInterface
+        public void saveJson(String requestedName, String json) {
+            if (!acelynnDirectRecoveryMode || !acelynnRecoveryBridgeActive || json == null) return;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            if (bytes.length == 0 || bytes.length > ACELYNN_RECOVERY_MAX_JSON_BYTES) {
+                postToast("Acelynn recovery backup was not saved: invalid file size.");
+                return;
+            }
+            String safeName = sanitizeQaFileName(requestedName);
+            if (!safeName.startsWith("acelynn-pro-")) safeName = "acelynn-pro-recovery.json";
+            try {
+                String location = writeAcelynnRecoveryJson(safeName, bytes);
+                postToast("Saved " + safeName + " to " + location);
+            } catch (IOException | SecurityException ex) {
+                postToast("Acelynn recovery backup could not be saved.");
+            }
+        }
+
+        @JavascriptInterface
+        public void recoverySucceeded(int restoredCount) {
+            if (!acelynnDirectRecoveryMode || !acelynnRecoveryBridgeActive) return;
+            runOnUiThread(() -> {
+                markAcelynnRecoveryDecisionComplete();
+                Toast.makeText(MainActivity.this,
+                        "Recovery complete: " + Math.max(0, restoredCount) + " saved checks. Continue when ready.",
+                        Toast.LENGTH_LONG).show();
+                webView.evaluateJavascript("(function(){var b=document.getElementById('cactusbyte-recovery-continue');if(b)b.style.display='block';})()", null);
+            });
+        }
+    }
+
+    private String writeAcelynnRecoveryJson(String fileName, byte[] bytes) throws IOException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Downloads.MIME_TYPE, "application/json");
+            values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/AcelynnProRecovery");
+            values.put(MediaStore.Downloads.IS_PENDING, 1);
+            Uri item = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (item == null) throw new IOException("MediaStore insert failed");
+            boolean success = false;
+            try (OutputStream output = getContentResolver().openOutputStream(item, "w")) {
+                if (output == null) throw new IOException("MediaStore output stream unavailable");
+                output.write(bytes);
+                output.flush();
+                success = true;
+            } finally {
+                if (success) {
+                    ContentValues publish = new ContentValues();
+                    publish.put(MediaStore.Downloads.IS_PENDING, 0);
+                    getContentResolver().update(item, publish, null, null);
+                } else {
+                    getContentResolver().delete(item, null, null);
+                }
+            }
+            return "Downloads/AcelynnProRecovery";
+        }
+
+        File root = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (root == null) throw new IOException("External files directory unavailable");
+        File dir = new File(root, "AcelynnProRecovery");
+        if (!dir.exists() && !dir.mkdirs()) throw new IOException("Could not create recovery download directory");
+        File target = new File(dir, fileName);
+        try (OutputStream output = new FileOutputStream(target, false)) {
+            output.write(bytes);
+            output.flush();
+        }
+        return target.getAbsolutePath();
     }
 
     private void setUpQaContentView() {
@@ -313,6 +534,19 @@ public class MainActivity extends Activity {
     }
 
     private void handleWebPermission(PermissionRequest request) {
+        if (acelynnDirectRecoveryMode) {
+            if (!isAllowedAcelynnPermissionOrigin(request.getOrigin()) || !requestsOnlyAcelynnAudio(request)) {
+                request.deny();
+                return;
+            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+                return;
+            }
+            pendingWebPermission = request;
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_WEB_PERMISSIONS);
+            return;
+        }
         List<String> needed = new ArrayList<>();
         for (String resource : request.getResources()) {
             if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource) &&
@@ -400,7 +634,14 @@ public class MainActivity extends Activity {
         boolean granted = true;
         for (int value : grantResults) granted &= value == PackageManager.PERMISSION_GRANTED;
         if (requestCode == REQUEST_WEB_PERMISSIONS && pendingWebPermission != null) {
-            if (granted) pendingWebPermission.grant(pendingWebPermission.getResources());
+            if (acelynnDirectRecoveryMode) {
+                if (granted && isAllowedAcelynnPermissionOrigin(pendingWebPermission.getOrigin())
+                        && requestsOnlyAcelynnAudio(pendingWebPermission)) {
+                    pendingWebPermission.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+                } else {
+                    pendingWebPermission.deny();
+                }
+            } else if (granted) pendingWebPermission.grant(pendingWebPermission.getResources());
             else pendingWebPermission.deny();
             pendingWebPermission = null;
         }
