@@ -10,6 +10,7 @@ type PublicRegistryRecord={
  version:string;
  status:"Live"|"Repository";
  synced:boolean;
+ aligned:boolean;
  truthState:"verified"|"recorded"|"staged"|"mismatch"|"deployment-mismatch";
  detectedVersion:string|null;
  stagedVersion:string|null;
@@ -20,14 +21,15 @@ type PublicRegistryRecord={
 async function resolveApp(app:(typeof studioApps)[number]):Promise<PublicRegistryRecord>{
  const record=releaseTruthByApp.get(app.id);
  if(!record){
-  return{id:app.id,version:app.version,status:app.status,synced:false,truthState:"recorded",detectedVersion:null,stagedVersion:null,sourceHealth:"not-configured",deploymentVerification:"unavailable"};
+  return{id:app.id,version:app.version,status:app.status,synced:false,aligned:false,truthState:"recorded",detectedVersion:null,stagedVersion:null,sourceHealth:"not-configured",deploymentVerification:"unavailable"};
  }
  const truth=await resolveReleaseTruth(record);
  return{
   id:app.id,
   version:truth.liveVersion,
   status:app.status,
-  synced:truth.sourceHealth==="ok"&&truth.detectedVersion===truth.liveVersion&&truth.truthState!=="deployment-mismatch",
+  synced:truth.sourceHealth==="ok",
+  aligned:truth.detectedVersion===truth.liveVersion&&truth.truthState!=="deployment-mismatch",
   truthState:truth.truthState,
   detectedVersion:truth.detectedVersion,
   stagedVersion:truth.stagedVersion,
