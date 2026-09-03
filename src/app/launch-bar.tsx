@@ -31,6 +31,7 @@ export default function LaunchBar(){
 
  useEffect(()=>{
   setNativeHub(isCactusByteNative());
+  const suppressLegacyPwa=(event:Event)=>{event.preventDefault();event.stopImmediatePropagation()};
   const capture=(event:MouseEvent)=>{
    if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
    const target=event.target instanceof Element?event.target.closest("button,a"):null;
@@ -47,8 +48,9 @@ export default function LaunchBar(){
     setChoice({appId:app.id,webUrl:target.href});
    }
   };
+  window.addEventListener("beforeinstallprompt",suppressLegacyPwa,true);
   document.addEventListener("click",capture,true);
-  return()=>document.removeEventListener("click",capture,true);
+  return()=>{window.removeEventListener("beforeinstallprompt",suppressLegacyPwa,true);document.removeEventListener("click",capture,true)};
  },[]);
 
  function openHubInstall(){
