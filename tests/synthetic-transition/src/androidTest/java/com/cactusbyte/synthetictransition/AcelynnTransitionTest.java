@@ -68,14 +68,16 @@ public class AcelynnTransitionTest {
         chooseDocument(FIXTURE_NAME);
         assertTextVisible(FIXTURE_NAME, UI_TIMEOUT_MS);
 
-        UiObject2 save = scrollToText("Save current check", UI_TIMEOUT_MS);
+        UiObject2 save = scrollToResourceOrTexts(
+                "captureButton", UI_TIMEOUT_MS, "Save current check", "Save last check");
         waitUntilEnabled(save, UI_TIMEOUT_MS);
         save.click();
         assertTextVisibleWithScroll("1 saved", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Balanced mix", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Mids leading", UI_TIMEOUT_MS);
 
-        UiObject2 export = scrollToText("Export session report", UI_TIMEOUT_MS);
+        UiObject2 export = scrollToResourceOrTexts(
+                "exportButton", UI_TIMEOUT_MS, "Export session report");
         waitUntilEnabled(export, UI_TIMEOUT_MS);
         export.click();
         device.waitForIdle();
@@ -113,7 +115,8 @@ public class AcelynnTransitionTest {
         chooseDocument(FIXTURE_NAME);
         assertTextVisible(FIXTURE_NAME, UI_TIMEOUT_MS);
 
-        UiObject2 save = scrollToText("Save current check", UI_TIMEOUT_MS);
+        UiObject2 save = scrollToResourceOrTexts(
+                "captureButton", UI_TIMEOUT_MS, "Save current check", "Save last check");
         waitUntilEnabled(save, UI_TIMEOUT_MS);
         save.click();
         assertTextVisibleWithScroll("2 saved", UI_TIMEOUT_MS);
@@ -499,6 +502,20 @@ public class AcelynnTransitionTest {
         return exact != null ? exact : device.findObject(By.textContains(text));
     }
 
+    private UiObject2 findResourceOrTexts(String resourceId, String... texts) {
+        UiObject2 object = device.findObject(By.res(resourceId));
+        if (object == null) {
+            object = device.findObject(By.res(ACELYNN_PACKAGE + ":id/" + resourceId));
+        }
+        if (object != null) return object;
+
+        for (String text : texts) {
+            object = findTextOrContains(text);
+            if (object != null) return object;
+        }
+        return null;
+    }
+
     private UiObject2 waitForTextOrContains(String text, long timeoutMs) {
         long deadline = SystemClock.uptimeMillis() + timeoutMs;
         while (SystemClock.uptimeMillis() < deadline) {
@@ -549,6 +566,22 @@ public class AcelynnTransitionTest {
         }
         captureDiagnostics("missing-" + safeName(text));
         fail("Could not find UI text after scrolling: " + text);
+        return null;
+    }
+
+    private UiObject2 scrollToResourceOrTexts(String resourceId, long timeoutMs, String... texts) {
+        long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 object = findResourceOrTexts(resourceId, texts);
+            if (object != null) {
+                System.out.println("Stable control resolved: " + resourceId + " text=" + object.getText());
+                return object;
+            }
+            swipeUp();
+            SystemClock.sleep(300);
+        }
+        captureDiagnostics("missing-control-" + safeName(resourceId));
+        fail("HARNESS_FAILURE: Could not find stable Acelynn control " + resourceId);
         return null;
     }
 
