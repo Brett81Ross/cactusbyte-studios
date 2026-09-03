@@ -172,8 +172,9 @@ check(pocketstomp.includes('repo:"https://github.com/Brett81Ross/pocketstomp"'),
 check(pocketstomp.includes('syncSource:"https://pocketstomp-v2-brett81ross.vercel.app/"'),"PocketStomp version sync stays on its verified production surface");
 
 const terraflow=records.find(line=>line.includes('id:"terraflow-matrix"'))||"";
-check(terraflow.includes('version:"v1.15.0"'),"TerraFlow registry tracks the current v1.15.0 branding release");
-check(terraflow.includes('syncSource:"https://raw.githubusercontent.com/Brett81Ross/terraflow-matrix/main/cloud-release.js"'),"TerraFlow version sync is connected to its release surface");
+check(terraflow.includes('version:"v1.7.0"'),"TerraFlow registry preserves the verified production v1.7.0 release");
+check(!terraflow.includes('syncSource:'),"TerraFlow repository v1.15.0 cannot silently override the recorded live release");
+check(terraflow.includes('linkSource:"Vercel verified · v1.7.0 live · v1.15.0 staged pending deployment verification"'),"TerraFlow staged v1.15.0 is labeled without being marked live");
 check(terraflow.includes('logo:"/terraflow-mark.svg"'),"TerraFlow uses its approved Concept 2 brand mark");
 check(exists("public/terraflow-mark.svg"),"Approved TerraFlow local brand asset exists");
 check(!terraflow.includes('logo:"/logo2.png"'),"TerraFlow no longer falls back to the CactusByte logo");
