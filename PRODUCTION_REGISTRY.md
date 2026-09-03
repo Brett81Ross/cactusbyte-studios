@@ -1,6 +1,6 @@
 # Cactus🌵Byte Studios™ Production Registry
 
-Verified on 2026-08-29. This registry identifies the one project to update for each app and the current ready production deployment to preserve as a rollback point.
+Originally verified on 2026-08-29. Acelynn Pro and Fantasy Football Matrix records were rechecked on 2026-09-03 during the CactusByte v1.6.0 Registry Cleanup. TerraFlow intentionally remains recorded as v1.7.0 live / v1.15.0 planned until the canonical production deployment is verified. This registry identifies the one project to update for each app and the current ready production deployment to preserve as a rollback point.
 
 | App | Version | Canonical Vercel project | Production domain | Source repository | Verified rollback deployment |
 | --- | --- | --- | --- | --- | --- |
@@ -8,7 +8,7 @@ Verified on 2026-08-29. This registry identifies the one project to update for e
 | No Problem Pressure Washing Matrix™ | v1.0.0 | `noproblem-pws` | `noproblem-pws.vercel.app` | `Brett81Ross/noproblem.pws` | `dpl_5YpdwumeHjePxJhkFry5FqJbbdoa` |
 | MachZero™ | v1.4.1 | `machzero` | `machzero-beta.vercel.app` | `Brett81Ross/machzero` | `dpl_5t8AKxs6k63T9mGHZEAPiZTBLsaP` |
 | Rapid Takeoff™ | v0.3.0 | `blueprint-estimator` | `blueprint-estimator.vercel.app` | `Brett81Ross/blueprint_estimator-` | `dpl_9W2ZV2dzc5kRLivsQruRgAR4TyqC` |
-| Acelynn Pro™ | v1.1.2 | `acelynn` | `acelynn.vercel.app` | `Brett81Ross/Acelynn` | `dpl_BX4tHTSXgh6XqeCBevbm14EdcJT2` |
+| Acelynn Pro™ | v1.2.0 | `acelynn` | `acelynn.vercel.app` | `Brett81Ross/Acelynn` | `dpl_7LUbYit3LkdPYBPdoLM7eMyCYUwj` |
 | PocketStomp™ | v1.0.0 | `pocketstomp-v2-brett81ross` | `pocketstomp-v2-brett81ross.vercel.app` | `Brett81Ross/pocketstomp` | `dpl_9RozD8FT12vvssxbDeVG3AayDyEg` |
 | GhostLane™ | v1.7.4 | `ghostlane-app` | `ghostlane-app.vercel.app` | `Brett81Ross/ghostlane-app` | `dpl_5BZVwAY5cYQPaxqGGSbCyRygABpE` |
 | First Bearing™ | v2.6.1 | `first-bearing` | `first-bearing.vercel.app` | `Brett81Ross/first-bearing` | `dpl_9HMRp4qv23LFLhTqvVcsXZCeZaiF` |
