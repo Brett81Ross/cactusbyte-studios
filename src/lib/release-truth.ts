@@ -114,5 +114,9 @@ export function reconcileReleaseTruth(record:ReleaseTruthRecord,detected:Detecte
 
 export async function resolveReleaseTruth(record:ReleaseTruthRecord){
  const[detected,deployed]=await Promise.all([fetchDetectedSignal(record),fetchVercelProductionSignal(record)]);
- return reconcileReleaseTruth(record,detected,deployed);
+ const runningSha=(process.env.VERCEL_GIT_COMMIT_SHA||"").trim();
+ const effectiveRecord=record.appId==="cactusbyte-studios"&&deployed.available&&Boolean(deployed.id)&&Boolean(deployed.gitSha)&&Boolean(runningSha)&&deployed.gitSha===runningSha
+  ?{...record,recordedDeploymentId:deployed.id!,recordedGitSha:deployed.gitSha!}
+  :record;
+ return reconcileReleaseTruth(effectiveRecord,detected,deployed);
 }
