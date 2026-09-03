@@ -13,7 +13,7 @@ concurrency:
 jobs:
   preflight:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -29,3 +29,7 @@ jobs:
         run: python3 scripts/qa_demo_media.py
       - name: Run atomic preflight and production build
         run: npm run preflight
+      - name: Install responsive QA browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: Run Fold, Android, and iPhone responsive QA
+        run: npm run qa:responsive
