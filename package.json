@@ -6,7 +6,7 @@
     "dev":"next dev",
     "build":"next build",
     "start":"next start",
-    "qa":"node scripts/preflight.mjs && node scripts/qa-release-truth.mjs && node scripts/qa-native-launch.mjs && node scripts/qa-owner-health.mjs && node scripts/preflight-owner.mjs && node scripts/qa-owner-authority.mjs && node scripts/qa-auth-persistence.mjs",
+    "qa":"node scripts/preflight.mjs && node scripts/qa-release-truth.mjs && node scripts/qa-native-launch.mjs && node scripts/qa-owner-health.mjs && node scripts/qa-android-migration.mjs && node scripts/preflight-owner.mjs && node scripts/qa-owner-authority.mjs && node scripts/qa-auth-persistence.mjs",
     "qa:responsive":"playwright test tests/hub-responsive.spec.ts",
     "preflight":"npm run qa && npm run build"
   },
