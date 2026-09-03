@@ -54,6 +54,13 @@ input:not([type="checkbox"]):not([type="radio"]),select{min-height:48px}
  .infra{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 
+/* Large tablets, DeX and desktop-style Android stay intentionally bounded. */
+@media (min-width:1201px){
+ .shell{width:min(1180px,calc(100% - 40px));margin-inline:auto}
+ .grid:not(.list){grid-template-columns:repeat(3,minmax(0,1fr))}
+ .infra{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
 @media (prefers-reduced-motion:reduce){
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
