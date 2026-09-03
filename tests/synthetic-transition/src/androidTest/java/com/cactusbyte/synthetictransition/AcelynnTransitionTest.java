@@ -224,26 +224,30 @@ public class AcelynnTransitionTest {
     }
 
     private void chooseDocument(String fileName) {
-        SystemClock.sleep(900);
+        waitForDocumentsUi(fileName);
 
-        // Audio fixtures are reliably indexed in MediaStore Audio even when Android 16's
-        // Downloads root is empty. Navigate to the real Audio root first instead of depending on
-        // Recent/Downloads provider state. Backup JSON continues to use Downloads/search.
-        if (isAudioFile(fileName) && waitForDocumentCandidate(fileName, 1_000) == null) {
-            openNamedRoot("Audio");
-        }
-
-        if (waitForDocumentCandidate(fileName, 2_500) == null) {
-            searchDocumentsUi(fileName);
-        }
-
-        if (waitForDocumentCandidate(fileName, 1_000) == null && !isAudioFile(fileName)) {
+        // The pinned synthetic fixtures live in /sdcard/Download. Android 16 DocumentsUI on the
+        // API 36 google_apis image exposes Downloads, device storage, Recent and Drive, but no
+        // standalone Audio root. Go directly to the physical Downloads root first so this test
+        // follows the same storage location that survives the uninstall boundary.
+        UiObject2 candidate = waitForDocumentCandidate(fileName, 1_000);
+        if (candidate == null) {
             openNamedRoot("Downloads");
+            candidate = waitForDocumentCandidate(fileName, 5_000);
         }
 
-        if (!clickFreshDocumentCandidate(fileName, UI_TIMEOUT_MS)) {
+        // Search is a fallback only. Never press Back merely because the search field did not
+        // appear: on Android 16 that can close DocumentsUI and return to Acelynn, producing a
+        // misleading "missing file" harness failure.
+        if (candidate == null) {
+            candidate = searchDocumentsUi(fileName);
+        }
+
+        if (candidate == null || !clickFreshDocumentCandidate(fileName, UI_TIMEOUT_MS)) {
+            logPickerState("missing-document", fileName);
             captureDiagnostics("documentsui-missing-real-file-" + safeName(fileName));
-            fail("HARNESS_FAILURE: Android document picker could not click a real file row for " + fileName);
+            fail("HARNESS_FAILURE: Android document picker could not click a real file row for " + fileName +
+                    " (foreground=" + device.getCurrentPackageName() + ")");
             return;
         }
 
@@ -251,9 +255,22 @@ public class AcelynnTransitionTest {
         waitForDocumentPickerToClose(fileName);
     }
 
-    private boolean isAudioFile(String fileName) {
-        String lower = fileName == null ? "" : fileName.toLowerCase();
-        return lower.endsWith(".wav") || lower.endsWith(".mp3") || lower.endsWith(".m4a") || lower.endsWith(".aac");
+    private void waitForDocumentsUi(String fileName) {
+        long deadline = SystemClock.uptimeMillis() + 7_000;
+        while (SystemClock.uptimeMillis() < deadline) {
+            String pkg = device.getCurrentPackageName();
+            if (GOOGLE_DOCUMENTS_UI.equals(pkg) || AOSP_DOCUMENTS_UI.equals(pkg)) {
+                System.out.println("DocumentsUI foreground for " + fileName + ": " + pkg);
+                device.waitForIdle();
+                return;
+            }
+            SystemClock.sleep(200);
+        }
+
+        logPickerState("picker-not-foreground", fileName);
+        captureDiagnostics("documentsui-not-foreground-" + safeName(fileName));
+        fail("HARNESS_FAILURE: Android document picker never reached foreground for " + fileName +
+                " (foreground=" + device.getCurrentPackageName() + ")");
     }
 
     private boolean openNamedRoot(String rootName) {
@@ -265,7 +282,7 @@ public class AcelynnTransitionTest {
             if (roots == null) roots = device.findObject(By.descContains("Navigate up"));
             if (roots == null) break;
             try {
-                roots.click();
+                clickNodeOrClickableAncestor(roots);
                 openedRoots = true;
             } catch (StaleObjectException ignored) {
                 device.waitForIdle();
@@ -277,6 +294,7 @@ public class AcelynnTransitionTest {
             device.click(Math.max(56, device.getDisplayWidth() / 20), Math.max(145, device.getDisplayHeight() / 16));
         }
         device.waitForIdle();
+        SystemClock.sleep(250);
 
         long deadline = SystemClock.uptimeMillis() + 5_000;
         while (SystemClock.uptimeMillis() < deadline) {
@@ -284,8 +302,11 @@ public class AcelynnTransitionTest {
             if (root == null) root = device.findObject(By.textContains(rootName));
             if (root != null) {
                 try {
-                    root.click();
+                    clickNodeOrClickableAncestor(root);
                     device.waitForIdle();
+                    SystemClock.sleep(350);
+                    System.out.println("DocumentsUI root selected: " + rootName +
+                            " foreground=" + device.getCurrentPackageName());
                     return true;
                 } catch (StaleObjectException ignored) {
                     device.waitForIdle();
@@ -294,16 +315,17 @@ public class AcelynnTransitionTest {
             SystemClock.sleep(200);
         }
 
+        logPickerState("root-missing", rootName);
         captureDiagnostics("documentsui-root-missing-" + safeName(rootName));
         return false;
     }
 
     private void leaveDocumentsSearchIfNeeded() {
-        UiObject2 searchInput = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/search_src_text"));
-        if (searchInput == null) searchInput = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/search_src_text"));
+        UiObject2 searchInput = findDocumentsSearchInput();
         if (searchInput != null) {
             device.pressBack();
             device.waitForIdle();
+            SystemClock.sleep(250);
         }
     }
 
@@ -311,36 +333,34 @@ public class AcelynnTransitionTest {
         UiObject2 search = device.wait(Until.findObject(By.desc("Search")), 4_000);
         if (search == null) search = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
         if (search == null) search = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
-        if (search == null) return null;
+        if (search == null) {
+            logPickerState("search-button-missing", fileName);
+            return null;
+        }
 
         try {
-            search.click();
+            clickNodeOrClickableAncestor(search);
         } catch (StaleObjectException stale) {
             UiObject2 freshSearch = device.findObject(By.desc("Search"));
             if (freshSearch == null) freshSearch = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
             if (freshSearch == null) freshSearch = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
             if (freshSearch == null) return null;
-            freshSearch.click();
+            clickNodeOrClickableAncestor(freshSearch);
         }
         device.waitForIdle();
+        SystemClock.sleep(400);
 
-        UiObject2 input = device.wait(Until.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/search_src_text")), 4_000);
-        if (input == null) input = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/search_src_text"));
-        if (input == null) input = device.findObject(By.clazz("android.widget.AutoCompleteTextView"));
-        if (input == null) input = device.findObject(By.clazz("android.widget.EditText"));
+        UiObject2 input = waitForDocumentsSearchInput(5_000);
         if (input == null) {
+            logPickerState("search-input-missing", fileName);
             captureDiagnostics("documentsui-search-input-missing");
-            device.pressBack();
-            device.waitForIdle();
             return null;
         }
 
         try {
             input.setText(fileName);
         } catch (StaleObjectException stale) {
-            UiObject2 freshInput = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/search_src_text"));
-            if (freshInput == null) freshInput = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/search_src_text"));
-            if (freshInput == null) freshInput = device.findObject(By.clazz("android.widget.AutoCompleteTextView"));
+            UiObject2 freshInput = waitForDocumentsSearchInput(2_000);
             if (freshInput == null) return null;
             freshInput.setText(fileName);
         }
@@ -351,8 +371,26 @@ public class AcelynnTransitionTest {
         UiObject2 result = waitForDocumentCandidate(fileName, UI_TIMEOUT_MS);
         if (result != null) return result;
 
-        device.pressBack();
-        device.waitForIdle();
+        leaveDocumentsSearchIfNeeded();
+        return null;
+    }
+
+    private UiObject2 findDocumentsSearchInput() {
+        UiObject2 input = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/search_src_text"));
+        if (input == null) input = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/search_src_text"));
+        if (input == null) input = device.findObject(By.res("android:id/search_src_text"));
+        if (input == null) input = device.findObject(By.clazz("android.widget.AutoCompleteTextView"));
+        if (input == null) input = device.findObject(By.clazz("android.widget.EditText"));
+        return input;
+    }
+
+    private UiObject2 waitForDocumentsSearchInput(long timeoutMs) {
+        long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 input = findDocumentsSearchInput();
+            if (input != null) return input;
+            SystemClock.sleep(200);
+        }
         return null;
     }
 
@@ -391,7 +429,7 @@ public class AcelynnTransitionTest {
             UiObject2 candidate = findDocumentCandidate(fileName);
             if (candidate != null) {
                 try {
-                    candidate.click();
+                    clickNodeOrClickableAncestor(candidate);
                     return true;
                 } catch (StaleObjectException ignored) {
                     device.waitForIdle();
@@ -402,10 +440,29 @@ public class AcelynnTransitionTest {
         return false;
     }
 
+    private void clickNodeOrClickableAncestor(UiObject2 object) {
+        UiObject2 target = object;
+        for (int depth = 0; depth < 5 && target != null; depth++) {
+            if (target.isClickable()) {
+                target.click();
+                return;
+            }
+            UiObject2 parent = target.getParent();
+            if (parent == null) break;
+            target = parent;
+        }
+        object.click();
+    }
+
     private boolean isRealDocumentCandidate(UiObject2 candidate) {
         if (candidate == null) return false;
         String resource = candidate.getResourceName();
         String clazz = candidate.getClassName();
+        String pkg = candidate.getApplicationPackage();
+
+        if (pkg != null && !GOOGLE_DOCUMENTS_UI.equals(pkg) && !AOSP_DOCUMENTS_UI.equals(pkg)) {
+            return false;
+        }
 
         if (resource != null && (
                 resource.endsWith(":id/search_src_text") ||
@@ -426,8 +483,15 @@ public class AcelynnTransitionTest {
             SystemClock.sleep(250);
         }
 
+        logPickerState("picker-did-not-close", fileName);
         captureDiagnostics("documentsui-did-not-close-" + safeName(fileName));
         fail("HARNESS_FAILURE: selected " + fileName + " but Android document picker did not return to Acelynn");
+    }
+
+    private void logPickerState(String stage, String value) {
+        System.out.println("PICKER_DIAGNOSTIC stage=" + stage +
+                " value=" + value +
+                " foreground=" + device.getCurrentPackageName());
     }
 
     private UiObject2 findTextOrContains(String text) {
