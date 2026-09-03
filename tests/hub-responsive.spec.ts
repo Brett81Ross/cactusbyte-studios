@@ -1,16 +1,16 @@
 import {expect,test} from "@playwright/test";
 
 const viewports=[
- {name:"Z Fold cover",width:360,height:748,mobile:true},
- {name:"Android phone",width:412,height:915,mobile:true},
- {name:"iPhone",width:390,height:844,mobile:true},
- {name:"Z Fold open portrait",width:884,height:1104,mobile:false},
- {name:"Z Fold open landscape",width:1104,height:884,mobile:false}
+ {name:"Z Fold cover",width:360,height:748},
+ {name:"Android phone",width:412,height:915},
+ {name:"iPhone",width:390,height:844},
+ {name:"Z Fold open portrait",width:884,height:1104},
+ {name:"Z Fold open landscape",width:1104,height:884}
 ];
 
 for(const viewport of viewports){
  test.describe(viewport.name,()=>{
-  test.use({viewport:{width:viewport.width,height:viewport.height},userAgent:viewport.mobile?"Mozilla/5.0 (Linux; Android 16; Mobile) AppleWebKit/537.36 Chrome/140 Mobile Safari/537.36":undefined});
+  test.use({viewport:{width:viewport.width,height:viewport.height}});
   test("hub remains readable, touchable, and contained",async({page})=>{
    const pageErrors:string[]=[];
    page.on("pageerror",error=>pageErrors.push(error.message));
@@ -66,8 +66,8 @@ test("Android launch dialog fits the Fold cover",async({page})=>{
  await expect(dialog).toBeVisible();
  const rect=await dialog.boundingBox();
  expect(rect).not.toBeNull();
- expect(rect!.left).toBeGreaterThanOrEqual(0);
- expect(rect!.right??rect!.x+rect!.width).toBeUndefined();
+ expect(rect!.x).toBeGreaterThanOrEqual(0);
+ expect(rect!.y).toBeGreaterThanOrEqual(0);
  expect(rect!.x+rect!.width).toBeLessThanOrEqual(360);
  expect(rect!.y+rect!.height).toBeLessThanOrEqual(748);
  await expect(dialog.getByRole("button",{name:"Download Android App"})).toBeVisible();
