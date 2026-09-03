@@ -1,9 +1,10 @@
 /* CactusByte Studios v1.6 Responsive Hub v2 — additive overrides only. */
 html,body{max-width:100%;overflow-x:clip}
 img,svg,video,canvas{max-width:100%}
-button,.actions a,[role="button"]{min-height:48px}
+button{min-width:48px;min-height:48px!important}
+.actions a,[role="button"]{min-height:48px!important}
 input:not([type="checkbox"]):not([type="radio"]),select{min-height:48px}
-.notice button,.mini button,.modalHead button{min-width:48px;min-height:48px}
+.notice button,.mini button,.modalHead button{min-width:48px;min-height:48px!important}
 
 .shell{min-width:0}
 .shell>*,.panel,.card,.subPanel,.release,.radarGrid article,.ideaGrid article{min-width:0}
@@ -13,7 +14,8 @@ input:not([type="checkbox"]):not([type="radio"]),select{min-height:48px}
 .cardtop img{max-width:100%;object-fit:contain}
 .actions{grid-template-columns:minmax(0,1fr) auto}
 .actions a,.actions button{min-width:0}
-.topActions button,.shell>nav button,.channels button{min-height:48px}
+.topActions button,.shell>nav button,.channels button{min-height:48px!important}
+.supportButtons button{min-width:48px}
 
 /* Phone + Fold cover: one strong column and readable controls. */
 @media (max-width:480px){
