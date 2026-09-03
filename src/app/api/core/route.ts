@@ -8,7 +8,7 @@ export async function GET() {
     {
       service: "CactusByte Core™",
       version: "0.3-development",
-      studioVersion: "1.5.0",
+      studioVersion: "1.6.0",
       state: "development",
       infrastructure: {
         registry: "connected",
@@ -28,7 +28,7 @@ export async function GET() {
         byteLinkTransport: "development",
         ideaRadarWorker,
       },
-      note: "CactusByte ID, cloud persistence, community and the Stripe storefront are connected. The staged atomic build adds owner-only AI web research, verified evidence links and automatic Idea Forge population. OPENAI_API_KEY remains a release-time requirement for live Idea Radar runs.",
+      note: "CactusByte ID, cloud persistence, community and the Stripe storefront are connected. CactusByte v1.6 adds Release Truth, Native Launch, responsive tablet/multi-window support, Owner Health, and a read-only Android Migration Center. Permanent-signing cutover remains a separate owner-approved operation.",
     },
     { headers: { "Cache-Control": "no-store" } }
   );
