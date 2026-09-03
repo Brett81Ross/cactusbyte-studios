@@ -9,7 +9,9 @@ import wave
 from pathlib import Path
 
 SAMPLE_RATE = 16_000
-DURATION_SECONDS = 20
+# Keep the deterministic fixture playing long enough for the API 36 document picker,
+# analysis startup, and UiAutomator scroll to reach the snapshot control before EOF.
+DURATION_SECONDS = 90
 FREQUENCY_HZ = 440.0
 AMPLITUDE = 0.35
 
