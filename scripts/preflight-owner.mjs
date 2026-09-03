@@ -43,7 +43,7 @@ check(Boolean(ownerStats)&&ownerStats.includes("listUsers"),"Owner analytics der
 check(ownerStats.includes("isUserAuth")&&ownerStats.includes("ownerRestores24h"),"Owner restores are separated from real user sign-in counts");
 check(Boolean(portal)&&portal.includes("billingPortal.sessions.create"),"Stripe customer portal session route exists");
 check(portal.includes("subscription_cancel")&&portal.includes("payment_method_update"),"Stripe portal enables cancel-at-period-end and payment-method management");
-check(Boolean(dock)&&dock.includes("Manage Billing")&&dock.includes("Owner Stats"),"Account dock exposes subscription management and owner-only analytics controls");
+check(Boolean(dock)&&dock.includes("Manage Billing")&&dock.includes("Owner Health"),"Account dock exposes subscription management and owner-only health controls");
 check(layout.includes("<AccountDock/>")&&layout.includes('import "./mobile.css"'),"Account dock and phone stylesheet are mounted globally");
 check(mobile.includes("max-device-width:500px")&&mobile.includes(".grid{grid-template-columns:1fr!important}")&&mobile.includes(".grid.list{grid-template-columns:1fr!important}"),"Phone stylesheet forces a readable one-column app grid even in wide mobile/custom-tab viewports");
 check(Boolean(brandedShare)&&brandedShare.includes("CACTUSBYTE SHARE™")&&brandedShare.includes("Android / iOS Share"),"CactusByte branded QR share surface exists");
