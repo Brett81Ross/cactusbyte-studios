@@ -24,7 +24,7 @@ check(route.includes("cutoverAuthorized:false")&&route.includes("permanentSignin
 check(!route.includes("expectedSha256Fingerprint")&&!route.includes("FIREBASE_ADMIN_PRIVATE_KEY")&&!route.includes("VERCEL_ACCESS_TOKEN"),"Owner Health response logic does not surface signing fingerprints or server secret values");
 check(dock.includes("CactusByte Owner Health Center™")&&dock.includes('/api/owner/health'),"Owner-only account dock exposes the Health Center");
 check(dock.includes("INTERNAL RELEASE EVIDENCE")&&dock.includes("RELEASE TRUTH ATTENTION"),"Health Center clearly separates internal release evidence from the public hub");
-check(dock.includes("Cutover: NOT AUTHORIZED")&&dock.includes("Owner Health is diagnostic only"),"Health Center states the deployment/cutover safety boundary in the UI");
+check(dock.includes("Cutover: NOT AUTHORIZED")&&dock.includes("Owner Health and Migration Center are diagnostic/read-only"),"Health Center states the deployment/cutover safety boundary in the UI");
 check(truth.includes("recorded")&&truth.includes("detected")&&truth.includes("deployed"),"Owner Health is backed by recorded/detected/deployed release evidence");
 check(env.includes("VERCEL_ACCESS_TOKEN")&&env.includes("VERCEL_TEAM_ID"),"Vercel production-verification credentials are documented as server-only configuration");
 check(!/NEXT_PUBLIC_(VERCEL_ACCESS_TOKEN|STRIPE_SECRET_KEY|FIREBASE_ADMIN_PRIVATE_KEY|OWNER_DEVICE_SIGNING_SECRET)/.test(env+route+dock),"Owner Health keeps privileged credentials out of NEXT_PUBLIC configuration");
