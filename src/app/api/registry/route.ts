@@ -1,77 +1,44 @@
-import { NextResponse } from "next/server";
-import { studioApps } from "../../../data/apps";
+import {NextResponse} from "next/server";
+import {studioApps} from "../../../data/apps";
+import {releaseTruthByApp} from "../../../data/release-truth";
+import {resolveReleaseTruth} from "../../../lib/release-truth";
 
-export const revalidate = 300;
+export const revalidate=300;
 
-type SyncRecord = {
-  id: string;
-  version: string;
-  status: "Live" | "Repository";
-  synced: boolean;
+type PublicRegistryRecord={
+ id:string;
+ version:string;
+ status:"Live"|"Repository";
+ synced:boolean;
+ aligned:boolean;
+ truthState:"verified"|"recorded"|"staged"|"mismatch"|"deployment-mismatch";
+ detectedVersion:string|null;
+ stagedVersion:string|null;
+ sourceHealth:"ok"|"degraded"|"not-configured";
+ deploymentVerification:"verified"|"mismatch"|"unavailable";
 };
 
-function extractVersion(source: string): string | null {
-  const applicationVersion = source.match(
-    /<meta[^>]*name=["']application-version["'][^>]*content=["']([^"']+)["'][^>]*>/i,
-  );
-  if (applicationVersion?.[1]) {
-    const value = applicationVersion[1].trim();
-    return value.startsWith("v") ? value : `v${value}`;
-  }
-
-  const versionFirst = source.match(
-    /<meta[^>]*content=["']([^"']+)["'][^>]*name=["']application-version["'][^>]*>/i,
-  );
-  if (versionFirst?.[1]) {
-    const value = versionFirst[1].trim();
-    return value.startsWith("v") ? value : `v${value}`;
-  }
-
-  const visibleVersion = source.match(/\bv(\d+\.\d+\.\d+)\b/i);
-  if (visibleVersion?.[1]) return `v${visibleVersion[1]}`;
-
-  const jsonVersion = source.match(/["']version["']\s*:\s*["'](\d+\.\d+\.\d+)["']/i);
-  if (jsonVersion?.[1]) return `v${jsonVersion[1]}`;
-
-  return null;
+async function resolveApp(app:(typeof studioApps)[number]):Promise<PublicRegistryRecord>{
+ const record=releaseTruthByApp.get(app.id);
+ if(!record){
+  return{id:app.id,version:app.version,status:app.status,synced:false,aligned:false,truthState:"recorded",detectedVersion:null,stagedVersion:null,sourceHealth:"not-configured",deploymentVerification:"unavailable"};
+ }
+ const truth=await resolveReleaseTruth(record);
+ return{
+  id:app.id,
+  version:truth.liveVersion,
+  status:app.status,
+  synced:truth.sourceHealth==="ok",
+  aligned:truth.detectedVersion===truth.liveVersion&&truth.truthState!=="deployment-mismatch",
+  truthState:truth.truthState,
+  detectedVersion:truth.detectedVersion,
+  stagedVersion:truth.stagedVersion,
+  sourceHealth:truth.sourceHealth,
+  deploymentVerification:truth.deploymentVerification
+ };
 }
 
-async function syncApp(app: (typeof studioApps)[number]): Promise<SyncRecord> {
-  if (!app.syncSource) {
-    return { id: app.id, version: app.version, status: app.status, synced: false };
-  }
-
-  try {
-    const response = await fetch(app.syncSource, {
-      headers: { "user-agent": "CactusByte-App-Registry/1.0" },
-      next: { revalidate: 300 },
-      signal: AbortSignal.timeout(4500),
-    });
-
-    if (!response.ok) {
-      return { id: app.id, version: app.version, status: app.status, synced: false };
-    }
-
-    const source = await response.text();
-    return {
-      id: app.id,
-      version: extractVersion(source) ?? app.version,
-      status: app.status,
-      synced: true,
-    };
-  } catch {
-    return { id: app.id, version: app.version, status: app.status, synced: false };
-  }
-}
-
-export async function GET() {
-  const apps = await Promise.all(studioApps.map(syncApp));
-  return NextResponse.json(
-    { apps, syncedAt: new Date().toISOString() },
-    {
-      headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
-      },
-    },
-  );
+export async function GET(){
+ const apps=await Promise.all(studioApps.map(resolveApp));
+ return NextResponse.json({apps,syncedAt:new Date().toISOString(),truthModel:"recorded-detected-deployed-v1"},{headers:{"Cache-Control":"public, s-maxage=300, stale-while-revalidate=3600"}});
 }

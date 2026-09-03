@@ -1,0 +1,66 @@
+/* CactusByte Studios v1.6 Responsive Hub v2 — additive overrides only. */
+html,body{max-width:100%;overflow-x:clip}
+img,svg,video,canvas{max-width:100%}
+button{min-width:48px;min-height:48px!important}
+.actions a,[role="button"]{min-height:48px!important}
+input:not([type="checkbox"]):not([type="radio"]),select{min-height:48px}
+.notice button,.mini button,.modalHead button{min-width:48px;min-height:48px!important}
+
+.shell{min-width:0}
+.shell>*,.panel,.card,.subPanel,.release,.radarGrid article,.ideaGrid article{min-width:0}
+.grid{grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))}
+.card h3,.card p,.meta,.price,.health,.row,.listTitle{overflow-wrap:anywhere}
+.meta,.price,.health,.row>div,.listTitle{flex-wrap:wrap}
+.cardtop img{max-width:100%;object-fit:contain}
+.actions{grid-template-columns:minmax(0,1fr) auto}
+.actions a,.actions button{min-width:0}
+.topActions button,.shell>nav button,.channels button{min-height:48px!important}
+.supportButtons button{min-width:48px}
+
+/* Phone + Fold cover: one strong column and readable controls. */
+@media (max-width:480px){
+ html{font-size:clamp(18px,5vw,20px)}
+ .shell{padding-inline:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+ .topActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+ .topActions button{width:100%;min-width:0}
+ .hero h1{font-size:clamp(2.15rem,11.5vw,2.85rem)}
+ .grid,.grid.list{grid-template-columns:minmax(0,1fr)!important}
+ .actions{grid-template-columns:minmax(0,1fr) minmax(96px,.42fr)}
+ .mini{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .mini button{width:100%}
+ .stats,.pulseStats{grid-template-columns:minmax(0,1fr)!important}
+ .infra{grid-template-columns:minmax(0,1fr)!important}
+ .settingsStats{flex-wrap:wrap}
+}
+
+/* Very narrow cover/custom-tab widths: stack primary card actions. */
+@media (max-width:360px){
+ .actions{grid-template-columns:minmax(0,1fr)}
+ .topActions{grid-template-columns:minmax(0,1fr)}
+}
+
+/* Fold open / compact tablet portrait: use the extra canvas without tiny cards. */
+@media (min-width:700px) and (max-width:980px){
+ .shell{width:min(940px,100%);padding-inline:20px}
+ .grid:not(.list){grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+ .hero{grid-template-columns:minmax(0,1fr) minmax(250px,.55fr)}
+ .infra{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .topActions{max-width:620px}
+}
+
+/* Fold open landscape / tablets: denser cards, still fully touchable. */
+@media (min-width:981px) and (max-width:1200px){
+ .grid:not(.list){grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+ .infra{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* Large tablets, DeX and desktop-style Android stay intentionally bounded. */
+@media (min-width:1201px){
+ .shell{width:min(1180px,calc(100% - 40px));margin-inline:auto}
+ .grid:not(.list){grid-template-columns:repeat(3,minmax(0,1fr))}
+ .infra{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+@media (prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
