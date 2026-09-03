@@ -12,7 +12,10 @@ const modal={width:"min(100%,460px)",border:"1px solid rgba(103,255,225,.3)",bor
 type Choice={appId:string;webUrl:string|null};
 
 function isAndroid(){return /android/i.test(navigator.userAgent)}
-function isIos(){return /iphone|ipad|ipod/i.test(navigator.userAgent)}
+function isIos(){
+ const ua=navigator.userAgent;
+ return /iphone|ipad|ipod/i.test(ua)||(/macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+}
 function isCactusByteNative(){return /CactusByteNative\/1\.0/i.test(navigator.userAgent)}
 
 function appFromUrl(url:string){
@@ -26,11 +29,13 @@ export default function LaunchBar(){
  const[hint,setHint]=useState("");
  const[choice,setChoice]=useState<Choice|null>(null);
  const[nativeHub,setNativeHub]=useState(false);
+ const[appleTouch,setAppleTouch]=useState(false);
  const selected=useMemo(()=>choice?.appId==="cactusbyte-studios"?{id:"cactusbyte-studios",shortName:"CactusByte Studios",url:location.origin+"/"}:studioApps.find(app=>app.id===choice?.appId)||null,[choice]);
  const distribution=choice?nativeDistributionByApp.get(choice.appId):null;
 
  useEffect(()=>{
   setNativeHub(isCactusByteNative());
+  setAppleTouch(isIos());
   const suppressLegacyPwa=(event:Event)=>{event.preventDefault();event.stopImmediatePropagation()};
   const capture=(event:MouseEvent)=>{
    if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
@@ -39,6 +44,7 @@ export default function LaunchBar(){
    const label=(target.textContent||"").trim().replace(/\s+/g," ");
    if(label==="Install"){
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    if(isIos()){setHint("iPhone/iPad native distribution is not published yet; use the CactusByte web apps.");return}
     setChoice({appId:"cactusbyte-studios",webUrl:location.origin+"/"});return;
    }
    if(target instanceof HTMLAnchorElement&&target.closest(".actions")&&isAndroid()){
@@ -54,12 +60,13 @@ export default function LaunchBar(){
  },[]);
 
  function openHubInstall(){
+  if(appleTouch||isIos()){setChoice(null);setHint("iPhone/iPad native distribution is not published yet; use the CactusByte web apps.");return}
   if(nativeHub){setHint("CactusByte is already running as the installed Android app.");return}
   setChoice({appId:"cactusbyte-studios",webUrl:location.origin+"/"});
  }
  function downloadAndroid(){
   if(!distribution)return;
-  if(isIos()){setHint("This is the Android download. iPhone/iPad native distribution is not published yet; the web app remains available.")}
+  if(isIos()){setChoice(null);setHint("This is the Android download. iPhone/iPad native distribution is not published yet; the web app remains available.");return}
   window.location.assign(distribution.legacyDirectUrl);
  }
  function openWeb(){if(!choice?.webUrl)return;const url=choice.webUrl;setChoice(null);window.open(url,"_blank","noopener,noreferrer")}
@@ -70,7 +77,7 @@ export default function LaunchBar(){
  function qr(){window.dispatchEvent(new Event("cactusbyte:share-open"))}
 
  return <>
-  <section aria-label="CactusByte quick actions" style={wrap}><button type="button" style={btn} onClick={openHubInstall}>{nativeHub?"✓ Android App":"⬇ Android App"}</button><button type="button" style={btn} onClick={()=>void share()}>↗ Share</button><button type="button" style={btn} onClick={qr}>▦ QR Code</button></section>
+  <section aria-label="CactusByte quick actions" style={wrap}><button type="button" style={btn} onClick={openHubInstall}>{appleTouch?"Web Apps":nativeHub?"✓ Android App":"⬇ Android App"}</button><button type="button" style={btn} onClick={()=>void share()}>↗ Share</button><button type="button" style={btn} onClick={qr}>▦ QR Code</button></section>
   {hint&&<div role="status" style={{position:"relative",zIndex:39,padding:"7px 14px",fontSize:12,lineHeight:1.35,color:"#9fb0aa",background:"#06100e",borderBottom:"1px solid rgba(103,255,225,.1)"}}>{hint}</div>}
   {choice&&selected&&distribution&&<div style={overlay} role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setChoice(null)}}><section role="dialog" aria-modal="true" aria-label={`${selected.shortName} launch options`} style={modal}>
    <div style={{display:"flex",alignItems:"start",justifyContent:"space-between",gap:12}}><div><small style={{color:"#67ffe1",fontWeight:800,letterSpacing:1}}>CACTUSBYTE NATIVE LAUNCH</small><h2 style={{margin:"7px 0 6px",fontSize:22}}>{selected.shortName}</h2></div><button type="button" aria-label="Close launch options" style={{...btn,minWidth:48,padding:0}} onClick={()=>setChoice(null)}>×</button></div>
