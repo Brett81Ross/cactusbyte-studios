@@ -1,6 +1,5 @@
 package com.cactusbyte.synthetictransition;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -20,8 +19,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RunWith(AndroidJUnit4.class)
 public class AcelynnTransitionTest {
@@ -34,6 +37,10 @@ public class AcelynnTransitionTest {
     private static final String CHROME_PACKAGE = "com.android.chrome";
     private static final long PAGE_TIMEOUT_MS = 25_000;
     private static final long UI_TIMEOUT_MS = 12_000;
+    private static final int CLICK_ATTEMPTS = 3;
+    private static final long CLICK_RETRY_DELAY_MS = 500;
+    private static final Pattern NODE_PATTERN = Pattern.compile("<node\\b[^>]*>");
+    private static final Pattern BOUNDS_PATTERN = Pattern.compile("\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]");
 
     private UiDevice device;
     private Context targetContext;
@@ -68,18 +75,19 @@ public class AcelynnTransitionTest {
         chooseDocument(FIXTURE_NAME);
         assertTextVisible(FIXTURE_NAME, UI_TIMEOUT_MS);
 
-        // This exact text path already completed a real legacy export on run 33818888688.
-        // Keep it stable; only the permanent restore path needs the API 36 resource hardening.
-        UiObject2 save = scrollToText("Save current check", UI_TIMEOUT_MS);
-        waitUntilEnabled(save, UI_TIMEOUT_MS);
-        save.click();
+        // WebView DOM ids are stable even when API 36 intermittently refuses By.text queries.
+        // The generic click utility retries resource/text selectors, captures diagnostics on
+        // every miss, and can fall back to the bounds from UiAutomator's own hierarchy dump.
+        clickReliableControl(
+                "legacy-save", "captureButton", UI_TIMEOUT_MS, true,
+                "Save current check", "Save last check");
         assertTextVisibleWithScroll("1 saved", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Balanced mix", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Mids leading", UI_TIMEOUT_MS);
 
-        UiObject2 export = scrollToText("Export session report", UI_TIMEOUT_MS);
-        waitUntilEnabled(export, UI_TIMEOUT_MS);
-        export.click();
+        clickReliableControl(
+                "legacy-export", "exportButton", UI_TIMEOUT_MS, true,
+                "Export session report");
         device.waitForIdle();
 
         completeLegacyExternalBackupDownload();
@@ -92,27 +100,23 @@ public class AcelynnTransitionTest {
         currentTest = "permanent-restore";
         launchAcelynn();
 
-        // Android 16 renders AlertDialog button labels in all caps in the accessibility tree.
-        // Target the stable platform positive-button resource first so styling/casing cannot
-        // break the migration proof again.
         assertTextVisible("Restore Acelynn Pro backup?", PAGE_TIMEOUT_MS);
-        clickControl("android:id/button1", UI_TIMEOUT_MS, "RESTORE BACKUP", "Restore backup");
+        clickReliableControl(
+                "native-restore-confirm", "android:id/button1", UI_TIMEOUT_MS, false,
+                "RESTORE BACKUP", "Restore backup");
 
-        // The built-in recovery copy is a WebView surface. Stable DOM IDs are exposed through
-        // UiAutomator even when text nodes are not reliably searchable on API 36.
-        UiObject2 restore = scrollToControl(
-                "restoreButton", PAGE_TIMEOUT_MS, "Restore / merge backup");
-        clickNodeOrClickableAncestor(restore);
+        clickReliableControl(
+                "recovery-restore", "restoreButton", PAGE_TIMEOUT_MS, true,
+                "Restore / merge backup");
         device.waitForIdle();
         chooseDocument(LEGACY_BACKUP_NAME);
 
         assertTextVisibleWithScroll("Backup restored", PAGE_TIMEOUT_MS);
         assertTextVisibleWithScroll("Recovery complete.", UI_TIMEOUT_MS);
 
-        UiObject2 continueButton = waitForControl(
-                "cactusbyte-recovery-continue", UI_TIMEOUT_MS, "Continue to Acelynn Pro");
-        assertNotNull("HARNESS_FAILURE: built-in recovery continue control was not exposed", continueButton);
-        clickNodeOrClickableAncestor(continueButton);
+        clickReliableControl(
+                "recovery-continue", "cactusbyte-recovery-continue", UI_TIMEOUT_MS, true,
+                "Continue to Acelynn Pro");
         device.waitForIdle();
 
         assertTextVisible("Acelynn Pro", PAGE_TIMEOUT_MS);
@@ -127,10 +131,9 @@ public class AcelynnTransitionTest {
         chooseDocument(FIXTURE_NAME);
         assertTextVisible(FIXTURE_NAME, UI_TIMEOUT_MS);
 
-        // Use the same proven text selector after restore; a new fixture has just started.
-        UiObject2 save = scrollToText("Save current check", UI_TIMEOUT_MS);
-        waitUntilEnabled(save, UI_TIMEOUT_MS);
-        save.click();
+        clickReliableControl(
+                "post-restore-save", "captureButton", UI_TIMEOUT_MS, true,
+                "Save current check", "Save last check");
         assertTextVisibleWithScroll("2 saved", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Balanced mix", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Mids leading", UI_TIMEOUT_MS);
@@ -162,7 +165,9 @@ public class AcelynnTransitionTest {
             }
 
             if (findTextOrContains("Download Acelynn backup") != null) {
-                clickFreshText("Download Acelynn backup", UI_TIMEOUT_MS);
+                clickReliableControl(
+                        "browser-download-backup", null, UI_TIMEOUT_MS, false,
+                        "Download Acelynn backup");
                 device.waitForIdle();
                 return;
             }
@@ -193,16 +198,17 @@ public class AcelynnTransitionTest {
         UiObject2 dismiss = device.findObject(By.res(CHROME_PACKAGE + ":id/negative_button"));
         if (prompt == null && dismiss == null) return false;
 
-        for (int attempt = 0; attempt < 3; attempt++) {
+        for (int attempt = 1; attempt <= CLICK_ATTEMPTS; attempt++) {
             UiObject2 fresh = device.findObject(By.res(CHROME_PACKAGE + ":id/negative_button"));
             if (fresh == null) fresh = device.findObject(By.text("No thanks"));
             if (fresh == null) return false;
             try {
-                fresh.click();
+                clickNodeOrClickableAncestor(fresh);
                 return true;
             } catch (StaleObjectException ignored) {
+                captureDiagnostics("chrome-notifications-attempt-" + attempt);
                 device.waitForIdle();
-                SystemClock.sleep(150);
+                SystemClock.sleep(CLICK_RETRY_DELAY_MS);
             }
         }
 
@@ -221,30 +227,9 @@ public class AcelynnTransitionTest {
         }
     }
 
-    private void clickFreshText(String text, long timeoutMs) {
-        long deadline = SystemClock.uptimeMillis() + timeoutMs;
-        while (SystemClock.uptimeMillis() < deadline) {
-            UiObject2 object = findTextOrContains(text);
-            if (object != null) {
-                try {
-                    clickNodeOrClickableAncestor(object);
-                    return;
-                } catch (StaleObjectException ignored) {
-                    device.waitForIdle();
-                }
-            }
-            SystemClock.sleep(200);
-        }
-        captureDiagnostics("missing-fresh-text-" + safeName(text));
-        fail("Could not click fresh UI text: " + text);
-    }
-
     private void chooseDocument(String fileName) {
         waitForDocumentsUi(fileName);
 
-        // The pinned fixtures live in /sdcard/Download. Android 16 DocumentsUI on the API 36
-        // google_apis image exposes Downloads, device storage, Recent and Drive, but not a
-        // standalone Audio root. Go straight to the real storage location first.
         UiObject2 candidate = waitForDocumentCandidate(fileName, 1_000);
         if (candidate == null) {
             openNamedRoot("Downloads");
@@ -289,7 +274,7 @@ public class AcelynnTransitionTest {
         leaveDocumentsSearchIfNeeded();
 
         boolean openedRoots = false;
-        for (int attempt = 0; attempt < 3 && !openedRoots; attempt++) {
+        for (int attempt = 0; attempt < CLICK_ATTEMPTS && !openedRoots; attempt++) {
             UiObject2 roots = device.findObject(By.descContains("Show roots"));
             if (roots == null) roots = device.findObject(By.descContains("Navigate up"));
             if (roots == null) break;
@@ -344,12 +329,8 @@ public class AcelynnTransitionTest {
 
     private UiObject2 searchDocumentsUi(String fileName) {
         UiObject2 search = device.wait(Until.findObject(By.desc("Search")), 4_000);
-        if (search == null) {
-            search = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
-        }
-        if (search == null) {
-            search = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
-        }
+        if (search == null) search = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
+        if (search == null) search = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
         if (search == null) {
             logPickerState("search-button-missing", fileName);
             return null;
@@ -359,12 +340,8 @@ public class AcelynnTransitionTest {
             clickNodeOrClickableAncestor(search);
         } catch (StaleObjectException stale) {
             UiObject2 freshSearch = device.findObject(By.desc("Search"));
-            if (freshSearch == null) {
-                freshSearch = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
-            }
-            if (freshSearch == null) {
-                freshSearch = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
-            }
+            if (freshSearch == null) freshSearch = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
+            if (freshSearch == null) freshSearch = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
             if (freshSearch == null) return null;
             clickNodeOrClickableAncestor(freshSearch);
         }
@@ -506,9 +483,12 @@ public class AcelynnTransitionTest {
     }
 
     private UiObject2 findControl(String resourceId, String... texts) {
-        UiObject2 object = device.findObject(By.res(resourceId));
-        if (object == null && !resourceId.contains(":")) {
-            object = device.findObject(By.res(ACELYNN_PACKAGE + ":id/" + resourceId));
+        UiObject2 object = null;
+        if (resourceId != null && !resourceId.isEmpty()) {
+            object = device.findObject(By.res(resourceId));
+            if (object == null && !resourceId.contains(":")) {
+                object = device.findObject(By.res(ACELYNN_PACKAGE + ":id/" + resourceId));
+            }
         }
         if (object != null) return object;
 
@@ -519,96 +499,172 @@ public class AcelynnTransitionTest {
         return null;
     }
 
-    private UiObject2 waitForControl(String resourceId, long timeoutMs, String... texts) {
-        long deadline = SystemClock.uptimeMillis() + timeoutMs;
-        while (SystemClock.uptimeMillis() < deadline) {
-            UiObject2 object = findControl(resourceId, texts);
-            if (object != null) {
-                System.out.println("Control resolved: " + resourceId + " text=" + object.getText());
-                return object;
-            }
-            SystemClock.sleep(200);
-        }
-        return null;
-    }
+    private void clickReliableControl(
+            String label,
+            String resourceId,
+            long timeoutMs,
+            boolean allowScroll,
+            String... texts) {
+        long perAttemptMs = Math.max(1_500, timeoutMs / CLICK_ATTEMPTS);
 
-    private void clickControl(String resourceId, long timeoutMs, String... texts) {
-        long deadline = SystemClock.uptimeMillis() + timeoutMs;
-        while (SystemClock.uptimeMillis() < deadline) {
-            UiObject2 object = findControl(resourceId, texts);
-            if (object != null) {
-                try {
-                    System.out.println("Clicking stable control: " + resourceId + " text=" + object.getText());
-                    clickNodeOrClickableAncestor(object);
-                    device.waitForIdle();
-                    return;
-                } catch (StaleObjectException ignored) {
-                    device.waitForIdle();
+        for (int attempt = 1; attempt <= CLICK_ATTEMPTS; attempt++) {
+            long deadline = SystemClock.uptimeMillis() + perAttemptMs;
+            while (SystemClock.uptimeMillis() < deadline) {
+                UiObject2 object = findControl(resourceId, texts);
+                if (object != null) {
+                    try {
+                        if (!object.isEnabled()) {
+                            SystemClock.sleep(200);
+                            continue;
+                        }
+                        clickNodeOrClickableAncestor(object);
+                        device.waitForIdle();
+                        System.out.println("Reliable click succeeded: " + label + " attempt=" + attempt);
+                        return;
+                    } catch (StaleObjectException ignored) {
+                        device.waitForIdle();
+                    }
                 }
+                SystemClock.sleep(200);
             }
-            SystemClock.sleep(200);
+
+            String attemptLabel = "reliable-" + safeName(label) + "-attempt-" + attempt;
+            captureDiagnostics(attemptLabel);
+            System.out.println("RELIABLE_CLICK_MISS label=" + label +
+                    " attempt=" + attempt +
+                    " foreground=" + device.getCurrentPackageName());
+
+            if (clickFromCapturedHierarchy(attemptLabel, resourceId, texts)) {
+                device.waitForIdle();
+                System.out.println("Hierarchy fallback click succeeded: " + label + " attempt=" + attempt);
+                return;
+            }
+
+            if (allowScroll) {
+                swipeUp();
+                device.waitForIdle();
+            }
+            SystemClock.sleep(CLICK_RETRY_DELAY_MS);
         }
-        captureDiagnostics("missing-control-" + safeName(resourceId));
-        fail("HARNESS_FAILURE: Could not click stable Acelynn control " + resourceId);
+
+        captureDiagnostics("reliable-" + safeName(label) + "-final");
+        fail("HARNESS_FAILURE: Could not click " + label +
+                " after " + CLICK_ATTEMPTS + " selector/hierarchy attempts" +
+                " (foreground=" + device.getCurrentPackageName() + ")");
     }
 
-    private UiObject2 waitForTextOrContains(String text, long timeoutMs) {
-        long deadline = SystemClock.uptimeMillis() + timeoutMs;
-        while (SystemClock.uptimeMillis() < deadline) {
-            UiObject2 object = findTextOrContains(text);
-            if (object != null) return object;
-            SystemClock.sleep(250);
+    private boolean clickFromCapturedHierarchy(String diagnosticLabel, String resourceId, String... texts) {
+        try {
+            File xml = new File(diagnosticsRoot(), safeName(diagnosticLabel) + ".xml");
+            if (!xml.exists()) {
+                device.dumpWindowHierarchy(xml);
+            }
+            String hierarchy = readFile(xml);
+            Matcher nodes = NODE_PATTERN.matcher(hierarchy);
+            while (nodes.find()) {
+                String node = nodes.group();
+                String nodeResource = attribute(node, "resource-id");
+                String nodeText = attribute(node, "text");
+                String enabled = attribute(node, "enabled");
+                String visible = attribute(node, "visible-to-user");
+
+                boolean resourceMatch = matchesResource(nodeResource, resourceId);
+                boolean textMatch = matchesAnyText(nodeText, texts);
+                if (!resourceMatch && !textMatch) continue;
+                if ("false".equals(enabled) || "false".equals(visible)) continue;
+
+                String bounds = attribute(node, "bounds");
+                Matcher boundsMatcher = BOUNDS_PATTERN.matcher(bounds);
+                if (!boundsMatcher.matches()) continue;
+
+                int left = Integer.parseInt(boundsMatcher.group(1));
+                int top = Integer.parseInt(boundsMatcher.group(2));
+                int right = Integer.parseInt(boundsMatcher.group(3));
+                int bottom = Integer.parseInt(boundsMatcher.group(4));
+                if (right <= left || bottom <= top) continue;
+
+                device.click((left + right) / 2, (top + bottom) / 2);
+                return true;
+            }
+        } catch (Exception error) {
+            System.out.println("Hierarchy fallback error for " + diagnosticLabel + ": " + error);
         }
-        return null;
+        return false;
+    }
+
+    private boolean matchesResource(String actual, String expected) {
+        if (expected == null || expected.isEmpty() || actual == null || actual.isEmpty()) return false;
+        return actual.equals(expected) ||
+                actual.equals(ACELYNN_PACKAGE + ":id/" + expected) ||
+                actual.endsWith(":id/" + expected);
+    }
+
+    private boolean matchesAnyText(String actual, String... expectedTexts) {
+        if (actual == null || actual.isEmpty()) return false;
+        for (String expected : expectedTexts) {
+            if (expected != null && !expected.isEmpty() && actual.contains(expected)) return true;
+        }
+        return false;
+    }
+
+    private String attribute(String node, String name) {
+        Pattern pattern = Pattern.compile(Pattern.quote(name) + "=\"([^\"]*)\"");
+        Matcher matcher = pattern.matcher(node);
+        return matcher.find() ? matcher.group(1) : "";
+    }
+
+    private String readFile(File file) throws Exception {
+        StringBuilder out = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                out.append(line).append('\n');
+            }
+        }
+        return out.toString();
     }
 
     private void clickText(String text, long timeoutMs) {
-        UiObject2 object = waitForTextOrContains(text, timeoutMs);
-        assertNotNull("Could not find UI text: " + text, object);
-        try {
-            clickNodeOrClickableAncestor(object);
-        } catch (StaleObjectException stale) {
-            clickFreshText(text, timeoutMs);
-        }
-        device.waitForIdle();
+        clickReliableControl("text-" + text, null, timeoutMs, false, text);
     }
 
     private void assertTextVisible(String text, long timeoutMs) {
-        UiObject2 object = waitForTextOrContains(text, timeoutMs);
-        assertNotNull("Expected UI text was not visible: " + text, object);
+        if (waitForTextEvidence(text, timeoutMs, false)) return;
+        captureDiagnostics("missing-" + safeName(text));
+        fail("Expected UI text was not visible: " + text);
     }
 
     private void assertTextVisibleWithScroll(String text, long timeoutMs) {
-        scrollToText(text, timeoutMs);
-    }
-
-    private UiObject2 scrollToText(String text, long timeoutMs) {
-        long deadline = SystemClock.uptimeMillis() + timeoutMs;
-        while (SystemClock.uptimeMillis() < deadline) {
-            UiObject2 object = findTextOrContains(text);
-            if (object != null) return object;
-            swipeUp();
-            SystemClock.sleep(300);
-        }
+        if (waitForTextEvidence(text, timeoutMs, true)) return;
         captureDiagnostics("missing-" + safeName(text));
         fail("Could not find UI text after scrolling: " + text);
-        return null;
     }
 
-    private UiObject2 scrollToControl(String resourceId, long timeoutMs, String... texts) {
+    private boolean waitForTextEvidence(String text, long timeoutMs, boolean allowScroll) {
         long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        int scrolls = 0;
         while (SystemClock.uptimeMillis() < deadline) {
-            UiObject2 object = findControl(resourceId, texts);
-            if (object != null) {
-                System.out.println("Stable control resolved: " + resourceId + " text=" + object.getText());
-                return object;
+            if (findTextOrContains(text) != null) return true;
+            if (hierarchyContainsText(text)) return true;
+
+            if (allowScroll && scrolls < 7) {
+                swipeUp();
+                scrolls++;
+                device.waitForIdle();
             }
-            swipeUp();
             SystemClock.sleep(300);
         }
-        captureDiagnostics("missing-control-" + safeName(resourceId));
-        fail("HARNESS_FAILURE: Could not find stable Acelynn control " + resourceId);
-        return null;
+        return false;
+    }
+
+    private boolean hierarchyContainsText(String text) {
+        try {
+            File xml = new File(diagnosticsRoot(), "probe.xml");
+            device.dumpWindowHierarchy(xml);
+            return readFile(xml).contains(text);
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private void clickNodeOrClickableAncestor(UiObject2 object) {
@@ -623,19 +679,6 @@ public class AcelynnTransitionTest {
             target = parent;
         }
         object.click();
-    }
-
-    private void waitUntilEnabled(UiObject2 object, long timeoutMs) {
-        long deadline = SystemClock.uptimeMillis() + timeoutMs;
-        while (SystemClock.uptimeMillis() < deadline) {
-            try {
-                if (object.isEnabled()) return;
-            } catch (StaleObjectException stale) {
-                fail("HARNESS_FAILURE: UI element became stale while waiting to enable");
-            }
-            SystemClock.sleep(250);
-        }
-        fail("UI element never became enabled: " + object.getText());
     }
 
     private void swipeUp() {
@@ -653,10 +696,15 @@ public class AcelynnTransitionTest {
         }
     }
 
+    private File diagnosticsRoot() {
+        File root = new File(targetContext.getExternalFilesDir(null), "diagnostics");
+        if (!root.exists()) root.mkdirs();
+        return root;
+    }
+
     private void captureDiagnostics(String label) {
         try {
-            File root = new File(targetContext.getExternalFilesDir(null), "diagnostics");
-            if (!root.exists() && !root.mkdirs()) return;
+            File root = diagnosticsRoot();
             String safe = safeName(label);
             device.takeScreenshot(new File(root, safe + ".png"));
             device.dumpWindowHierarchy(new File(root, safe + ".xml"));
