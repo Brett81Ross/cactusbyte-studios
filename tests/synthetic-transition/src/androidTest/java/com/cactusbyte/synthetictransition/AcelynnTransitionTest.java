@@ -505,52 +505,72 @@ public class AcelynnTransitionTest {
             long timeoutMs,
             boolean allowScroll,
             String... texts) {
-        long perAttemptMs = Math.max(1_500, timeoutMs / CLICK_ATTEMPTS);
+        // The initial viewport is not a retry. Probe it first, then probe every viewport
+        // produced by each of the three retry scrolls before we are allowed to fail.
+        // This avoids the previous off-by-one bug where retry #3 scrolled the target into
+        // view and the method exited without ever querying/clicking that new viewport.
+        int maxViewport = allowScroll ? CLICK_ATTEMPTS : 0;
+        long perViewportMs = Math.max(1_500, timeoutMs / Math.max(1, maxViewport + 1));
 
-        for (int attempt = 1; attempt <= CLICK_ATTEMPTS; attempt++) {
-            long deadline = SystemClock.uptimeMillis() + perAttemptMs;
-            while (SystemClock.uptimeMillis() < deadline) {
-                UiObject2 object = findControl(resourceId, texts);
-                if (object != null) {
-                    try {
-                        if (!object.isEnabled()) {
-                            SystemClock.sleep(200);
-                            continue;
-                        }
-                        clickNodeOrClickableAncestor(object);
-                        device.waitForIdle();
-                        System.out.println("Reliable click succeeded: " + label + " attempt=" + attempt);
-                        return;
-                    } catch (StaleObjectException ignored) {
-                        device.waitForIdle();
-                    }
-                }
-                SystemClock.sleep(200);
-            }
-
-            String attemptLabel = "reliable-" + safeName(label) + "-attempt-" + attempt;
-            captureDiagnostics(attemptLabel);
-            System.out.println("RELIABLE_CLICK_MISS label=" + label +
-                    " attempt=" + attempt +
-                    " foreground=" + device.getCurrentPackageName());
-
-            if (clickFromCapturedHierarchy(attemptLabel, resourceId, texts)) {
-                device.waitForIdle();
-                System.out.println("Hierarchy fallback click succeeded: " + label + " attempt=" + attempt);
-                return;
-            }
-
-            if (allowScroll) {
+        for (int viewport = 0; viewport <= maxViewport; viewport++) {
+            if (viewport > 0) {
                 swipeUp();
                 device.waitForIdle();
+                SystemClock.sleep(CLICK_RETRY_DELAY_MS);
             }
-            SystemClock.sleep(CLICK_RETRY_DELAY_MS);
+
+            if (tryClickCurrentViewport(
+                    label, viewport, resourceId, perViewportMs, texts)) {
+                return;
+            }
         }
 
         captureDiagnostics("reliable-" + safeName(label) + "-final");
         fail("HARNESS_FAILURE: Could not click " + label +
-                " after " + CLICK_ATTEMPTS + " selector/hierarchy attempts" +
+                " after probing initial viewport plus " + maxViewport + " retry viewport(s)" +
                 " (foreground=" + device.getCurrentPackageName() + ")");
+    }
+
+    private boolean tryClickCurrentViewport(
+            String label,
+            int viewport,
+            String resourceId,
+            long timeoutMs,
+            String... texts) {
+        long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 object = findControl(resourceId, texts);
+            if (object != null) {
+                try {
+                    if (!object.isEnabled()) {
+                        SystemClock.sleep(200);
+                        continue;
+                    }
+                    clickNodeOrClickableAncestor(object);
+                    device.waitForIdle();
+                    System.out.println("Reliable click succeeded: " + label +
+                            " viewport=" + viewport);
+                    return true;
+                } catch (StaleObjectException ignored) {
+                    device.waitForIdle();
+                }
+            }
+            SystemClock.sleep(200);
+        }
+
+        String viewportLabel = "reliable-" + safeName(label) + "-viewport-" + viewport;
+        captureDiagnostics(viewportLabel);
+        System.out.println("RELIABLE_CLICK_MISS label=" + label +
+                " viewport=" + viewport +
+                " foreground=" + device.getCurrentPackageName());
+
+        if (clickFromCapturedHierarchy(viewportLabel, resourceId, texts)) {
+            device.waitForIdle();
+            System.out.println("Hierarchy fallback click succeeded: " + label +
+                    " viewport=" + viewport);
+            return true;
+        }
+        return false;
     }
 
     private boolean clickFromCapturedHierarchy(String diagnosticLabel, String resourceId, String... texts) {
