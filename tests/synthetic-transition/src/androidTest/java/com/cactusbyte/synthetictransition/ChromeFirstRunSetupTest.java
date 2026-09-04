@@ -17,7 +17,9 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ChromeFirstRunSetupTest {
     private static final String CHROME_PACKAGE = "com.android.chrome";
-    private static final long TIMEOUT_MS = 20_000;
+    private static final String BACKUP_PAGE_TEXT = "Download Acelynn backup";
+    private static final String BACKUP_URL_FRAGMENT = "acelynn.vercel.app/legacy-backup";
+    private static final long TIMEOUT_MS = 30_000;
 
     @Test
     public void dismissChromeFirstRunIfPresent() throws Exception {
@@ -29,38 +31,97 @@ public class ChromeFirstRunSetupTest {
 
         long deadline = SystemClock.uptimeMillis() + TIMEOUT_MS;
         while (SystemClock.uptimeMillis() < deadline) {
-            // Prefer Chrome's stable resource id so generic text such as
-            // 'Make Chrome your own' can never starve the real dismiss button.
-            UiObject2 dismiss = device.findObject(By.res(CHROME_PACKAGE + ":id/signin_fre_dismiss_button"));
-            if (dismiss == null) dismiss = device.findObject(By.text("Use without an account"));
-            if (dismiss == null) dismiss = device.findObject(By.text("Continue without an account"));
-            if (dismiss == null) dismiss = device.findObject(By.text("No thanks"));
-            if (dismiss == null) dismiss = device.findObject(By.text("Not now"));
-            if (dismiss == null) dismiss = device.findObject(By.text("Got it"));
+            // Success is not merely "Chrome is foreground." Chrome can briefly report itself
+            // foreground before its first-run pages have actually inflated. Require proof that
+            // the requested migration page is reachable before declaring the precondition green.
+            if (isBackupPageReady(device)) {
+                device.pressHome();
+                device.waitForIdle();
+                return;
+            }
 
+            UiObject2 dismiss = findFirstRunDismiss(device);
             if (dismiss != null) {
                 try {
-                    dismiss.click();
+                    clickNodeOrClickableAncestor(dismiss);
                     device.waitForIdle();
-                    SystemClock.sleep(500);
+                    SystemClock.sleep(700);
                     continue;
                 } catch (StaleObjectException ignored) {
                     device.waitForIdle();
                 }
             }
 
-            boolean firstRunStillVisible =
-                    device.findObject(By.res(CHROME_PACKAGE + ":id/signin_fre_dismiss_button")) != null ||
-                    device.findObject(By.textContains("Make Chrome your own")) != null;
-            if (CHROME_PACKAGE.equals(device.getCurrentPackageName()) && !firstRunStillVisible) {
-                device.pressHome();
-                device.waitForIdle();
-                return;
+            // Chrome can show a notification opt-in after the account/sign-in page.
+            UiObject2 notificationsDismiss = device.findObject(
+                    By.res(CHROME_PACKAGE + ":id/negative_button"));
+            if (notificationsDismiss == null) {
+                notificationsDismiss = device.findObject(By.text("No thanks"));
+            }
+            if (notificationsDismiss != null) {
+                try {
+                    clickNodeOrClickableAncestor(notificationsDismiss);
+                    device.waitForIdle();
+                    SystemClock.sleep(700);
+                    continue;
+                } catch (StaleObjectException ignored) {
+                    device.waitForIdle();
+                }
             }
 
             SystemClock.sleep(250);
         }
 
-        fail("HARNESS_FAILURE: Chrome first-run screen could not be dismissed deterministically");
+        String currentPackage = device.getCurrentPackageName();
+        UiObject2 title = device.findObject(By.res(CHROME_PACKAGE + ":id/title"));
+        String visibleTitle = title == null ? "<none>" : String.valueOf(title.getText());
+        fail("HARNESS_FAILURE: Chrome did not reach the Acelynn backup page after first-run handling" +
+                " (foreground=" + currentPackage + ", chromeTitle=" + visibleTitle + ")");
+    }
+
+    private boolean isBackupPageReady(UiDevice device) {
+        if (!CHROME_PACKAGE.equals(device.getCurrentPackageName())) return false;
+
+        UiObject2 pageText = device.findObject(By.text(BACKUP_PAGE_TEXT));
+        if (pageText == null) pageText = device.findObject(By.textContains(BACKUP_PAGE_TEXT));
+        if (pageText != null) return true;
+
+        // The omnibox/accessibility text is a secondary readiness signal in case the page's
+        // WebView text has not yet entered the accessibility tree.
+        UiObject2 url = device.findObject(By.textContains(BACKUP_URL_FRAGMENT));
+        if (url != null) return true;
+
+        UiObject2 urlBar = device.findObject(By.res(CHROME_PACKAGE + ":id/url_bar"));
+        if (urlBar != null) {
+            String text = urlBar.getText();
+            return text != null && text.contains(BACKUP_URL_FRAGMENT);
+        }
+        return false;
+    }
+
+    private UiObject2 findFirstRunDismiss(UiDevice device) {
+        // Stable ids first; text fallbacks cover Chrome variants.
+        UiObject2 dismiss = device.findObject(
+                By.res(CHROME_PACKAGE + ":id/signin_fre_dismiss_button"));
+        if (dismiss == null) dismiss = device.findObject(By.text("Use without an account"));
+        if (dismiss == null) dismiss = device.findObject(By.text("Continue without an account"));
+        if (dismiss == null) dismiss = device.findObject(By.text("No thanks"));
+        if (dismiss == null) dismiss = device.findObject(By.text("Not now"));
+        if (dismiss == null) dismiss = device.findObject(By.text("Got it"));
+        return dismiss;
+    }
+
+    private void clickNodeOrClickableAncestor(UiObject2 object) {
+        UiObject2 target = object;
+        for (int depth = 0; depth < 5 && target != null; depth++) {
+            if (target.isClickable()) {
+                target.click();
+                return;
+            }
+            UiObject2 parent = target.getParent();
+            if (parent == null) break;
+            target = parent;
+        }
+        object.click();
     }
 }
