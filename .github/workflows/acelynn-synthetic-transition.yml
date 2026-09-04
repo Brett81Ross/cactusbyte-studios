@@ -71,7 +71,7 @@ jobs:
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
 
-      - name: Run exact legacy to permanent transition on API 36 emulator
+      - name: Run multi-snapshot legacy to permanent transition on API 36 emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
@@ -84,16 +84,16 @@ jobs:
             echo '=== Install external UiAutomator harness for Chrome precondition ==='
             adb install -r "$HARNESS_APK"
             adb install -r "$HARNESS_TEST_APK"
-            echo '=== Harness precondition: dismiss Chrome first-run if present ==='
+            echo '=== Harness precondition: dismiss all Chrome first-run screens and prove backup-page readiness ==='
             adb shell am instrument -w -r -e class com.cactusbyte.synthetictransition.ChromeFirstRunSetupTest com.cactusbyte.synthetictransition.test/androidx.test.runner.AndroidJUnitRunner
-            echo '=== Run exact Acelynn legacy-to-permanent transition ==='
-            bash tests/synthetic-transition/run-transition.sh
+            echo '=== Run Acelynn four-snapshot legacy-to-permanent transition ==='
+            bash tests/synthetic-transition/run-multisnapshot-transition.sh
 
-      - name: Upload synthetic transition evidence
+      - name: Upload multi-snapshot transition evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: acelynn-synthetic-transition-evidence
+          name: acelynn-multisnapshot-transition-evidence
           path: |
             synthetic-diagnostics/**
             ${{ runner.temp }}/fixture/manifest.txt
