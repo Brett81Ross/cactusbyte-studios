@@ -68,18 +68,18 @@ public class AcelynnTransitionTest {
         chooseDocument(FIXTURE_NAME);
         assertTextVisible(FIXTURE_NAME, UI_TIMEOUT_MS);
 
-        UiObject2 save = scrollToResourceOrTexts(
+        UiObject2 save = scrollToControl(
                 "captureButton", UI_TIMEOUT_MS, "Save current check", "Save last check");
         waitUntilEnabled(save, UI_TIMEOUT_MS);
-        save.click();
+        clickNodeOrClickableAncestor(save);
         assertTextVisibleWithScroll("1 saved", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Balanced mix", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Mids leading", UI_TIMEOUT_MS);
 
-        UiObject2 export = scrollToResourceOrTexts(
+        UiObject2 export = scrollToControl(
                 "exportButton", UI_TIMEOUT_MS, "Export session report");
         waitUntilEnabled(export, UI_TIMEOUT_MS);
-        export.click();
+        clickNodeOrClickableAncestor(export);
         device.waitForIdle();
 
         completeLegacyExternalBackupDownload();
@@ -92,16 +92,28 @@ public class AcelynnTransitionTest {
         currentTest = "permanent-restore";
         launchAcelynn();
 
+        // Android 16 renders AlertDialog button labels in all caps in the accessibility tree.
+        // Target the stable platform positive-button resource first so styling/casing cannot
+        // break the migration proof again.
         assertTextVisible("Restore Acelynn Pro backup?", PAGE_TIMEOUT_MS);
-        clickText("Restore backup", UI_TIMEOUT_MS);
+        clickControl("android:id/button1", UI_TIMEOUT_MS, "RESTORE BACKUP", "Restore backup");
 
-        assertTextVisible("Restore / merge backup", PAGE_TIMEOUT_MS);
-        clickTextWithScroll("Restore / merge backup", UI_TIMEOUT_MS);
+        // The built-in recovery copy is a WebView surface. Stable DOM IDs are exposed through
+        // UiAutomator even when text nodes are not reliably searchable on API 36.
+        UiObject2 restore = scrollToControl(
+                "restoreButton", PAGE_TIMEOUT_MS, "Restore / merge backup");
+        clickNodeOrClickableAncestor(restore);
+        device.waitForIdle();
         chooseDocument(LEGACY_BACKUP_NAME);
 
         assertTextVisibleWithScroll("Backup restored", PAGE_TIMEOUT_MS);
         assertTextVisibleWithScroll("Recovery complete.", UI_TIMEOUT_MS);
-        clickText("Continue to Acelynn Pro", UI_TIMEOUT_MS);
+
+        UiObject2 continueButton = waitForControl(
+                "cactusbyte-recovery-continue", UI_TIMEOUT_MS, "Continue to Acelynn Pro");
+        assertNotNull("HARNESS_FAILURE: built-in recovery continue control was not exposed", continueButton);
+        clickNodeOrClickableAncestor(continueButton);
+        device.waitForIdle();
 
         assertTextVisible("Acelynn Pro", PAGE_TIMEOUT_MS);
         assertTextVisibleWithScroll("Session snapshots", UI_TIMEOUT_MS);
@@ -115,10 +127,10 @@ public class AcelynnTransitionTest {
         chooseDocument(FIXTURE_NAME);
         assertTextVisible(FIXTURE_NAME, UI_TIMEOUT_MS);
 
-        UiObject2 save = scrollToResourceOrTexts(
+        UiObject2 save = scrollToControl(
                 "captureButton", UI_TIMEOUT_MS, "Save current check", "Save last check");
         waitUntilEnabled(save, UI_TIMEOUT_MS);
-        save.click();
+        clickNodeOrClickableAncestor(save);
         assertTextVisibleWithScroll("2 saved", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Balanced mix", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Mids leading", UI_TIMEOUT_MS);
@@ -202,7 +214,7 @@ public class AcelynnTransitionTest {
         UiObject2 object = findTextOrContains(text);
         if (object == null) return false;
         try {
-            object.click();
+            clickNodeOrClickableAncestor(object);
             return true;
         } catch (StaleObjectException ignored) {
             return false;
@@ -215,7 +227,7 @@ public class AcelynnTransitionTest {
             UiObject2 object = findTextOrContains(text);
             if (object != null) {
                 try {
-                    object.click();
+                    clickNodeOrClickableAncestor(object);
                     return;
                 } catch (StaleObjectException ignored) {
                     device.waitForIdle();
@@ -223,25 +235,22 @@ public class AcelynnTransitionTest {
             }
             SystemClock.sleep(200);
         }
+        captureDiagnostics("missing-fresh-text-" + safeName(text));
         fail("Could not click fresh UI text: " + text);
     }
 
     private void chooseDocument(String fileName) {
         waitForDocumentsUi(fileName);
 
-        // The pinned synthetic fixtures live in /sdcard/Download. Android 16 DocumentsUI on the
-        // API 36 google_apis image exposes Downloads, device storage, Recent and Drive, but no
-        // standalone Audio root. Go directly to the physical Downloads root first so this test
-        // follows the same storage location that survives the uninstall boundary.
+        // The pinned fixtures live in /sdcard/Download. Android 16 DocumentsUI on the API 36
+        // google_apis image exposes Downloads, device storage, Recent and Drive, but not a
+        // standalone Audio root. Go straight to the real storage location first.
         UiObject2 candidate = waitForDocumentCandidate(fileName, 1_000);
         if (candidate == null) {
             openNamedRoot("Downloads");
             candidate = waitForDocumentCandidate(fileName, 5_000);
         }
 
-        // Search is a fallback only. Never press Back merely because the search field did not
-        // appear: on Android 16 that can close DocumentsUI and return to Acelynn, producing a
-        // misleading "missing file" harness failure.
         if (candidate == null) {
             candidate = searchDocumentsUi(fileName);
         }
@@ -294,7 +303,8 @@ public class AcelynnTransitionTest {
         }
 
         if (!openedRoots) {
-            device.click(Math.max(56, device.getDisplayWidth() / 20), Math.max(145, device.getDisplayHeight() / 16));
+            device.click(Math.max(56, device.getDisplayWidth() / 20),
+                    Math.max(145, device.getDisplayHeight() / 16));
         }
         device.waitForIdle();
         SystemClock.sleep(250);
@@ -334,8 +344,12 @@ public class AcelynnTransitionTest {
 
     private UiObject2 searchDocumentsUi(String fileName) {
         UiObject2 search = device.wait(Until.findObject(By.desc("Search")), 4_000);
-        if (search == null) search = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
-        if (search == null) search = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
+        if (search == null) {
+            search = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
+        }
+        if (search == null) {
+            search = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
+        }
         if (search == null) {
             logPickerState("search-button-missing", fileName);
             return null;
@@ -345,8 +359,12 @@ public class AcelynnTransitionTest {
             clickNodeOrClickableAncestor(search);
         } catch (StaleObjectException stale) {
             UiObject2 freshSearch = device.findObject(By.desc("Search"));
-            if (freshSearch == null) freshSearch = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
-            if (freshSearch == null) freshSearch = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
+            if (freshSearch == null) {
+                freshSearch = device.findObject(By.res(GOOGLE_DOCUMENTS_UI + ":id/option_menu_search"));
+            }
+            if (freshSearch == null) {
+                freshSearch = device.findObject(By.res(AOSP_DOCUMENTS_UI + ":id/option_menu_search"));
+            }
             if (freshSearch == null) return null;
             clickNodeOrClickableAncestor(freshSearch);
         }
@@ -443,20 +461,6 @@ public class AcelynnTransitionTest {
         return false;
     }
 
-    private void clickNodeOrClickableAncestor(UiObject2 object) {
-        UiObject2 target = object;
-        for (int depth = 0; depth < 5 && target != null; depth++) {
-            if (target.isClickable()) {
-                target.click();
-                return;
-            }
-            UiObject2 parent = target.getParent();
-            if (parent == null) break;
-            target = parent;
-        }
-        object.click();
-    }
-
     private boolean isRealDocumentCandidate(UiObject2 candidate) {
         if (candidate == null) return false;
         String resource = candidate.getResourceName();
@@ -466,7 +470,6 @@ public class AcelynnTransitionTest {
         if (pkg != null && !GOOGLE_DOCUMENTS_UI.equals(pkg) && !AOSP_DOCUMENTS_UI.equals(pkg)) {
             return false;
         }
-
         if (resource != null && (
                 resource.endsWith(":id/search_src_text") ||
                 resource.endsWith(":id/option_menu_search") ||
@@ -474,7 +477,6 @@ public class AcelynnTransitionTest {
                 resource.endsWith(":id/toolbar"))) {
             return false;
         }
-
         return !"android.widget.AutoCompleteTextView".equals(clazz) &&
                 !"android.widget.EditText".equals(clazz);
     }
@@ -488,7 +490,8 @@ public class AcelynnTransitionTest {
 
         logPickerState("picker-did-not-close", fileName);
         captureDiagnostics("documentsui-did-not-close-" + safeName(fileName));
-        fail("HARNESS_FAILURE: selected " + fileName + " but Android document picker did not return to Acelynn");
+        fail("HARNESS_FAILURE: selected " + fileName +
+                " but Android document picker did not return to Acelynn");
     }
 
     private void logPickerState(String stage, String value) {
@@ -502,9 +505,9 @@ public class AcelynnTransitionTest {
         return exact != null ? exact : device.findObject(By.textContains(text));
     }
 
-    private UiObject2 findResourceOrTexts(String resourceId, String... texts) {
+    private UiObject2 findControl(String resourceId, String... texts) {
         UiObject2 object = device.findObject(By.res(resourceId));
-        if (object == null) {
+        if (object == null && !resourceId.contains(":")) {
             object = device.findObject(By.res(ACELYNN_PACKAGE + ":id/" + resourceId));
         }
         if (object != null) return object;
@@ -514,6 +517,39 @@ public class AcelynnTransitionTest {
             if (object != null) return object;
         }
         return null;
+    }
+
+    private UiObject2 waitForControl(String resourceId, long timeoutMs, String... texts) {
+        long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 object = findControl(resourceId, texts);
+            if (object != null) {
+                System.out.println("Control resolved: " + resourceId + " text=" + object.getText());
+                return object;
+            }
+            SystemClock.sleep(200);
+        }
+        return null;
+    }
+
+    private void clickControl(String resourceId, long timeoutMs, String... texts) {
+        long deadline = SystemClock.uptimeMillis() + timeoutMs;
+        while (SystemClock.uptimeMillis() < deadline) {
+            UiObject2 object = findControl(resourceId, texts);
+            if (object != null) {
+                try {
+                    System.out.println("Clicking stable control: " + resourceId + " text=" + object.getText());
+                    clickNodeOrClickableAncestor(object);
+                    device.waitForIdle();
+                    return;
+                } catch (StaleObjectException ignored) {
+                    device.waitForIdle();
+                }
+            }
+            SystemClock.sleep(200);
+        }
+        captureDiagnostics("missing-control-" + safeName(resourceId));
+        fail("HARNESS_FAILURE: Could not click stable Acelynn control " + resourceId);
     }
 
     private UiObject2 waitForTextOrContains(String text, long timeoutMs) {
@@ -530,17 +566,7 @@ public class AcelynnTransitionTest {
         UiObject2 object = waitForTextOrContains(text, timeoutMs);
         assertNotNull("Could not find UI text: " + text, object);
         try {
-            object.click();
-        } catch (StaleObjectException stale) {
-            clickFreshText(text, timeoutMs);
-        }
-        device.waitForIdle();
-    }
-
-    private void clickTextWithScroll(String text, long timeoutMs) {
-        UiObject2 object = scrollToText(text, timeoutMs);
-        try {
-            object.click();
+            clickNodeOrClickableAncestor(object);
         } catch (StaleObjectException stale) {
             clickFreshText(text, timeoutMs);
         }
@@ -569,10 +595,10 @@ public class AcelynnTransitionTest {
         return null;
     }
 
-    private UiObject2 scrollToResourceOrTexts(String resourceId, long timeoutMs, String... texts) {
+    private UiObject2 scrollToControl(String resourceId, long timeoutMs, String... texts) {
         long deadline = SystemClock.uptimeMillis() + timeoutMs;
         while (SystemClock.uptimeMillis() < deadline) {
-            UiObject2 object = findResourceOrTexts(resourceId, texts);
+            UiObject2 object = findControl(resourceId, texts);
             if (object != null) {
                 System.out.println("Stable control resolved: " + resourceId + " text=" + object.getText());
                 return object;
@@ -583,6 +609,20 @@ public class AcelynnTransitionTest {
         captureDiagnostics("missing-control-" + safeName(resourceId));
         fail("HARNESS_FAILURE: Could not find stable Acelynn control " + resourceId);
         return null;
+    }
+
+    private void clickNodeOrClickableAncestor(UiObject2 object) {
+        UiObject2 target = object;
+        for (int depth = 0; depth < 5 && target != null; depth++) {
+            if (target.isClickable()) {
+                target.click();
+                return;
+            }
+            UiObject2 parent = target.getParent();
+            if (parent == null) break;
+            target = parent;
+        }
+        object.click();
     }
 
     private void waitUntilEnabled(UiObject2 object, long timeoutMs) {
