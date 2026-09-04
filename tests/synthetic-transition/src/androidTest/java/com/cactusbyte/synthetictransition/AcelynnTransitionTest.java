@@ -68,18 +68,18 @@ public class AcelynnTransitionTest {
         chooseDocument(FIXTURE_NAME);
         assertTextVisible(FIXTURE_NAME, UI_TIMEOUT_MS);
 
-        UiObject2 save = scrollToControl(
-                "captureButton", UI_TIMEOUT_MS, "Save current check", "Save last check");
+        // This exact text path already completed a real legacy export on run 33818888688.
+        // Keep it stable; only the permanent restore path needs the API 36 resource hardening.
+        UiObject2 save = scrollToText("Save current check", UI_TIMEOUT_MS);
         waitUntilEnabled(save, UI_TIMEOUT_MS);
-        clickNodeOrClickableAncestor(save);
+        save.click();
         assertTextVisibleWithScroll("1 saved", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Balanced mix", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Mids leading", UI_TIMEOUT_MS);
 
-        UiObject2 export = scrollToControl(
-                "exportButton", UI_TIMEOUT_MS, "Export session report");
+        UiObject2 export = scrollToText("Export session report", UI_TIMEOUT_MS);
         waitUntilEnabled(export, UI_TIMEOUT_MS);
-        clickNodeOrClickableAncestor(export);
+        export.click();
         device.waitForIdle();
 
         completeLegacyExternalBackupDownload();
@@ -127,10 +127,10 @@ public class AcelynnTransitionTest {
         chooseDocument(FIXTURE_NAME);
         assertTextVisible(FIXTURE_NAME, UI_TIMEOUT_MS);
 
-        UiObject2 save = scrollToControl(
-                "captureButton", UI_TIMEOUT_MS, "Save current check", "Save last check");
+        // Use the same proven text selector after restore; a new fixture has just started.
+        UiObject2 save = scrollToText("Save current check", UI_TIMEOUT_MS);
         waitUntilEnabled(save, UI_TIMEOUT_MS);
-        clickNodeOrClickableAncestor(save);
+        save.click();
         assertTextVisibleWithScroll("2 saved", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Balanced mix", UI_TIMEOUT_MS);
         assertTextVisibleWithScroll("Mids leading", UI_TIMEOUT_MS);
