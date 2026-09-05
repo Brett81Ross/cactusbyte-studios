@@ -27,23 +27,28 @@ export async function POST(req:NextRequest){
   if(!EMAIL_RE.test(email))return NextResponse.json({ok:false,error:"Enter a valid email address."},{status:400});
   if(!consent)return NextResponse.json({ok:false,error:"Please confirm you want launch updates."},{status:400});
 
-  const ref=adminDb().collection("launchWaitlist").doc(emailKey(email));
-  const snap=await ref.get();
-  if(snap.exists){
+  const db=adminDb();
+  const ref=db.collection("launchWaitlist").doc(emailKey(email));
+  const alreadyJoined=await db.runTransaction(async transaction=>{
+   const snap=await transaction.get(ref);
+   if(snap.exists)return true;
+   transaction.create(ref,{
+    name,
+    email,
+    interest,
+    source,
+    status:"waiting",
+    consent:true,
+    consentText:"CactusByte Studios Google Play launch and early-access updates",
+    createdAt:FieldValue.serverTimestamp(),
+    updatedAt:FieldValue.serverTimestamp(),
+   });
+   return false;
+  });
+
+  if(alreadyJoined){
    return NextResponse.json({ok:true,joined:true,alreadyJoined:true,message:"You’re already on the CactusByte waitlist."});
   }
-
-  await ref.create({
-   name,
-   email,
-   interest,
-   source,
-   status:"waiting",
-   consent:true,
-   consentText:"CactusByte Studios Google Play launch and early-access updates",
-   createdAt:FieldValue.serverTimestamp(),
-   updatedAt:FieldValue.serverTimestamp(),
-  });
 
   return NextResponse.json({ok:true,joined:true,alreadyJoined:false,message:"You’re on the list. We’ll let you know when CactusByte hits Google Play."},{status:201});
  }catch(error){
