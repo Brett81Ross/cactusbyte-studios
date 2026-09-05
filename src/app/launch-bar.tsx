@@ -111,7 +111,7 @@ export default function LaunchBar(){
     <label style={field}>Most interested in<select style={input} value={waitInterest} onChange={e=>setWaitInterest(e.target.value)}><option>CactusByte Studios</option>{studioApps.map(app=><option key={app.id} value={app.shortName}>{app.shortName}</option>)}</select></label>
     <label style={{display:"flex",gap:9,alignItems:"flex-start",color:"#a8bbb5",fontSize:12,lineHeight:1.45}}><input type="checkbox" checked={waitConsent} onChange={e=>setWaitConsent(e.target.checked)} required style={{marginTop:2,minWidth:18,minHeight:18}}/><span>I want CactusByte Studios Google Play launch and early-access updates. I can opt out later.</span></label>
     <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{position:"absolute",left:"-10000px",width:1,height:1,opacity:0}}/>
-    <button type="submit" disabled={waitBusy} style={{...waitBtn,minHeight:52,fontSize:15,opacity:waitBusy?.7:1}}>{waitBusy?"Joining…":"Join the Waitlist"}</button>
+    <button type="submit" disabled={waitBusy} style={{...waitBtn,minHeight:52,fontSize:15,opacity:waitBusy?0.7:1}}>{waitBusy?"Joining…":"Join the Waitlist"}</button>
    </form>
    {waitMessage&&<div role="status" style={{marginTop:12,padding:"10px 12px",borderRadius:10,background:"rgba(112,255,91,.08)",border:"1px solid rgba(112,255,91,.22)",color:"#c8ffc0",fontSize:13,lineHeight:1.45}}>{waitMessage}</div>}
    <p style={{margin:"12px 0 0",color:"#78928a",fontSize:11,lineHeight:1.5}}>Your signup is stored in CactusByte Cloud. One waitlist entry per email address.</p>
