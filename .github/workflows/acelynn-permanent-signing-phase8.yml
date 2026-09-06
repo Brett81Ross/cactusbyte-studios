@@ -1,0 +1,263 @@
+name: Acelynn Pro Permanent Signing Phase 8
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - acelynn-permanent-signing-phase8
+    paths:
+      - 'android-packager/app/**'
+      - 'android-packager/fixtures/acelynn-transition-*.json'
+      - 'android-packager/signing-manifest.json'
+      - 'android-packager/verify_apk_signatures.py'
+      - 'tools/run-acelynn-signing-transition-emulator.py'
+      - '.github/workflows/acelynn-permanent-signing-phase8.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  transition-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment: android-release
+    env:
+      KEYSTORE_CACTUSBYTE: ${{ secrets.KEYSTORE_CACTUSBYTE }}
+      KEYSTORE_PASSWORD_CACTUSBYTE: ${{ secrets.KEYSTORE_PASSWORD_CACTUSBYTE }}
+      KEY_PASSWORD_CACTUSBYTE: ${{ secrets.KEY_PASSWORD_CACTUSBYTE }}
+      KEY_ALIAS_CACTUSBYTE: ${{ secrets.KEY_ALIAS_CACTUSBYTE }}
+      KEYSTORE_NOPROBLEM: ${{ secrets.KEYSTORE_NOPROBLEM }}
+      KEYSTORE_PASSWORD_NOPROBLEM: ${{ secrets.KEYSTORE_PASSWORD_NOPROBLEM }}
+      KEY_PASSWORD_NOPROBLEM: ${{ secrets.KEY_PASSWORD_NOPROBLEM }}
+      KEY_ALIAS_NOPROBLEM: ${{ secrets.KEY_ALIAS_NOPROBLEM }}
+      KEYSTORE_MACHZERO: ${{ secrets.KEYSTORE_MACHZERO }}
+      KEYSTORE_PASSWORD_MACHZERO: ${{ secrets.KEYSTORE_PASSWORD_MACHZERO }}
+      KEY_PASSWORD_MACHZERO: ${{ secrets.KEY_PASSWORD_MACHZERO }}
+      KEY_ALIAS_MACHZERO: ${{ secrets.KEY_ALIAS_MACHZERO }}
+      KEYSTORE_RAPIDTAKEOFF: ${{ secrets.KEYSTORE_RAPIDTAKEOFF }}
+      KEYSTORE_PASSWORD_RAPIDTAKEOFF: ${{ secrets.KEYSTORE_PASSWORD_RAPIDTAKEOFF }}
+      KEY_PASSWORD_RAPIDTAKEOFF: ${{ secrets.KEY_PASSWORD_RAPIDTAKEOFF }}
+      KEY_ALIAS_RAPIDTAKEOFF: ${{ secrets.KEY_ALIAS_RAPIDTAKEOFF }}
+      KEYSTORE_ACELYNNPRO: ${{ secrets.KEYSTORE_ACELYNNPRO }}
+      KEYSTORE_PASSWORD_ACELYNNPRO: ${{ secrets.KEYSTORE_PASSWORD_ACELYNNPRO }}
+      KEY_PASSWORD_ACELYNNPRO: ${{ secrets.KEY_PASSWORD_ACELYNNPRO }}
+      KEY_ALIAS_ACELYNNPRO: ${{ secrets.KEY_ALIAS_ACELYNNPRO }}
+      KEYSTORE_POCKETSTOMP: ${{ secrets.KEYSTORE_POCKETSTOMP }}
+      KEYSTORE_PASSWORD_POCKETSTOMP: ${{ secrets.KEYSTORE_PASSWORD_POCKETSTOMP }}
+      KEY_PASSWORD_POCKETSTOMP: ${{ secrets.KEY_PASSWORD_POCKETSTOMP }}
+      KEY_ALIAS_POCKETSTOMP: ${{ secrets.KEY_ALIAS_POCKETSTOMP }}
+      KEYSTORE_GHOSTLANE: ${{ secrets.KEYSTORE_GHOSTLANE }}
+      KEYSTORE_PASSWORD_GHOSTLANE: ${{ secrets.KEYSTORE_PASSWORD_GHOSTLANE }}
+      KEY_PASSWORD_GHOSTLANE: ${{ secrets.KEY_PASSWORD_GHOSTLANE }}
+      KEY_ALIAS_GHOSTLANE: ${{ secrets.KEY_ALIAS_GHOSTLANE }}
+      KEYSTORE_FIRSTBEARING: ${{ secrets.KEYSTORE_FIRSTBEARING }}
+      KEYSTORE_PASSWORD_FIRSTBEARING: ${{ secrets.KEYSTORE_PASSWORD_FIRSTBEARING }}
+      KEY_PASSWORD_FIRSTBEARING: ${{ secrets.KEY_PASSWORD_FIRSTBEARING }}
+      KEY_ALIAS_FIRSTBEARING: ${{ secrets.KEY_ALIAS_FIRSTBEARING }}
+      KEYSTORE_FANTASY: ${{ secrets.KEYSTORE_FANTASY }}
+      KEYSTORE_PASSWORD_FANTASY: ${{ secrets.KEYSTORE_PASSWORD_FANTASY }}
+      KEY_PASSWORD_FANTASY: ${{ secrets.KEY_PASSWORD_FANTASY }}
+      KEY_ALIAS_FANTASY: ${{ secrets.KEY_ALIAS_FANTASY }}
+      KEYSTORE_SCOUTTRACE: ${{ secrets.KEYSTORE_SCOUTTRACE }}
+      KEYSTORE_PASSWORD_SCOUTTRACE: ${{ secrets.KEYSTORE_PASSWORD_SCOUTTRACE }}
+      KEY_PASSWORD_SCOUTTRACE: ${{ secrets.KEY_PASSWORD_SCOUTTRACE }}
+      KEY_ALIAS_SCOUTTRACE: ${{ secrets.KEY_ALIAS_SCOUTTRACE }}
+      KEYSTORE_SHADOWNEX: ${{ secrets.KEYSTORE_SHADOWNEX }}
+      KEYSTORE_PASSWORD_SHADOWNEX: ${{ secrets.KEYSTORE_PASSWORD_SHADOWNEX }}
+      KEY_PASSWORD_SHADOWNEX: ${{ secrets.KEY_PASSWORD_SHADOWNEX }}
+      KEY_ALIAS_SHADOWNEX: ${{ secrets.KEY_ALIAS_SHADOWNEX }}
+      KEYSTORE_TERRAFLOW: ${{ secrets.KEYSTORE_TERRAFLOW }}
+      KEYSTORE_PASSWORD_TERRAFLOW: ${{ secrets.KEYSTORE_PASSWORD_TERRAFLOW }}
+      KEY_PASSWORD_TERRAFLOW: ${{ secrets.KEY_PASSWORD_TERRAFLOW }}
+      KEY_ALIAS_TERRAFLOW: ${{ secrets.KEY_ALIAS_TERRAFLOW }}
+      KEYSTORE_ORBITGATHER: ${{ secrets.KEYSTORE_ORBITGATHER }}
+      KEYSTORE_PASSWORD_ORBITGATHER: ${{ secrets.KEYSTORE_PASSWORD_ORBITGATHER }}
+      KEY_PASSWORD_ORBITGATHER: ${{ secrets.KEY_PASSWORD_ORBITGATHER }}
+      KEY_ALIAS_ORBITGATHER: ${{ secrets.KEY_ALIAS_ORBITGATHER }}
+
+    steps:
+      - name: Checkout exact Phase 8 branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Verify staged signing registry
+        run: python3 android-packager/verify_signing_manifest.py --allow-staged
+
+      - name: Confirm private keys are not committed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find . -type f \( -name '*.jks' -o -name '*.keystore' -o -name '*.p12' -o -name '*.pfx' \) -print -quit | grep -q .; then
+            echo 'Private signing material must never be committed.' >&2
+            exit 1
+          fi
+
+      - name: Install icon tooling
+        run: python3 -m pip install --disable-pip-version-check pillow cairosvg
+
+      - name: Build branded launcher icons
+        run: python3 android-packager/fetch_icons.py
+
+      - name: Build synthetic legacy-signed Acelynn Direct APK
+        shell: bash
+        env:
+          CACTUSBYTE_PERMANENT_SIGNING: '0'
+        run: |
+          set -euo pipefail
+          gradle --no-daemon -p android-packager :app:assembleAcelynnproDirectRelease --stacktrace
+          mapfile -t apks < <(find android-packager/app/build/outputs/apk -type f -iname '*acelynnpro*direct*release*.apk' | sort)
+          test "${#apks[@]}" -eq 1
+          cp "${apks[0]}" "$RUNNER_TEMP/acelynn-synthetic-legacy.apk"
+          echo "ACELYNN_SYNTHETIC_LEGACY_APK=$RUNNER_TEMP/acelynn-synthetic-legacy.apk" >> "$GITHUB_ENV"
+          rm -rf android-packager/app/build
+
+      - name: Materialize permanent signing keystores from environment secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cactusbyte-signing"
+          flavors=(cactusbyte noproblem machzero rapidtakeoff acelynnpro pocketstomp ghostlane firstbearing fantasy scouttrace shadownex terraflow orbitgather)
+          for flavor in "${flavors[@]}"; do
+            suffix="$(printf '%s' "$flavor" | tr '[:lower:]-' '[:upper:]_')"
+            ks_var="KEYSTORE_$suffix"
+            store_var="KEYSTORE_PASSWORD_$suffix"
+            key_var="KEY_PASSWORD_$suffix"
+            alias_var="KEY_ALIAS_$suffix"
+            [[ -n "${!ks_var:-}" ]] || { echo "Missing android-release environment secret $ks_var" >&2; exit 1; }
+            [[ -n "${!store_var:-}" ]] || { echo "Missing android-release environment secret $store_var" >&2; exit 1; }
+            [[ -n "${!key_var:-}" ]] || { echo "Missing android-release environment secret $key_var" >&2; exit 1; }
+            [[ -n "${!alias_var:-}" ]] || { echo "Missing android-release environment secret $alias_var" >&2; exit 1; }
+            path="$RUNNER_TEMP/cactusbyte-signing/$flavor.jks"
+            printf '%s' "${!ks_var}" | base64 --decode > "$path"
+            chmod 600 "$path"
+            echo "KEYSTORE_PATH_$suffix=$path" >> "$GITHUB_ENV"
+          done
+
+      - name: Build permanent-signed Acelynn Direct APK
+        shell: bash
+        env:
+          CACTUSBYTE_PERMANENT_SIGNING: '1'
+        run: |
+          set -euo pipefail
+          gradle --no-daemon -p android-packager :app:assembleAcelynnproDirectRelease --stacktrace
+          mapfile -t apks < <(find android-packager/app/build/outputs/apk -type f -iname '*acelynnpro*direct*release*.apk' | sort)
+          test "${#apks[@]}" -eq 1
+          cp "${apks[0]}" "$RUNNER_TEMP/acelynn-permanent.apk"
+          echo "ACELYNN_PERMANENT_APK=$RUNNER_TEMP/acelynn-permanent.apk" >> "$GITHUB_ENV"
+
+      - name: Verify package identity and both signer identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -x "$AAPT"
+          test -x "$APKSIGNER"
+          expected='FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230'
+          for apk in "$ACELYNN_SYNTHETIC_LEGACY_APK" "$ACELYNN_PERMANENT_APK"; do
+            "$AAPT" dump badging "$apk" | tee -a "$RUNNER_TEMP/acelynn-phase8-badging.txt"
+            "$AAPT" dump badging "$apk" | grep -Fq "package: name='com.cactusbyte.acelynnpro' versionCode='2'"
+          done
+          "$APKSIGNER" verify --verbose --print-certs "$ACELYNN_SYNTHETIC_LEGACY_APK" | tee "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$ACELYNN_PERMANENT_APK" | tee "$RUNNER_TEMP/acelynn-phase8-permanent-signature.txt"
+          legacy="$(awk -F': ' '/certificate SHA-256 digest:/{print toupper($2);exit}' "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt")"
+          permanent="$(awk -F': ' '/certificate SHA-256 digest:/{print toupper($2);exit}' "$RUNNER_TEMP/acelynn-phase8-permanent-signature.txt")"
+          legacy="${legacy//:/}"
+          permanent="${permanent//:/}"
+          test -n "$legacy" && test -n "$permanent"
+          test "$legacy" != "$permanent"
+          test "$permanent" = "$expected"
+          grep -Eq 'certificate DN: .*CN=Android Debug' "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt"
+          printf 'synthetic_legacy_sha256=%s\npermanent_sha256=%s\n' "$legacy" "$permanent" | tee "$RUNNER_TEMP/acelynn-phase8-signers.txt"
+
+      - name: Verify recovery engine fixtures before emulator
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const Recovery = require('./android-packager/app/src/acelynnproDirect/assets/acelynn-recovery.js');
+          const good = Recovery.parseBackupText(fs.readFileSync('./android-packager/fixtures/acelynn-transition-backup.json','utf8'));
+          if (good.length !== 2) throw new Error('expected exactly two good transition snapshots');
+          const state = new Map();
+          const storage = {getItem:k=>state.has(k)?state.get(k):null,setItem:(k,v)=>state.set(k,v),removeItem:k=>state.delete(k)};
+          let restored = Recovery.restore(storage, good);
+          if (restored.length !== 2) throw new Error('first restore did not produce two snapshots');
+          restored = Recovery.restore(storage, good);
+          if (restored.length !== 2) throw new Error('duplicate restore was not suppressed');
+          let rejected = false;
+          try { Recovery.parseBackupText(fs.readFileSync('./android-packager/fixtures/acelynn-transition-wrong-app.json','utf8')); }
+          catch (error) { rejected = /different app/i.test(String(error && error.message)); }
+          if (!rejected) throw new Error('wrong-app transition fixture was not rejected');
+          console.log('Recovery engine fixture gate passed.');
+          NODE
+
+      - name: Run API 36 emulator signer-transition and recovery round trip
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: |
+            set -euo pipefail
+            export ACELYNN_SYNTHETIC_LEGACY_APK="$ACELYNN_SYNTHETIC_LEGACY_APK"
+            export ACELYNN_PERMANENT_APK="$ACELYNN_PERMANENT_APK"
+            if ! python3 tools/run-acelynn-signing-transition-emulator.py 2>&1 | tee "$RUNNER_TEMP/acelynn-phase8-emulator.log"; then
+              adb shell uiautomator dump /sdcard/acelynn-phase8-failure.xml || true
+              adb pull /sdcard/acelynn-phase8-failure.xml "$RUNNER_TEMP/acelynn-phase8-failure.xml" || true
+              adb exec-out screencap -p > "$RUNNER_TEMP/acelynn-phase8-failure.png" || true
+              exit 1
+            fi
+            adb shell uiautomator dump /sdcard/acelynn-phase8-final.xml || true
+            adb pull /sdcard/acelynn-phase8-final.xml "$RUNNER_TEMP/acelynn-phase8-final.xml" || true
+            adb exec-out screencap -p > "$RUNNER_TEMP/acelynn-phase8-final.png" || true
+
+      - name: Run full CactusByte preflight without deployment
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          npm run preflight
+
+      - name: Reject deployment and real-device cutover side effects
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          test "$GITHUB_REF_NAME" = 'acelynn-permanent-signing-phase8'
+          echo 'Phase 8 is emulator-only. No Vercel deployment, preview, Play publication, main merge, physical-device uninstall, or physical-device signing cutover was executed.'
+
+      - name: Upload non-secret Phase 8 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acelynn-phase8-transition-evidence
+          path: |
+            ${{ runner.temp }}/acelynn-phase8-badging.txt
+            ${{ runner.temp }}/acelynn-phase8-legacy-signature.txt
+            ${{ runner.temp }}/acelynn-phase8-permanent-signature.txt
+            ${{ runner.temp }}/acelynn-phase8-signers.txt
+            ${{ runner.temp }}/acelynn-phase8-emulator.log
+            ${{ runner.temp }}/acelynn-phase8-final.xml
+            ${{ runner.temp }}/acelynn-phase8-final.png
+            ${{ runner.temp }}/acelynn-phase8-failure.xml
+            ${{ runner.temp }}/acelynn-phase8-failure.png
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Phase 8 gate passed
+        run: echo 'Acelynn Pro permanent signing Phase 8 passed synthetic signer mismatch, emulator-only uninstall, permanent signer verification, restore, dedupe, wrong-file rejection, and no-deploy guards.'
