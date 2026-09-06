@@ -1,0 +1,15 @@
+{
+  "app": "Not Acelynn Pro",
+  "schema": "acelynn-pro-backup-v1",
+  "version": 1,
+  "created": "2026-09-06T00:00:00.000Z",
+  "snapshots": [
+    {
+      "time": "Sep 6, 8:10 AM",
+      "profile": "Balanced mix",
+      "score": 50,
+      "focus": "Air",
+      "bands": [20, 30, 40, 50, 60]
+    }
+  ]
+}
