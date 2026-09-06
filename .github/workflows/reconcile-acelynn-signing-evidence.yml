@@ -21,7 +21,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Reconcile Acelynn audit and runbook evidence
+      - name: Reconcile Acelynn audit, runbook, and ABL evidence
         shell: bash
         run: |
           set -euo pipefail
@@ -30,8 +30,10 @@ jobs:
 
           audit_path = Path('android-packager/SIGNING_CUTOVER_DATA_AUDIT.md')
           runbook_path = Path('android-packager/SIGNING_CUTOVER_RUNBOOK.md')
+          abl_path = Path('ATOMIC_BUILD_LIST.md')
           audit = audit_path.read_text()
           runbook = runbook_path.read_text()
+          abl = abl_path.read_text()
 
           def replace_or_accept(text, old, new, label):
               old_count = text.count(old)
@@ -62,8 +64,17 @@ jobs:
           new_post = "4. Verify the installed Direct APK matches the certified permanent Acelynn signer and recovery path already proven by run `33869737869`; do not substitute an unverified build."
           runbook = replace_or_accept(runbook, old_post, new_post, 'Acelynn post-install signer check')
 
+          old_abl_detail = "- [ ] **Acelynn Pro production-cutover equivalence gate:** verify the exact permanent-signed Direct APK has guaranteed access to the certified recovery implementation, then pass a synthetic legacy-signature → export → uninstall → permanent-signature → restore round trip on a non-production Android environment before authorizing any real Acelynn uninstall."
+          new_abl_detail = "- [x] **Acelynn Pro production-cutover equivalence gate:** Actions run `33869737869` passed the literal August 31 legacy APK → four real audio snapshots → backup export → emulator-only uninstall → certified permanent-signed Direct APK → four-snapshot restore transition. Evidence is locked in `android-packager/ACELYNN_SIGNING_TRANSITION_EVIDENCE.md` and artifact `9935674326`. Real-device uninstall still requires an external current backup and explicit user approval."
+          abl = replace_or_accept(abl, old_abl_detail, new_abl_detail, 'Acelynn detailed ABL gate')
+
+          old_abl_phase = "- [ ] Phase 7 — Acelynn Pro production-cutover equivalence gate: verify the exact permanent-signed Direct APK exposes or embeds the certified recovery implementation and pass a synthetic legacy-signed → backup → uninstall → permanent-signed Direct → restore transition on a non-production Android environment. No real Acelynn uninstall is authorized until this gate passes and the user explicitly approves cutover."
+          new_abl_phase = "- [x] Phase 7 — Acelynn Pro production-cutover equivalence gate: run `33869737869` proved literal legacy-signed APK → real four-snapshot backup → emulator-only uninstall → certified permanent-signed Direct APK → restore. Acelynn's technical gate is closed; physical cutover remains separately locked behind a fresh external backup and explicit user approval."
+          abl = replace_or_accept(abl, old_abl_phase, new_abl_phase, 'Acelynn Phase 7 ABL summary')
+
           audit_path.write_text(audit)
           runbook_path.write_text(runbook)
+          abl_path.write_text(abl)
           PY
 
       - name: Verify safety language remains locked
@@ -76,26 +87,28 @@ jobs:
           grep -Fq '33869737869' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
           grep -Fq '9935674326' android-packager/SIGNING_CUTOVER_RUNBOOK.md
           grep -Fq 'do not substitute an unverified build' android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          grep -Fq 'Acelynn Pro production-cutover equivalence gate:** Actions run `33869737869`' ATOMIC_BUILD_LIST.md
+          grep -Fq 'physical cutover remains separately locked' ATOMIC_BUILD_LIST.md
           grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
 
       - name: Commit reconciliation if needed
         shell: bash
         run: |
           set -euo pipefail
-          git add android-packager/SIGNING_CUTOVER_DATA_AUDIT.md android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          git add ATOMIC_BUILD_LIST.md android-packager/SIGNING_CUTOVER_DATA_AUDIT.md android-packager/SIGNING_CUTOVER_RUNBOOK.md
           if git diff --cached --quiet; then
             echo 'Acelynn evidence records already reconciled.'
             exit 0
           fi
-          changed="$(git diff --cached --name-only | sort)"
-          allowed=$'android-packager/SIGNING_CUTOVER_DATA_AUDIT.md\nandroid-packager/SIGNING_CUTOVER_RUNBOOK.md'
-          case "$changed" in
-            'android-packager/SIGNING_CUTOVER_RUNBOOK.md'|"$allowed") ;;
-            *) echo "Unexpected reconciliation set: $changed" >&2; exit 1 ;;
-          esac
+          for file in $(git diff --cached --name-only); do
+            case "$file" in
+              ATOMIC_BUILD_LIST.md|android-packager/SIGNING_CUTOVER_DATA_AUDIT.md|android-packager/SIGNING_CUTOVER_RUNBOOK.md) ;;
+              *) echo "Unexpected reconciliation file: $file" >&2; exit 1 ;;
+            esac
+          done
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'phase8: finalize Acelynn technical transition record'
+          git commit -m 'phase8: close Acelynn technical cutover ABL gate'
           git push origin HEAD:android-release-v2-foundation
 
       - name: Confirm no deployment or cutover action
