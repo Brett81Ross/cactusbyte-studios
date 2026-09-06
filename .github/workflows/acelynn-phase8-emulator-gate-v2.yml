@@ -81,8 +81,8 @@ jobs:
           done
           "$APKSIGNER" verify --verbose --print-certs "$ACELYNN_SYNTHETIC_LEGACY_APK" | tee "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt"
           "$APKSIGNER" verify --verbose --print-certs "$ACELYNN_PERMANENT_APK" | tee "$RUNNER_TEMP/acelynn-phase8-permanent-signature.txt"
-          legacy="$(awk -F': ' '/certificate SHA-256 digest:/{print toupper($2);exit}' "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt")"; legacy="${legacy//:/}"
-          permanent="$(awk -F': ' '/certificate SHA-256 digest:/{print toupper($2);exit}' "$RUNNER_TEMP/acelynn-phase8-permanent-signature.txt")"; permanent="${permanent//:/}"
+          legacy="$(awk -F': ' '/certificate SHA-256 digest:/{print toupper($NF);exit}' "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt")"; legacy="${legacy//:/}"
+          permanent="$(awk -F': ' '/certificate SHA-256 digest:/{print toupper($NF);exit}' "$RUNNER_TEMP/acelynn-phase8-permanent-signature.txt")"; permanent="${permanent//:/}"
           test "$legacy" != "$permanent"
           test "$permanent" = "$EXPECTED_PERMANENT_SHA256"
           grep -Eq 'certificate DN: .*CN=Android Debug' "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt"
