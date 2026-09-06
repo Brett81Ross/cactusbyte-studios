@@ -21,10 +21,16 @@ The run used a literal historical Acelynn APK from the August 31 distribution pl
 - Certified Android foundation: `c2ea2bd182956b1202f33e499cb54019b358a272`
 - Certified signing run: `33639746045`
 - Certified signed-APK artifact ID consumed by the transition test: `9850425582`
+- Artifact name: `cactusbyte-brand-distribution-signed-apks`
+- Artifact ZIP SHA-256: `46bae462252c786cc9221bcf0bce012e4a7c87e8bd46f587511f11fbcf314dad`
+- Artifact retention expiration recorded by GitHub: September 9, 2026
+- **Exact cutover APK path inside the artifact:** `acelynnproDirect/release/app-acelynnpro-direct-release.apk`
 - Permanent Acelynn Direct signer DN: `CN=CactusByte Studios, OU=acelynnpro, O=CactusByte Studios, C=US`
 - Permanent signer certificate SHA-256: `FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230`
 
 Both APK signatures verified using Android APK Signature Scheme v2 and the certificates were confirmed to be different.
+
+**Cutover authority rule:** use the exact certified Direct APK above for the first real-device Acelynn signing cutover. Do not silently substitute a newer Acelynn APK or a different artifact merely because it also carries the permanent signer. Any substitute must first be proven equivalent to this certified package/recovery path and signer before it can become cutover authority.
 
 ## Real recovery-flow proof
 
@@ -56,6 +62,12 @@ The successful transition proved all of the following:
 - Retention expiration recorded by GitHub: September 18, 2026
 
 The artifact contains transition diagnostics, fixture manifest, legacy and permanent signature reports, and APK badging evidence.
+
+## Superseded duplicate emulator workflow
+
+The later workflow `Acelynn Pro Phase 8 Emulator Gate v2` / run `34041321737` was a redundant harness, not the cutover authority. Its historical red result came after the authoritative transition had already passed and does not invalidate run `33869737869`. That redundant workflow has now been retired to manual-only explanatory status so it cannot keep generating misleading automatic red checks.
+
+Future engineers and QA must use run `33869737869`, this evidence record, artifact `9935674326`, and certified signed artifact `9850425582` as the Acelynn transition authority unless a later gate explicitly supersedes them with equal or stronger evidence.
 
 ## Safety boundary
 
