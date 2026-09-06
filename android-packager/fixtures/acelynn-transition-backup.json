@@ -1,0 +1,22 @@
+{
+  "app": "Acelynn Pro",
+  "schema": "acelynn-pro-backup-v1",
+  "version": 1,
+  "created": "2026-09-06T00:00:00.000Z",
+  "snapshots": [
+    {
+      "time": "Sep 6, 8:01 AM",
+      "profile": "Balanced mix",
+      "score": 84,
+      "focus": "Mids",
+      "bands": [41, 56, 63, 54, 42]
+    },
+    {
+      "time": "Sep 6, 8:06 AM",
+      "profile": "Bass / hip-hop",
+      "score": 79,
+      "focus": "Bass",
+      "bands": [64, 75, 50, 45, 39]
+    }
+  ]
+}
