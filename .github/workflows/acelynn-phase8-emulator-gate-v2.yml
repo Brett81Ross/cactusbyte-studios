@@ -49,6 +49,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: 34040663695
 
+      - name: Generate branded launcher resources for synthetic build
+        run: |
+          python3 -m pip install --disable-pip-version-check pillow cairosvg
+          python3 android-packager/fetch_icons.py
+
       - name: Locate permanent APK and build synthetic legacy APK
         shell: bash
         env:
