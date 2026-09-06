@@ -1,0 +1,89 @@
+name: Reconcile Acelynn Signing Evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - android-release-v2-foundation
+    paths:
+      - '.github/workflows/reconcile-acelynn-signing-evidence.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact Android foundation
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Reconcile Acelynn audit and runbook evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          audit_path = Path('android-packager/SIGNING_CUTOVER_DATA_AUDIT.md')
+          runbook_path = Path('android-packager/SIGNING_CUTOVER_RUNBOOK.md')
+
+          audit = audit_path.read_text()
+          runbook = runbook_path.read_text()
+
+          old_table = "| Acelynn Pro™ | B | Saved analysis snapshots are local under `acelynn-snapshots` with 12-record retention. | Recovery code/CI, deterministic settle, service-worker retirement, and physical Z Fold recovery-engine QA are complete. Still require production-cutover equivalence: the exact permanent-signed Direct APK must have guaranteed access to the certified recovery implementation and pass a synthetic legacy-signature → uninstall → permanent-signature restore transition before any real uninstall. |"
+          new_table = "| Acelynn Pro™ | B | Saved analysis snapshots are local under `acelynn-snapshots` with 12-record retention. | **Technical cutover gate passed.** Recovery code/CI, deterministic settle, service-worker retirement, physical Z Fold recovery-engine QA, literal legacy-APK export, emulator uninstall boundary, certified permanent-signed Direct install, and four-snapshot restore are proven. Real-device uninstall still requires a fresh external backup plus explicit user approval. |"
+
+          old_tail = "The normal permanent Acelynn Direct/Play wrappers still load the production web URL rather than the QA-only pinned local recovery entry point. Therefore the physical QA result certifies the recovery engine and Android integration, but it does not by itself prove production-cutover equivalence.\n\n**Gate status:** recovery code/CI + deterministic settle + service-worker retirement + physical Z Fold recovery-engine QA complete. Still blocked from real uninstall/cutover until the exact permanent-signed Direct APK has guaranteed access to the certified recovery implementation and passes a synthetic legacy-signature → export → uninstall → permanent-signature → restore round trip on a non-production Android environment. Explicit user approval remains required after that gate passes."
+          new_tail = "Production-cutover equivalence is now proven independently of the QA-only package. GitHub Actions run `33869737869` used the literal August 31 distributed `Acelynn-Pro.apk` (APK SHA-256 `a34ce06b7197e078095a5328f7107adafa9616b29aaa5a8bb9bf5a93e4d0d7c5`) signed by the historical Android Debug certificate `F62B0F713281125F32CC5053A624E17C0BE4ACCE5C799B86FD03683153BB5FDE`, and the certified permanent-signed Acelynn Direct APK signed by `FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230`. On an API 36 emulator, the harness created four deterministic real audio snapshots (`Sub → Bass → Mids → Presence`), exported a valid backup, crossed the uninstall boundary, installed the certified permanent APK, and restored all four snapshots successfully. The run ended `ACELYNN MULTI-SNAPSHOT TRANSITION GATE GREEN.` Evidence artifact `9935674326` (`acelynn-multisnapshot-transition-evidence`) has SHA-256 `303166515938eb686b9dde017103a7d8688b0855b0a8a9d7d22787e116852dec`. Full evidence is recorded in `ACELYNN_SIGNING_TRANSITION_EVIDENCE.md`.\n\n**Gate status:** Acelynn Pro's technical recovery/signing-transition gate is **passed**. The remaining real-device safeguards are procedural: export the current real backup outside app-private storage and obtain explicit user approval before uninstalling the legacy package. No physical-device cutover is authorized by this audit."
+
+          replacements = [(old_table, new_table), (old_tail, new_tail)]
+          for old, new in replacements:
+              if audit.count(old) != 1:
+                  raise SystemExit(f'Audit reconciliation anchor count was {audit.count(old)}, expected 1.')
+              audit = audit.replace(old, new)
+
+          old_runbook_step = "3. Do not uninstall until the isolated recovery round-trip gate has already proven the current recovery build can consume both legacy reports and the versioned backup format.\n\nAfter the permanent-signed install:"
+          new_runbook_step = "3. Do not uninstall until the isolated recovery round-trip gate has already proven the current recovery build can consume both legacy reports and the versioned backup format.\n\n**Technical transition proof is complete.** GitHub Actions run `33869737869` used the literal August 31 legacy APK and the certified permanent-signed Direct APK on API 36. It created and exported four real audio snapshots, preserved the backup across the emulator-only uninstall, installed the permanent signer, and restored all four snapshots. Evidence artifact `9935674326` is recorded in `ACELYNN_SIGNING_TRANSITION_EVIDENCE.md`. This proof does not authorize a physical-device uninstall.\n\nAfter the permanent-signed install:"
+
+          old_check = "- [ ] Acelynn Pro recovery-engine/device QA is proven **and** the exact permanent-signed Direct APK passes the production-cutover equivalence gate: guaranteed certified recovery access plus a synthetic legacy-signature → export → uninstall → permanent-signature → restore transition on a non-production Android environment."
+          new_check = "- [x] Acelynn Pro recovery-engine/device QA and production-cutover equivalence are proven. Run `33869737869` passed literal legacy APK → four-snapshot export → emulator-only uninstall → certified permanent-signed Direct APK → four-snapshot restore. Evidence: `ACELYNN_SIGNING_TRANSITION_EVIDENCE.md` / artifact `9935674326`."
+
+          for old, new in [(old_runbook_step, new_runbook_step), (old_check, new_check)]:
+              if runbook.count(old) != 1:
+                  raise SystemExit(f'Runbook reconciliation anchor count was {runbook.count(old)}, expected 1.')
+              runbook = runbook.replace(old, new)
+
+          audit_path.write_text(audit)
+          runbook_path.write_text(runbook)
+          PY
+
+      - name: Verify safety language remains locked
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'No physical-device cutover is authorized by this audit.' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
+          grep -Fq -- '- [ ] The user explicitly approves beginning the device cutover.' android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          grep -Fq 'staged only' android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          grep -Fq '33869737869' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
+          grep -Fq '9935674326' android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          grep -Fq '"deploymentEnabled": false' vercel.json
+
+      - name: Commit evidence reconciliation only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add android-packager/SIGNING_CUTOVER_DATA_AUDIT.md android-packager/SIGNING_CUTOVER_RUNBOOK.md
+          changed="$(git diff --cached --name-only | sort)"
+          expected=$'android-packager/SIGNING_CUTOVER_DATA_AUDIT.md\nandroid-packager/SIGNING_CUTOVER_RUNBOOK.md'
+          test "$changed" = "$expected" || { echo "Unexpected reconciliation set: $changed" >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'phase8: mark Acelynn technical transition gate proven'
+          git push origin HEAD:android-release-v2-foundation
+
+      - name: Confirm no deployment or cutover action
+        run: echo 'Documentation-only reconciliation complete. No Vercel deploy/preview, Play publish, main merge, or physical-device uninstall/cutover was performed.'
