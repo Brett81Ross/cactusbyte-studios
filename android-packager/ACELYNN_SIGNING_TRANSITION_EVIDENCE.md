@@ -25,6 +25,7 @@ The run used a literal historical Acelynn APK from the August 31 distribution pl
 - Artifact ZIP SHA-256: `46bae462252c786cc9221bcf0bce012e4a7c87e8bd46f587511f11fbcf314dad`
 - Artifact retention expiration recorded by GitHub: September 9, 2026
 - **Exact cutover APK path inside the artifact:** `acelynnproDirect/release/app-acelynnpro-direct-release.apk`
+- **Exact cutover APK SHA-256:** `77502fef4ca5f2e9cd934c1028ef192f05d41ab2b77dd2040304461c4c747b8c`
 - Permanent Acelynn Direct signer DN: `CN=CactusByte Studios, OU=acelynnpro, O=CactusByte Studios, C=US`
 - Permanent signer certificate SHA-256: `FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230`
 
