@@ -115,7 +115,7 @@ After the permanent-signed install:
 1. Open **Restore / merge backup** and choose the saved JSON file.
 2. Confirm Acelynn downloads a pre-import backup before writing.
 3. Verify the restored snapshot count/content and run one new live/file mix check.
-4. Confirm the exact permanent-signed Direct APK is using a recovery path that is equivalent to the certified recovery implementation. The QA-only pinned local package proves the recovery engine, but does not replace the production-cutover equivalence gate.
+4. Verify the installed Direct APK matches the certified permanent Acelynn signer and recovery path already proven by run `33869737869`; do not substitute an unverified build.
 5. Service-worker retirement is already part of the certified recovery source; do not reintroduce the old Acelynn worker during cutover.
 
 ### Acelynn’s ScoutTrace™ — preserve scan history
