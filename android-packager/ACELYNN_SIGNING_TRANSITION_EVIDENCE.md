@@ -1,6 +1,6 @@
 # Acelynn Pro™ Permanent-Signing Transition Evidence
 
-Status: **physical Samsung Galaxy Z Fold cutover GREEN on September 6, 2026. Permanent-signed Acelynn installed, certified backup restored, and live microphone analysis verified. Recovery QA package cleanup remains optional and separate.**
+Status: **permanent-signed Acelynn installed and certified backup restored on the Samsung Galaxy Z Fold, but field acceptance is NOT GREEN. Live microphone capture starts, yet the user reported visible runtime glitching during live analysis. Keep the Recovery QA package and backup until the web-runtime hotfix is deployed and re-verified.**
 
 ## Proven transition
 
@@ -76,9 +76,11 @@ The permanent app opened its certified built-in recovery surface. The user selec
 - `Session snapshots · 1 saved`
 - restored snapshot `Balanced mix · Sep 4, 7:56 AM · Sub leading · 54/100`
 
-The user then continued into Acelynn Pro and started live microphone analysis. The runtime UI changed to `Stop live analysis` and reported non-zero live microphone measurements including approximately `-42.1 dB` peak, `-46.6 dB` average, and `4.4 dB` range. This verifies that the permanent app launched and microphone capture was active after the signing cutover.
+The user then continued into Acelynn Pro and started live microphone analysis. The runtime UI changed to `Stop live analysis` and reported non-zero live microphone measurements including approximately `-42.1 dB` peak, `-46.6 dB` average, and `4.4 dB` range. This proves that the permanent APK launches and microphone capture is active after the signing transition.
 
-**Physical cutover result: GREEN.** The permanent signing migration for Acelynn Pro is complete. The Recovery QA package can now be removed separately after final owner cleanup; its removal is not part of the signing proof and must not be confused with uninstalling the permanent `com.cactusbyte.acelynnpro` package.
+The user subsequently supplied a screen recording showing the live analysis surface visibly glitching while analysis continued. Source review identified high-frequency DOM churn in the live web runtime: the coaching panel is rebuilt on animation frames, enhancement panels also rewrite live findings repeatedly, and the signal-validity observer reacts to those same mutations. This is a web-runtime stability defect, not evidence that the permanent signing certificate or restored backup failed.
+
+**Physical cutover result: SIGNER + RECOVERY GREEN; FIELD ACCEPTANCE HOLD.** Do not remove the Recovery QA package yet. The permanent APK points to `https://acelynn.vercel.app/`, so the runtime stability repair can be delivered through the Acelynn web app without another APK signing transition or reinstall. Final field acceptance requires the hotfix to be deployed, the permanent app reopened, and live analysis re-tested on the Fold without the reported glitch.
 
 ## Evidence artifact
 
@@ -97,6 +99,6 @@ Future engineers and QA must use run `33869737869`, this evidence record, artifa
 
 ## Safety boundary
 
-Acelynn Pro's permanent-signing certificate transition is now complete on the user's Samsung Galaxy Z Fold. The fresh recovery backup remains outside app-private storage and should be retained as a rollback/recovery artifact until the owner intentionally archives or replaces it with a newer backup.
+Acelynn Pro's permanent signer is now installed on the user's Samsung Galaxy Z Fold and the certified backup restored successfully, but operational acceptance remains on hold because the live web runtime is glitching. Retain `acelynn-pro-backup (5).json` and the separate Recovery QA app until a deployed web hotfix passes a fresh Fold live-analysis check.
 
-The separate Recovery QA package may be removed only by explicitly selecting **Acelynn Pro QA / Recovery QA**, never the permanent Acelynn Pro package. No Vercel deployment, preview deployment, Supabase change, Google Play publication, or `main` merge was performed as part of the physical cutover.
+Do not uninstall the permanent `com.cactusbyte.acelynnpro` package. Do not remove the Recovery QA package yet. No Google Play publication or APK replacement is required for the current web-runtime repair.
