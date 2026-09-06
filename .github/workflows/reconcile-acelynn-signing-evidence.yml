@@ -70,7 +70,7 @@ jobs:
           grep -Fq 'staged only' android-packager/SIGNING_CUTOVER_RUNBOOK.md
           grep -Fq '33869737869' android-packager/SIGNING_CUTOVER_DATA_AUDIT.md
           grep -Fq '9935674326' android-packager/SIGNING_CUTOVER_RUNBOOK.md
-          grep -Fq '"deploymentEnabled": false' vercel.json
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
 
       - name: Commit evidence reconciliation only
         shell: bash
