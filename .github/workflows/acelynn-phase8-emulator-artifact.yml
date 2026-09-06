@@ -1,0 +1,180 @@
+name: Acelynn Pro Phase 8 Emulator Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - android-release-v2-foundation
+    paths:
+      - '.github/workflows/acelynn-phase8-emulator-artifact.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  transition-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      SIGNED_SOURCE_SHA: '34ff582b6359fe2c119857083a2a740d73818615'
+      SIGNED_RUN_ID: '34040663695'
+      EXPECTED_PERMANENT_SHA256: 'FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230'
+
+    steps:
+      - name: Checkout exact Phase 8 foundation
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Prove signed artifact matches current Android source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git cat-file -e "$SIGNED_SOURCE_SHA^{commit}"
+          changed="$(git diff --name-only "$SIGNED_SOURCE_SHA" HEAD | sort)"
+          expected='.github/workflows/acelynn-phase8-emulator-artifact.yml'
+          test "$changed" = "$expected" || {
+            echo 'Current source differs from the signed-artifact source:' >&2
+            printf '%s\n' "$changed" >&2
+            exit 1
+          }
+          echo "Signed APK source is exact for all app/runtime files: $SIGNED_SOURCE_SHA"
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Download certified permanent-signed APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cactusbyte-brand-distribution-signed-apks
+          path: ${{ runner.temp }}/signed-apks
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 34040663695
+
+      - name: Locate permanent Acelynn Direct APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t apks < <(find "$RUNNER_TEMP/signed-apks" -type f -iname '*acelynnpro*direct*release*.apk' | sort)
+          printf 'Matching permanent APKs:\n%s\n' "${apks[*]}"
+          test "${#apks[@]}" -eq 1
+          cp "${apks[0]}" "$RUNNER_TEMP/acelynn-permanent.apk"
+          echo "ACELYNN_PERMANENT_APK=$RUNNER_TEMP/acelynn-permanent.apk" >> "$GITHUB_ENV"
+
+      - name: Build synthetic legacy-signed Acelynn Direct APK
+        shell: bash
+        env:
+          CACTUSBYTE_PERMANENT_SIGNING: '0'
+        run: |
+          set -euo pipefail
+          gradle --no-daemon -p android-packager :app:assembleAcelynnproDirectRelease --stacktrace
+          mapfile -t apks < <(find android-packager/app/build/outputs/apk -type f -iname '*acelynnpro*direct*release*.apk' | sort)
+          test "${#apks[@]}" -eq 1
+          cp "${apks[0]}" "$RUNNER_TEMP/acelynn-synthetic-legacy.apk"
+          echo "ACELYNN_SYNTHETIC_LEGACY_APK=$RUNNER_TEMP/acelynn-synthetic-legacy.apk" >> "$GITHUB_ENV"
+
+      - name: Verify package/version and distinct signer identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -x "$AAPT" && test -x "$APKSIGNER"
+          : > "$RUNNER_TEMP/acelynn-phase8-badging.txt"
+          for apk in "$ACELYNN_SYNTHETIC_LEGACY_APK" "$ACELYNN_PERMANENT_APK"; do
+            "$AAPT" dump badging "$apk" | tee -a "$RUNNER_TEMP/acelynn-phase8-badging.txt"
+            "$AAPT" dump badging "$apk" | grep -Fq "package: name='com.cactusbyte.acelynnpro' versionCode='2'"
+          done
+          "$APKSIGNER" verify --verbose --print-certs "$ACELYNN_SYNTHETIC_LEGACY_APK" | tee "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$ACELYNN_PERMANENT_APK" | tee "$RUNNER_TEMP/acelynn-phase8-permanent-signature.txt"
+          legacy="$(awk -F': ' '/certificate SHA-256 digest:/{print toupper($2);exit}' "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt")"
+          permanent="$(awk -F': ' '/certificate SHA-256 digest:/{print toupper($2);exit}' "$RUNNER_TEMP/acelynn-phase8-permanent-signature.txt")"
+          legacy="${legacy//:/}"
+          permanent="${permanent//:/}"
+          test -n "$legacy" && test -n "$permanent"
+          test "$legacy" != "$permanent"
+          test "$permanent" = "$EXPECTED_PERMANENT_SHA256"
+          grep -Eq 'certificate DN: .*CN=Android Debug' "$RUNNER_TEMP/acelynn-phase8-legacy-signature.txt"
+          printf 'synthetic_legacy_sha256=%s\npermanent_sha256=%s\n' "$legacy" "$permanent" | tee "$RUNNER_TEMP/acelynn-phase8-signers.txt"
+
+      - name: Verify recovery engine fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const Recovery = require('./android-packager/app/src/acelynnproDirect/assets/acelynn-recovery.js');
+          const good = Recovery.parseBackupText(fs.readFileSync('./android-packager/fixtures/acelynn-transition-backup.json','utf8'));
+          if (good.length !== 2) throw new Error('expected exactly two good transition snapshots');
+          const state = new Map();
+          const storage = {getItem:k=>state.has(k)?state.get(k):null,setItem:(k,v)=>state.set(k,v),removeItem:k=>state.delete(k)};
+          let restored = Recovery.restore(storage, good);
+          if (restored.length !== 2) throw new Error('first restore did not produce two snapshots');
+          restored = Recovery.restore(storage, good);
+          if (restored.length !== 2) throw new Error('duplicate restore was not suppressed');
+          let rejected = false;
+          try { Recovery.parseBackupText(fs.readFileSync('./android-packager/fixtures/acelynn-transition-wrong-app.json','utf8')); }
+          catch (error) { rejected = /different app/i.test(String(error && error.message)); }
+          if (!rejected) throw new Error('wrong-app fixture was not rejected');
+          console.log('Recovery fixture contract passed.');
+          NODE
+
+      - name: Run API 36 emulator signer transition and recovery round trip
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: |
+            set -euo pipefail
+            if ! python3 tools/run-acelynn-signing-transition-emulator.py 2>&1 | tee "$RUNNER_TEMP/acelynn-phase8-emulator.log"; then
+              adb shell uiautomator dump /sdcard/acelynn-phase8-failure.xml || true
+              adb pull /sdcard/acelynn-phase8-failure.xml "$RUNNER_TEMP/acelynn-phase8-failure.xml" || true
+              adb exec-out screencap -p > "$RUNNER_TEMP/acelynn-phase8-failure.png" || true
+              exit 1
+            fi
+            adb shell uiautomator dump /sdcard/acelynn-phase8-final.xml || true
+            adb pull /sdcard/acelynn-phase8-final.xml "$RUNNER_TEMP/acelynn-phase8-final.xml" || true
+            adb exec-out screencap -p > "$RUNNER_TEMP/acelynn-phase8-final.png" || true
+
+      - name: No-deploy and no-real-device guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          test "$GITHUB_REF_NAME" = 'android-release-v2-foundation'
+          echo 'Emulator-only proof complete. No Vercel deployment, preview, Play publication, main merge, physical-device uninstall, or physical-device cutover occurred.'
+
+      - name: Upload non-secret Phase 8 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acelynn-phase8-emulator-evidence
+          path: |
+            ${{ runner.temp }}/acelynn-phase8-badging.txt
+            ${{ runner.temp }}/acelynn-phase8-legacy-signature.txt
+            ${{ runner.temp }}/acelynn-phase8-permanent-signature.txt
+            ${{ runner.temp }}/acelynn-phase8-signers.txt
+            ${{ runner.temp }}/acelynn-phase8-emulator.log
+            ${{ runner.temp }}/acelynn-phase8-final.xml
+            ${{ runner.temp }}/acelynn-phase8-final.png
+            ${{ runner.temp }}/acelynn-phase8-failure.xml
+            ${{ runner.temp }}/acelynn-phase8-failure.png
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Phase 8 passed
+        run: echo 'Acelynn Pro Phase 8 passed permanent signer verification, synthetic cross-signer rejection, emulator-only uninstall, restore, dedupe, wrong-app rejection, and no-deploy guards.'
