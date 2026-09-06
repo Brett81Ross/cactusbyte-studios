@@ -108,6 +108,8 @@ Before uninstall:
 2. Keep the JSON file private; it contains saved analysis snapshots.
 3. Do not uninstall until the isolated recovery round-trip gate has already proven the current recovery build can consume both legacy reports and the versioned backup format.
 
+**Technical transition proof is complete.** GitHub Actions run `33869737869` used the literal August 31 legacy APK and the certified permanent-signed Direct APK on API 36. It created and exported four real audio snapshots, preserved the backup across the emulator-only uninstall, installed the permanent signer, and restored all four snapshots. Evidence artifact `9935674326` is recorded in `ACELYNN_SIGNING_TRANSITION_EVIDENCE.md`. This proof does not authorize a physical-device uninstall.
+
 After the permanent-signed install:
 
 1. Open **Restore / merge backup** and choose the saved JSON file.
@@ -183,7 +185,7 @@ All of the following must be true before the first uninstall:
 - [ ] CactusByte ID/owner restoration path is verified before hub uninstall.
 - [ ] Rapid Takeoff legacy lifetime-Pro claim is verified before Rapid uninstall, and same-ID clean-install restore is proven after approved bridge-secret configuration.
 - [ ] OrbitGather legacy cloud identity is protected before OrbitGather uninstall, and same-UUID clean-install restore is proven after approved bridge-secret configuration.
-- [ ] Acelynn Pro recovery-engine/device QA is proven **and** the exact permanent-signed Direct APK passes the production-cutover equivalence gate: guaranteed certified recovery access plus a synthetic legacy-signature → export → uninstall → permanent-signature → restore transition on a non-production Android environment.
+- [x] Acelynn Pro recovery-engine/device QA and production-cutover equivalence are proven. Run `33869737869` passed literal legacy APK → four-snapshot export → emulator-only uninstall → certified permanent-signed Direct APK → four-snapshot restore. Evidence: `ACELYNN_SIGNING_TRANSITION_EVIDENCE.md` / artifact `9935674326`.
 - [ ] ScoutTrace history export/import runtime round trip is proven before ScoutTrace uninstall, and its intended v1.2.x/service-worker release truth is reconciled.
 - [ ] GhostLane encrypted ledger round trip or explicit start-fresh choice is completed before GhostLane uninstall; Supabase remains intentionally paused and outside this gate.
 - [ ] The user explicitly approves beginning the device cutover.
