@@ -1,6 +1,6 @@
 # Acelynn Pro™ Permanent-Signing Transition Evidence
 
-Status: **technical transition gate proven in non-production Android QA. This record does not authorize a physical-device uninstall or cutover.**
+Status: **physical Samsung Galaxy Z Fold cutover GREEN on September 6, 2026. Permanent-signed Acelynn installed, certified backup restored, and live microphone analysis verified. Recovery QA package cleanup remains optional and separate.**
 
 ## Proven transition
 
@@ -55,6 +55,31 @@ The successful transition proved all of the following:
 7. The permanent install restored the four snapshots successfully.
 8. The workflow finished with `ACELYNN MULTI-SNAPSHOT TRANSITION GATE GREEN.`
 
+## Physical Samsung Galaxy Z Fold cutover
+
+The user explicitly approved the Acelynn permanent-signing cutover on September 6, 2026.
+
+Immediately before the cutover, the installed Recovery QA build exported a fresh off-app backup named `acelynn-pro-backup (5).json`. The user visually confirmed the file in Samsung My Files. Its visible payload identified:
+
+- `app`: `Acelynn Pro`
+- `schema`: `acelynn-pro-backup-v1`
+- `version`: `1`
+- created timestamp: `2026-09-06T17:08:12.782Z`
+- one retained snapshot: Balanced mix, score `54`, focus `Sub`
+
+The exact certified permanent APK above was then installed through Android Package Installer while the Recovery QA package was intentionally retained as an emergency fallback because it uses the separate package ID `com.cactusbyte.acelynnpro.qa`.
+
+The permanent app opened its certified built-in recovery surface. The user selected `Restore / merge backup` and restored `acelynn-pro-backup (5).json`. The UI confirmed:
+
+- `Backup restored`
+- `Recovery complete. 1 saved checks are available on this device.`
+- `Session snapshots · 1 saved`
+- restored snapshot `Balanced mix · Sep 4, 7:56 AM · Sub leading · 54/100`
+
+The user then continued into Acelynn Pro and started live microphone analysis. The runtime UI changed to `Stop live analysis` and reported non-zero live microphone measurements including approximately `-42.1 dB` peak, `-46.6 dB` average, and `4.4 dB` range. This verifies that the permanent app launched and microphone capture was active after the signing cutover.
+
+**Physical cutover result: GREEN.** The permanent signing migration for Acelynn Pro is complete. The Recovery QA package can now be removed separately after final owner cleanup; its removal is not part of the signing proof and must not be confused with uninstalling the permanent `com.cactusbyte.acelynnpro` package.
+
 ## Evidence artifact
 
 - Transition evidence artifact: `acelynn-multisnapshot-transition-evidence`
@@ -72,6 +97,6 @@ Future engineers and QA must use run `33869737869`, this evidence record, artifa
 
 ## Safety boundary
 
-This proof removes Acelynn Pro's technical blocker for the signing-certificate transition. It does **not** authorize the physical Samsung Z Fold cutover. Before a real uninstall, the user must still explicitly approve beginning the device cutover and must export the current real Acelynn backup to storage outside the app. The one-brand-at-a-time runbook remains controlling authority.
+Acelynn Pro's permanent-signing certificate transition is now complete on the user's Samsung Galaxy Z Fold. The fresh recovery backup remains outside app-private storage and should be retained as a rollback/recovery artifact until the owner intentionally archives or replaces it with a newer backup.
 
-No Vercel deployment, preview deployment, Supabase change, Google Play publication, `main` merge, or physical-device uninstall was performed by this proof.
+The separate Recovery QA package may be removed only by explicitly selecting **Acelynn Pro QA / Recovery QA**, never the permanent Acelynn Pro package. No Vercel deployment, preview deployment, Supabase change, Google Play publication, or `main` merge was performed as part of the physical cutover.
