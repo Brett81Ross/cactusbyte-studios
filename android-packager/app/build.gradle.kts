@@ -160,6 +160,12 @@ android {
             buildConfigField("String", "CHANNEL", "\"qa\"")
             signingConfig = signingConfigs.getByName("debug")
         }
+        create("renderqa") {
+            dimension = "distribution"
+            applicationIdSuffix = ".renderqa"
+            buildConfigField("String", "CHANNEL", "\"qa\"")
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
 
     buildTypes {
@@ -192,6 +198,11 @@ androidComponents {
         variantBuilder.enable = isAcelynnPro && variantBuilder.buildType == "debug"
     }
 
+    beforeVariants(selector().withFlavor("distribution" to "renderqa")) { variantBuilder ->
+        val isAcelynnPro = variantBuilder.productFlavors.contains("brand" to "acelynnpro")
+        variantBuilder.enable = isAcelynnPro && variantBuilder.buildType == "debug"
+    }
+
     onVariants(selector().withFlavor("distribution" to "qa")) { variant ->
         variant.buildConfigFields.put(
             "START_URL",
@@ -204,6 +215,21 @@ androidComponents {
         variant.resValues.put(
             variant.makeResValueKey("string", "app_name"),
             ResValue("Acelynn Pro QA", "QA-only application label"),
+        )
+    }
+
+    onVariants(selector().withFlavor("distribution" to "renderqa")) { variant ->
+        variant.buildConfigFields.put(
+            "START_URL",
+            BuildConfigField(
+                "String",
+                "\"https://appassets.androidplatform.net/assets/acelynnrenderqa/index.html\"",
+                "Pinned local Acelynn Pro renderer QA entry point",
+            ),
+        )
+        variant.resValues.put(
+            variant.makeResValueKey("string", "app_name"),
+            ResValue("Acelynn Pro Render QA", "Renderer-QA-only application label"),
         )
     }
 }
