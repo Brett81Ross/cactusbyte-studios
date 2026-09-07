@@ -1,0 +1,181 @@
+name: Acelynn Pro Render QA APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - acelynn-render-qa
+    paths:
+      - 'android-packager/app/build.gradle.kts'
+      - 'android-packager/app/src/acelynnproRenderqaDebug/**'
+      - 'tools/stage-acelynn-render-qa.mjs'
+      - 'tools/patch-acelynn-render-qa-banner.mjs'
+      - 'tools/qa-acelynn-render-qa.mjs'
+      - '.github/workflows/acelynn-render-qa-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  render-qa-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      CACTUSBYTE_PERMANENT_SIGNING: '0'
+      ACELYNN_SOURCE_SHA: '85987cd5d6b8020ac9aa15c8b98bc515a13aabdb'
+
+    steps:
+      - name: Checkout isolated Android QA branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Checkout exact Acelynn renderer source
+        uses: actions/checkout@v5
+        with:
+          repository: Brett81Ross/Acelynn
+          ref: ${{ env.ACELYNN_SOURCE_SHA }}
+          path: acelynn-source
+
+      - name: Verify exact Acelynn source pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C acelynn-source rev-parse HEAD)" = "$ACELYNN_SOURCE_SHA"
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' acelynn-source/vercel.json
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Stage exact local-only renderer assets
+        run: node tools/stage-acelynn-render-qa.mjs
+
+      - name: Label this build as Render QA without changing permanent source
+        run: node tools/patch-acelynn-render-qa-banner.mjs
+
+      - name: Verify Render QA static contract
+        run: |
+          node tools/qa-acelynn-render-qa.mjs
+          grep -Fq 'Acelynn Pro — Render QA · pinned 85987cd5d6b8' android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java
+          cat android-packager/app/src/acelynnproRenderqaDebug/assets/acelynnrenderqa/PINNED_SOURCE.json
+
+      - name: Verify isolated variant matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p android-packager tasks --all > "$RUNNER_TEMP/android-tasks.txt"
+          grep -Eq '(^|:)assembleAcelynnproRenderqaDebug\b' "$RUNNER_TEMP/android-tasks.txt"
+          if grep -Eq '(^|:)assemble.*RenderqaRelease\b' "$RUNNER_TEMP/android-tasks.txt"; then
+            echo 'Render QA release task must not exist.' >&2
+            grep -E '(^|:)assemble.*RenderqaRelease\b' "$RUNNER_TEMP/android-tasks.txt" >&2
+            exit 1
+          fi
+          other="$(grep -E '(^|:)assemble.*RenderqaDebug\b' "$RUNNER_TEMP/android-tasks.txt" | grep -Ev '(^|:)assembleAcelynnproRenderqaDebug\b' || true)"
+          test -z "$other" || { echo "Unexpected non-Acelynn Render QA variants: $other" >&2; exit 1; }
+          echo 'Only AcelynnproRenderqaDebug is enabled for the Render QA distribution.'
+
+      - name: Build isolated Acelynn Pro Render QA APK
+        run: gradle -p android-packager :app:assembleAcelynnproRenderqaDebug --stacktrace
+
+      - name: Locate APK and Android tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t candidates < <(find android-packager/app/build/outputs/apk -type f -name '*.apk' | sort)
+          printf 'Built APKs:\n%s\n' "${candidates[*]}"
+          test "${#candidates[@]}" -eq 1
+          echo "RENDER_QA_APK=${candidates[0]}" >> "$GITHUB_ENV"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -x "$AAPT"
+          test -x "$APKSIGNER"
+          echo "AAPT=$AAPT" >> "$GITHUB_ENV"
+          echo "APKSIGNER=$APKSIGNER" >> "$GITHUB_ENV"
+
+      - name: Verify package label and debug signer
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$AAPT" dump badging "$RENDER_QA_APK" > "$RUNNER_TEMP/renderqa-badging.txt"
+          cat "$RUNNER_TEMP/renderqa-badging.txt"
+          grep -Fq "package: name='com.cactusbyte.acelynnpro.renderqa'" "$RUNNER_TEMP/renderqa-badging.txt"
+          grep -Fq "application-label:'Acelynn Pro Render QA'" "$RUNNER_TEMP/renderqa-badging.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$RENDER_QA_APK" > "$RUNNER_TEMP/renderqa-signature.txt"
+          cat "$RUNNER_TEMP/renderqa-signature.txt"
+          grep -Eq 'certificate DN: .*CN=Android Debug' "$RUNNER_TEMP/renderqa-signature.txt"
+          ! grep -Fiq 'FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230' "$RUNNER_TEMP/renderqa-signature.txt"
+          echo 'Render QA uses a separate package and Android debug signing identity.'
+
+      - name: Verify bundled local source pin and renderer modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$RUNNER_TEMP/renderqa-apk"
+          mkdir -p "$RUNNER_TEMP/renderqa-apk"
+          unzip -q "$RENDER_QA_APK" 'assets/acelynnrenderqa/*' -d "$RUNNER_TEMP/renderqa-apk"
+          bundled="$RUNNER_TEMP/renderqa-apk/assets/acelynnrenderqa"
+          cmp android-packager/app/src/acelynnproRenderqaDebug/assets/acelynnrenderqa/PINNED_SOURCE.json "$bundled/PINNED_SOURCE.json"
+          test -f "$bundled/js/live-state.js"
+          test -f "$bundled/js/live-renderer.js"
+          test -f "$bundled/js/live-controller.js"
+          test -f "$bundled/js/live-app.js"
+          test ! -e "$bundled/js/live-stability.js"
+          test ! -e "$bundled/js/webview-performance.js"
+          test ! -e "$bundled/sw.js"
+          grep -Fq "$ACELYNN_SOURCE_SHA" "$bundled/PINNED_SOURCE.json"
+          ! grep -R -Fq 'https://acelynn.vercel.app/' "$bundled"
+          ! grep -R -Fq 'navigator.serviceWorker.register' "$bundled"
+          echo 'APK contains the exact local renderer bundle and source pin.'
+
+      - name: Verify BuildConfig is local-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          build_config="$(find android-packager/app/build/generated -type f -name BuildConfig.java -ipath '*acelynnpro*renderqa*debug*' -print -quit)"
+          test -n "$build_config"
+          cat "$build_config"
+          grep -Fq 'CHANNEL = "qa"' "$build_config"
+          grep -Fq 'START_URL = "https://appassets.androidplatform.net/assets/acelynnrenderqa/index.html"' "$build_config"
+          ! grep -Fq 'https://acelynn.vercel.app/' "$build_config"
+
+      - name: Verify permanent Direct configuration is unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p android-packager :app:generateAcelynnproDirectDebugBuildConfig
+          direct_config="$(find android-packager/app/build/generated -type f -name BuildConfig.java -ipath '*acelynnpro*direct*debug*' -print -quit)"
+          test -n "$direct_config"
+          grep -Fq 'CHANNEL = "direct"' "$direct_config"
+          grep -Fq 'START_URL = "https://acelynn.vercel.app/"' "$direct_config"
+          echo 'Permanent Direct target remains unchanged.'
+
+      - name: Reject deployment and permanent-signing side effects
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          test ! -d .vercel/output
+          test "$CACTUSBYTE_PERMANENT_SIGNING" = '0'
+          if find . -type f \( -name '*.jks' -o -name '*.keystore' -o -name '*.p12' -o -name '*.pfx' \) -print -quit | grep -q .; then
+            echo 'Private signing material must not be present.' >&2
+            exit 1
+          fi
+          echo 'No Vercel deployment, permanent signing, Play publication, install, uninstall, or production cutover occurred.'
+
+      - name: Upload exactly one Render QA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: acelynn-pro-render-qa
+          path: |
+            ${{ env.RENDER_QA_APK }}
+            android-packager/app/src/acelynnproRenderqaDebug/assets/acelynnrenderqa/PINNED_SOURCE.json
+          retention-days: 7
+          compression-level: 0
