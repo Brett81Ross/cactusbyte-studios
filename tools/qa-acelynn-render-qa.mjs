@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const expectedPackage = 'com.cactusbyte.acelynnpro.renderqa';
@@ -7,6 +7,7 @@ const expectedLabel = 'Acelynn Pro Render QA';
 const expectedSource = '85987cd5d6b8020ac9aa15c8b98bc515a13aabdb';
 const expectedStartUrl = 'https://appassets.androidplatform.net/assets/acelynnrenderqa/index.html';
 const assetRoot = 'android-packager/app/src/acelynnproRenderqaDebug/assets/acelynnrenderqa';
+const activityPath = 'android-packager/app/src/acelynnproRenderqaDebug/java/com/cactusbyte/wrapper/RenderQaMainActivity.java';
 const gradle = readFileSync('android-packager/app/build.gradle.kts', 'utf8');
 const manifest = readFileSync('android-packager/app/src/acelynnproRenderqaDebug/AndroidManifest.xml', 'utf8');
 
@@ -26,6 +27,20 @@ for (const token of [
 }
 
 if (!manifest.includes('android:label="@string/app_name"')) fail('Render QA manifest label is not resource-controlled.');
+if (!manifest.includes('android.permission.MODIFY_AUDIO_SETTINGS')) fail('Render QA is missing the QA microphone audio-settings permission used by the proven physical QA path.');
+if (!manifest.includes('android:name=".MainActivity"') || !manifest.includes('tools:node="remove"')) fail('Render QA must remove the shared launcher activity.');
+if (!manifest.includes('android:name=".RenderQaMainActivity"')) fail('Render QA must launch its dedicated microphone-aware activity.');
+if (!existsSync(activityPath)) fail('Render QA dedicated microphone-aware activity is missing.');
+const activity = readFileSync(activityPath, 'utf8');
+for (const token of [
+  'class RenderQaMainActivity extends MainActivity',
+  'appassets.androidplatform.net',
+  'PermissionRequest.RESOURCE_AUDIO_CAPTURE',
+  'Manifest.permission.RECORD_AUDIO',
+  'request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE})'
+]) {
+  if (!activity.includes(token)) fail(`Render QA microphone bridge missing ${token}`);
+}
 
 const pin = JSON.parse(readFileSync(join(assetRoot, 'PINNED_SOURCE.json'), 'utf8'));
 if (pin.sourceCommit !== expectedSource) fail(`source pin mismatch: ${pin.sourceCommit}`);
