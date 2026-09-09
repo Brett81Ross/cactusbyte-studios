@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 const expectedPackage = 'com.cactusbyte.acelynnpro.renderqa';
 const expectedLabel = 'Acelynn Pro Render QA';
-const expectedSource = '85987cd5d6b8020ac9aa15c8b98bc515a13aabdb';
+const expectedSource = '62c6fd3f0d7fb20c0d77913d044e00fc2cd4441d';
 const expectedStartUrl = 'https://appassets.androidplatform.net/assets/acelynnrenderqa/index.html';
 const assetRoot = 'android-packager/app/src/acelynnproRenderqaDebug/assets/acelynnrenderqa';
 const activityPath = 'android-packager/app/src/acelynnproRenderqaDebug/java/com/cactusbyte/wrapper/RenderQaMainActivity.java';

@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 25
     env:
       CACTUSBYTE_PERMANENT_SIGNING: '0'
-      ACELYNN_SOURCE_SHA: '85987cd5d6b8020ac9aa15c8b98bc515a13aabdb'
+      ACELYNN_SOURCE_SHA: '62c6fd3f0d7fb20c0d77913d044e00fc2cd4441d'
 
     steps:
       - name: Checkout isolated Android QA branch
@@ -64,7 +64,7 @@ jobs:
       - name: Verify Render QA static contract
         run: |
           node tools/qa-acelynn-render-qa.mjs
-          grep -Fq 'Acelynn Pro — Render QA · pinned 85987cd5d6b8' android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java
+          grep -Fq 'Acelynn Pro — Render QA · pinned 62c6fd3f0d7f' android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java
           cat android-packager/app/src/acelynnproRenderqaDebug/assets/acelynnrenderqa/PINNED_SOURCE.json
 
       - name: Verify isolated variant matrix

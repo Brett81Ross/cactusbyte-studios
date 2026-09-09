@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const path = 'android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java';
 const original = 'banner.setText("Acelynn Pro — Recovery QA Build · pinned 6363059183ce");';
-const replacement = 'banner.setText(getPackageName().endsWith(".renderqa") ? "Acelynn Pro — Render QA · pinned 85987cd5d6b8" : "Acelynn Pro — Recovery QA Build · pinned 6363059183ce");';
+const replacement = 'banner.setText(getPackageName().endsWith(".renderqa") ? "Acelynn Pro — Render QA · pinned 62c6fd3f0d7f" : "Acelynn Pro — Recovery QA Build · pinned 6363059183ce");';
 
 let source = readFileSync(path, 'utf8');
 if (source.includes(replacement)) {
