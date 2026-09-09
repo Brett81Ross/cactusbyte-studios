@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-const SOURCE_COMMIT = '85987cd5d6b8020ac9aa15c8b98bc515a13aabdb';
+const SOURCE_COMMIT = '62c6fd3f0d7fb20c0d77913d044e00fc2cd4441d';
 const sourceRoot = process.env.ACELYNN_RENDER_QA_SOURCE || 'acelynn-source';
 const destRoot = 'android-packager/app/src/acelynnproRenderqaDebug/assets/acelynnrenderqa';
 const assetPrefix = '/assets/acelynnrenderqa';
