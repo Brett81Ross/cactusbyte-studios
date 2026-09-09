@@ -2,18 +2,20 @@
 
 Originally verified on 2026-08-29. CactusByte Studios, Acelynn Pro, Fantasy Football Matrix, and TerraFlow were rechecked against their canonical Vercel production projects on 2026-09-03 during the CactusByte v1.6.0 Registry Cleanup. CactusByte Studios v1.6.0 was deployed to the canonical production project on 2026-09-03 and live-smoke verified at `cactusbyte-studios.vercel.app`. TerraFlow production directly renders v1.7.0 while repository main contains staged v1.15.0 release surfaces, so v1.15.0 must not be promoted to live without a later verified deployment. This registry identifies the one project to update for each app and the current ready production deployment to preserve as a rollback point.
 
+2026-09-09 QA reconciliation: the live CactusByte hub renders v1.6.1, so its registry version is corrected below. Acelynn’s ScoutTrace production and repository `main` both render v1.2.0, so the prior v1.2.1 registry entry is corrected to v1.2.0 rather than falsely treating production as stale. Fantasy Football Matrix’s most recently verified Season Intelligence production deployment is recorded as `dpl_4P4864yDPiwzUkXLgZYTECMbH1Js`. No deployment was triggered by this registry-only correction.
+
 | App | Version | Canonical Vercel project | Production domain | Source repository | Verified production / rollback deployment |
 | --- | --- | --- | --- | --- | --- |
-| Cactus🌵Byte Studios™ | v1.6.0 | `cactusbyte-studios` | `cactusbyte-studios.vercel.app` | `Brett81Ross/cactusbyte-studios` | LIVE `dpl_8oJuzg9XZawDpzvVGHJHAq1bCb6v` (`e959b1ba7a0fbffd96be6217d48e38a923640115`); clean v1.5 rollback `dpl_C5sknfxyQJo7vyckwPBZgTDnHg9M` |
+| Cactus🌵Byte Studios™ | v1.6.1 | `cactusbyte-studios` | `cactusbyte-studios.vercel.app` | `Brett81Ross/cactusbyte-studios` | LIVE `dpl_8oJuzg9XZawDpzvVGHJHAq1bCb6v` (`e959b1ba7a0fbffd96be6217d48e38a923640115`); clean v1.5 rollback `dpl_C5sknfxyQJo7vyckwPBZgTDnHg9M` |
 | No Problem Pressure Washing Matrix™ | v1.0.0 | `noproblem-pws` | `noproblem-pws.vercel.app` | `Brett81Ross/noproblem.pws` | `dpl_5YpdwumeHjePxJhkFry5FqJbbdoa` |
 | MachZero™ | v1.4.1 | `machzero` | `machzero-beta.vercel.app` | `Brett81Ross/machzero` | `dpl_5t8AKxs6k63T9mGHZEAPiZTBLsaP` |
 | Rapid Takeoff™ | v0.3.0 | `blueprint-estimator` | `blueprint-estimator.vercel.app` | `Brett81Ross/blueprint_estimator-` | `dpl_9W2ZV2dzc5kRLivsQruRgAR4TyqC` |
 | Acelynn Pro™ | v1.2.0 | `acelynn` | `acelynn.vercel.app` | `Brett81Ross/Acelynn` | `dpl_7LUbYit3LkdPYBPdoLM7eMyCYUwj` |
 | PocketStomp™ | v1.0.0 | `pocketstomp-v2-brett81ross` | `pocketstomp-v2-brett81ross.vercel.app` | `Brett81Ross/pocketstomp` | `dpl_9RozD8FT12vvssxbDeVG3AayDyEg` |
-| GhostLane™ | v1.7.4 | `ghostlane-app` | `ghostlane-app.vercel.app` | `Brett81Ross/ghostlane-app` | `dpl_5BZVwAY5cYQPaxqGGSbCyRygABpE` |
+| GhostLane™ | v1.7.4 | `ghostlane-app` | `ghostlane-app.vercel.app/radar.html` | `Brett81Ross/ghostlane-app` | `dpl_5BZVwAY5cYQPaxqGGSbCyRygABpE` |
 | First Bearing™ | v2.6.1 | `first-bearing` | `first-bearing.vercel.app` | `Brett81Ross/first-bearing` | `dpl_9HMRp4qv23LFLhTqvVcsXZCeZaiF` |
-| Fantasy Football Matrix™ | v1.5.5 | `fantasy-football-selector-matrix` | `fantasy-football-selector-matrix.vercel.app` | `Brett81Ross/fantasy-football-selector-matrix` | `dpl_6NR9LmgNvA8xvsvmKj92oG4XnMqn` |
-| Acelynn’s ScoutTrace™ | v1.2.1 | `acelynn-scoutrace` | `acelynn-scoutrace.vercel.app` | `Brett81Ross/acelynn_scoutrace` | `dpl_BYVPu6i8Xrbcts697rRCc1Mfpp7Q` |
+| Fantasy Football Matrix™ | v1.5.5 | `fantasy-football-selector-matrix` | `fantasy-football-selector-matrix.vercel.app` | `Brett81Ross/fantasy-football-selector-matrix` | LIVE `dpl_4P4864yDPiwzUkXLgZYTECMbH1Js`; prior registry rollback `dpl_6NR9LmgNvA8xvsvmKj92oG4XnMqn` |
+| Acelynn’s ScoutTrace™ | v1.2.0 | `acelynn-scoutrace` | `acelynn-scoutrace.vercel.app` | `Brett81Ross/acelynn_scoutrace` | `dpl_BYVPu6i8Xrbcts697rRCc1Mfpp7Q` |
 | ShadowNex Prime™ | v2.2.0 | `shadownex-prime` | `shadownex-prime.vercel.app` | `Brett81Ross/shadownex-prime` | `dpl_DEn8svsz4WxeXpp5Pqz2i12JinnC` |
 | TerraFlow Matrix™ | v1.7.0 live; v1.15.0 staged | `terraflow-matrix` | `terraflow-matrix.vercel.app` | `Brett81Ross/terraflow-matrix` | `dpl_784aR3rSMoze7BMFuweYc5fDE6AR` |
 | OrbitGather™ | v0.5.0 | `orbitgather` | `orbitgather-wahh.vercel.app` | `Brett81Ross/orbitgather` | `dpl_7EWSQfWGDyJAGs2hJanjwC7LCt8E` |
