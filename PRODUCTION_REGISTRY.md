@@ -1,35 +1,34 @@
 # Cactus🌵Byte Studios™ Production Registry
 
-Originally verified on 2026-08-29. CactusByte Studios, Acelynn Pro, Fantasy Football Matrix, and TerraFlow were rechecked against their canonical Vercel production projects on 2026-09-03 during the CactusByte v1.6.0 Registry Cleanup. CactusByte Studios v1.6.0 was deployed to the canonical production project on 2026-09-03 and live-smoke verified at `cactusbyte-studios.vercel.app`. TerraFlow production directly renders v1.7.0 while repository main contains staged v1.15.0 release surfaces, so v1.15.0 must not be promoted to live without a later verified deployment. This registry identifies the one project to update for each app and the current ready production deployment to preserve as a rollback point.
+Originally verified on 2026-08-29. Rechecked against the canonical Vercel projects on 2026-09-14 during the portfolio QA sweep. The registry identifies the one project to update for each app and the current READY production deployment to preserve as a rollback point. TerraFlow production remains v1.7.0 while repository main contains staged v1.15.0 release surfaces, so v1.15.0 must not be promoted to live without a later verified deployment.
 
 | App | Version | Canonical Vercel project | Production domain | Source repository | Verified production / rollback deployment |
 | --- | --- | --- | --- | --- | --- |
-| Cactus🌵Byte Studios™ | v1.6.0 | `cactusbyte-studios` | `cactusbyte-studios.vercel.app` | `Brett81Ross/cactusbyte-studios` | LIVE `dpl_8oJuzg9XZawDpzvVGHJHAq1bCb6v` (`e959b1ba7a0fbffd96be6217d48e38a923640115`); clean v1.5 rollback `dpl_C5sknfxyQJo7vyckwPBZgTDnHg9M` |
+| Cactus🌵Byte Studios™ | v1.6.1 | `cactusbyte-studios` | `cactusbyte-studios.vercel.app` | `Brett81Ross/cactusbyte-studios` | LIVE `dpl_45Z852ryuwneoB5WQUv5PTLXHe6B`; clean v1.5 rollback `dpl_C5sknfxyQJo7vyckwPBZgTDnHg9M` |
 | No Problem Pressure Washing Matrix™ | v1.0.0 | `noproblem-pws` | `noproblem-pws.vercel.app` | `Brett81Ross/noproblem.pws` | `dpl_5YpdwumeHjePxJhkFry5FqJbbdoa` |
 | MachZero™ | v1.4.1 | `machzero` | `machzero-beta.vercel.app` | `Brett81Ross/machzero` | `dpl_5t8AKxs6k63T9mGHZEAPiZTBLsaP` |
-| Rapid Takeoff™ | v0.3.0 | `blueprint-estimator` | `blueprint-estimator.vercel.app` | `Brett81Ross/blueprint_estimator-` | `dpl_9W2ZV2dzc5kRLivsQruRgAR4TyqC` |
-| Acelynn Pro™ | v1.2.0 | `acelynn` | `acelynn.vercel.app` | `Brett81Ross/Acelynn` | `dpl_7LUbYit3LkdPYBPdoLM7eMyCYUwj` |
+| Rapid Takeoff™ | v0.3.0 | `blueprint-estimator` | `blueprint-estimator.vercel.app` | `Brett81Ross/blueprint_estimator-` | `dpl_6o35AvXmpoRvAAwJr1q1XP3eE5Lj` |
+| Acelynn Pro™ | v1.2.0 | `acelynn` | `acelynn.vercel.app` | `Brett81Ross/Acelynn` | `dpl_5zm1NFgChtSCSRQTTNLbkKjVxNTh` |
 | PocketStomp™ | v1.0.0 | `pocketstomp-v2-brett81ross` | `pocketstomp-v2-brett81ross.vercel.app` | `Brett81Ross/pocketstomp` | `dpl_9RozD8FT12vvssxbDeVG3AayDyEg` |
 | GhostLane™ | v1.7.4 | `ghostlane-app` | `ghostlane-app.vercel.app` | `Brett81Ross/ghostlane-app` | `dpl_5BZVwAY5cYQPaxqGGSbCyRygABpE` |
-| First Bearing™ | v2.6.1 | `first-bearing` | `first-bearing.vercel.app` | `Brett81Ross/first-bearing` | `dpl_9HMRp4qv23LFLhTqvVcsXZCeZaiF` |
-| Fantasy Football Matrix™ | v1.5.5 | `fantasy-football-selector-matrix` | `fantasy-football-selector-matrix.vercel.app` | `Brett81Ross/fantasy-football-selector-matrix` | `dpl_6NR9LmgNvA8xvsvmKj92oG4XnMqn` |
+| First Bearing™ | v2.6.1 | `first-bearing` | `first-bearing.vercel.app` | `Brett81Ross/first-bearing` | `dpl_3RHAkaovtqU2PPg6qf9aCPHaSdYW` |
+| Fantasy Football Matrix™ | v1.6.7 | `fantasy-football-selector-matrix` | `fantasy-football-selector-matrix.vercel.app` | `Brett81Ross/fantasy-football-selector-matrix` | `dpl_CjY4a4Wsg4cxRbkToXsWso1oNRoQ` |
 | Acelynn’s ScoutTrace™ | v1.2.1 | `acelynn-scoutrace` | `acelynn-scoutrace.vercel.app` | `Brett81Ross/acelynn_scoutrace` | `dpl_BYVPu6i8Xrbcts697rRCc1Mfpp7Q` |
 | ShadowNex Prime™ | v2.2.0 | `shadownex-prime` | `shadownex-prime.vercel.app` | `Brett81Ross/shadownex-prime` | `dpl_DEn8svsz4WxeXpp5Pqz2i12JinnC` |
 | TerraFlow Matrix™ | v1.7.0 live; v1.15.0 staged | `terraflow-matrix` | `terraflow-matrix.vercel.app` | `Brett81Ross/terraflow-matrix` | `dpl_784aR3rSMoze7BMFuweYc5fDE6AR` |
 | OrbitGather™ | v0.5.0 | `orbitgather` | `orbitgather-wahh.vercel.app` | `Brett81Ross/orbitgather` | `dpl_7EWSQfWGDyJAGs2hJanjwC7LCt8E` |
 
-## CactusByte v1.6.0 production verification
+## 2026-09-14 QA verification
 
-- Canonical deployment: `dpl_8oJuzg9XZawDpzvVGHJHAq1bCb6v`.
-- Deployment Git SHA: `e959b1ba7a0fbffd96be6217d48e38a923640115`.
-- Canonical domain: `https://cactusbyte-studios.vercel.app/`.
-- Live homepage, `/api/manifest`, and `/api/core` report v1.6.0.
-- Live Registry Truth preserves Acelynn Pro v1.2.0, Fantasy Football Matrix v1.5.5, and TerraFlow v1.7.0 while keeping TerraFlow v1.15.0 staged.
-- Owner Health remains fail-closed when unauthenticated (`OWNER_REQUIRED`).
-- No Vercel runtime errors were found in the release smoke-test window.
-- The project deployment gate was restored to `git.deploymentEnabled=false` after the production deployment.
-- Runtime Vercel API deployment verification is currently fail-closed/unavailable unless `VERCEL_ACCESS_TOKEN` and `VERCEL_TEAM_ID` are configured in production; no status is falsely promoted to verified when those credentials are absent.
-- Android permanent-signing cutover and Google Play publication were not performed by this release.
+- CactusByte package/source version is v1.6.1 and its canonical Vercel production deployment is READY.
+- CactusByte Git-triggered Vercel deployment remains locked with `git.deploymentEnabled=false`.
+- Fantasy Football Matrix repository VERSION and canonical production deployment are both v1.6.7; its Vercel deployment gate is also restored to `git.deploymentEnabled=false`.
+- Rapid Takeoff remains v0.3.0; only its recorded production deployment changed.
+- Acelynn Pro remains v1.2.0; only its recorded production deployment changed.
+- First Bearing remains v2.6.1; only its recorded production deployment changed.
+- ScoutTrace production remains on the canonical `main` production deployment; newer Android-validation deployments are READY previews and are not treated as live.
+- TerraFlow v1.15.0 remains staged and is not advertised as production.
+- No deployment was performed by this QA sweep.
 
 ## Duplicate-project hold
 
