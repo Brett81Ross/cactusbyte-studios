@@ -18,7 +18,7 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 ## Platform and release safety
 
 - [x] CactusByte production project is identified: `cactusbyte-studios`
-- [x] Latest CactusByte production commit is verified ready: `c3c0e83`
+- [x] Latest CactusByte production commit is verified ready: `fd6021e` on deployment `dpl_45Z852ryuwneoB5WQUv5PTLXHe6B`
 - [x] Canonical projects are mapped for the portfolio
 - [x] Inspect generated domains and ready rollback deployments for duplicate CactusByte, TerraFlow, and PocketStomp projects
 - [ ] Never delete a duplicate project until its domain assignment and fallback deployment are recorded
@@ -26,7 +26,9 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [x] Record the canonical source repository, Vercel project, production domain, and ready rollback deployment for every app in `PRODUCTION_REGISTRY.md`
 - [x] Verify TerraFlow Supabase project `mvxiwdbfpdvriymcjqge` is `ACTIVE_HEALTHY`, run a read-only database health check, and add daily read-only anti-pause monitoring
 - [ ] Check production environment-variable names and make one real authenticated API smoke test where an app uses server APIs
+- [x] Lock Idea Radar’s source-side OpenAI environment contract in QA: server-only `OPENAI_API_KEY`, optional model override, fail-closed 503 behavior, and no public credential path or key logging
 - [ ] Add a common accessibility pass: readable text, 48px touch targets, contrast, focus state, loading/error state, and reduced-motion support
+- [x] Add CactusByte accessibility regressions for visible keyboard focus, 48px Idea Radar evidence/detail targets, existing mobile target sizing, and reduced-motion protections
 - [ ] Add a performance pass: fast first usable screen, controlled image sizes, responsive API/AI states, and no unnecessary service workers
 - [ ] Define privacy, retention, deletion, rate-limit, spam-prevention, and source-attribution requirements before collecting user data
 - [ ] Add app-level error monitoring and an owner-visible health check for failed APIs, data sources, and payments
@@ -37,9 +39,12 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 
 ## Cactus🌵Byte Studios™ v1.5.0+
 
-- [ ] Compare the latest GitHub source with the verified production commit before new hub work
+- [x] Compare the latest GitHub source with the verified production commit: production `fd6021e` → current source `fa9003f`; source is 4 commits ahead and 0 behind
 - [ ] Verify the live CactusByte ID restoration flow on Android after the latest auth release
 - [ ] Verify Idea Radar, source citations, and the owner-only gate with production configuration
+- [x] Fix Idea Radar OpenAI evidence verification in source: require live web search, consume authoritative `web_search_call.action.sources`, canonicalize tracking-only URL differences, and enforce the contract in QA
+- [x] Lock the Idea Radar OpenAI source environment contract in Atomic QA; live Vercel secret presence and the authenticated production smoke test remain pending
+- [x] Re-run Atomic QA on current source `fa9003f` after the Idea Radar and accessibility safeguards: production build, media audit, Fold, Android, and iPhone checks passed
 - [ ] Reconcile all registry versions and production links with their canonical Vercel projects
 - [ ] Keep ShadowNex Prime™ represented in the launchpad and Release Center
 - [ ] Display current deployment/version truth without marking staged releases as live
