@@ -9,7 +9,8 @@ export const maxDuration=60;
 
 type Source={title:string;url:string};
 type RadarIdea={title:string;problem:string;audience:string;details:string;sources:Source[]};
-type ResponseOutput={type?:string;content?:Array<{type?:string;text?:string;annotations?:Array<{type?:string;url?:string;title?:string}>}>};
+type SearchSource={type?:string;url?:string;title?:string};
+type ResponseOutput={type?:string;action?:{type?:string;sources?:SearchSource[]};content?:Array<{type?:string;text?:string;annotations?:Array<{type?:string;url?:string;title?:string}>}>};
 type OpenAIResponse={output?:ResponseOutput[];error?:{message?:string}};
 
 const IDEA_SCHEMA={
@@ -33,6 +34,20 @@ const IDEA_SCHEMA={
 function canonical(value:string){return value.toLowerCase().replace(/[™®©]/g,"").replace(/[^a-z0-9]+/g," ").trim()}
 function safeText(value:unknown,max:number){return String(value||"").replace(/\s+/g," ").trim().slice(0,max)}
 function safeUrl(value:unknown){try{const url=new URL(String(value));return url.protocol==="https:"?url.toString():""}catch{return""}}
+function sourceKey(value:unknown){
+ const safe=safeUrl(value);
+ if(!safe)return"";
+ const url=new URL(safe);
+ url.hash="";
+ for(const key of [...url.searchParams.keys()]){
+  const lower=key.toLowerCase();
+  if(lower.startsWith("utm_")||lower==="gclid"||lower==="fbclid"||lower==="mc_cid"||lower==="mc_eid")url.searchParams.delete(key);
+ }
+ url.hostname=url.hostname.toLowerCase();
+ url.pathname=url.pathname.replace(/\/+$/g,"")||"/";
+ url.searchParams.sort();
+ return url.toString();
+}
 
 function outputText(response:OpenAIResponse){
  for(const item of response.output||[])for(const content of item.content||[])if(content.type==="output_text"&&content.text)return content.text;
@@ -41,10 +56,16 @@ function outputText(response:OpenAIResponse){
 
 function citedUrls(response:OpenAIResponse){
  const urls=new Set<string>();
- for(const item of response.output||[])for(const content of item.content||[])for(const annotation of content.annotations||[]){
-  if(annotation.type!=="url_citation")continue;
-  const url=safeUrl(annotation.url);
-  if(url)urls.add(url);
+ for(const item of response.output||[]){
+  if(item.type==="web_search_call")for(const source of item.action?.sources||[]){
+   const key=sourceKey(source.url);
+   if(key)urls.add(key);
+  }
+  for(const content of item.content||[])for(const annotation of content.annotations||[]){
+   if(annotation.type!=="url_citation")continue;
+   const key=sourceKey(annotation.url);
+   if(key)urls.add(key);
+  }
  }
  return urls;
 }
@@ -59,6 +80,8 @@ async function researchIdeas(context:string){
   body:JSON.stringify({
    model,
    tools:[{type:"web_search"}],
+   tool_choice:"required",
+   include:["web_search_call.action.sources"],
    max_output_tokens:5000,
    input:[
     {role:"system",content:"You are CactusByte Idea Radar, an evidence-first product researcher. Search the live web before proposing ideas. Find practical, buildable product opportunities that solve a specific pain point, fit a small independent app studio, and do not duplicate the supplied portfolio or existing ideas. Use current evidence, avoid hype, and return exactly three distinct concepts. Every concept must include two to four real HTTPS sources that support the problem or market gap."},
@@ -79,7 +102,7 @@ async function researchIdeas(context:string){
   problem:safeText(idea.problem,320),
   audience:safeText(idea.audience,160),
   details:safeText(idea.details,900),
-  sources:(idea.sources||[]).map(source=>({title:safeText(source.title,160),url:safeUrl(source.url)})).filter(source=>source.title&&source.url&&citations.has(source.url)).slice(0,4)
+  sources:(idea.sources||[]).map(source=>({title:safeText(source.title,160),url:safeUrl(source.url)})).filter(source=>source.title&&source.url&&citations.has(sourceKey(source.url))).slice(0,4)
  })).filter(idea=>idea.title&&idea.problem&&idea.audience&&idea.details&&idea.sources.length>=2);
  if(!ideas.length)throw new Error("Idea Radar research did not return enough verifiable source links.");
  return{model,ideas};

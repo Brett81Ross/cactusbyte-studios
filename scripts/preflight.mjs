@@ -93,7 +93,7 @@ check(Boolean(ideaRadar),"AI Idea Radar route is present");
 check(ideaRadar.includes("ownerIdentity(request)"),"Idea Radar is restricted to verified owner access");
 check(ideaRadar.includes('tools:[{type:"web_search"}]'),"Idea Radar uses OpenAI live web search");
 check(ideaRadar.includes('type:"json_schema"')&&ideaRadar.includes("IDEA_SCHEMA"),"Idea Radar requires schema-validated research output");
-check(ideaRadar.includes("citedUrls(data)")&&ideaRadar.includes("citations.has(source.url)"),"Idea Radar saves only evidence links returned as web citations");
+check(ideaRadar.includes('include:["web_search_call.action.sources"]')&&ideaRadar.includes('tool_choice:"required"')&&ideaRadar.includes('item.type==="web_search_call"')&&ideaRadar.includes("item.action?.sources")&&ideaRadar.includes("citations.has(sourceKey(source.url))"),"Idea Radar requires live web research and verifies evidence against OpenAI web-search sources");
 check(ideaRadar.includes("existingIdeaTitles")&&ideaRadar.includes("known.has(key)"),"Idea Radar compares against existing Forge titles and skips duplicates");
 check(ideaRadar.includes("anonymizedFeedback")&&!ideaRadar.includes("data.contact"),"Idea Radar uses feedback signals without sending contact fields");
 check(ideaRadar.includes('collection("ideas")')&&ideaRadar.includes('source:"radar"'),"AI concepts are persisted directly into Idea Forge");
