@@ -66,6 +66,75 @@ jobs:
       - name: Build release APKs
         run: gradle -p android-packager assembleRelease --stacktrace
 
+      - name: Prepare QA Fantasy signing identity
+        if: github.ref != 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          QA_STORE="$RUNNER_TEMP/fantasy-qa-release.p12"
+          QA_PASS='fantasy-qa-only-12345'
+          keytool -genkeypair -noprompt \
+            -keystore "$QA_STORE" -storetype PKCS12 \
+            -storepass "$QA_PASS" -keypass "$QA_PASS" \
+            -alias fantasy-qa \
+            -keyalg RSA -keysize 2048 -sigalg SHA256withRSA -validity 30 \
+            -dname 'CN=Fantasy Matrix QA, O=CactusByte Studios, C=US'
+          {
+            echo "FANTASY_ANDROID_KEYSTORE_PATH=$QA_STORE"
+            echo "FANTASY_ANDROID_KEYSTORE_PASSWORD=$QA_PASS"
+            echo "FANTASY_ANDROID_KEY_ALIAS=fantasy-qa"
+            echo "FANTASY_ANDROID_KEY_PASSWORD=$QA_PASS"
+          } >> "$GITHUB_ENV"
+
+      - name: Require permanent Fantasy signing secrets
+        if: github.ref == 'refs/heads/main'
+        env:
+          FANTASY_ANDROID_KEYSTORE_B64: ${{ secrets.FANTASY_ANDROID_KEYSTORE_B64 }}
+          FANTASY_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.FANTASY_ANDROID_KEYSTORE_PASSWORD }}
+          FANTASY_ANDROID_KEY_ALIAS: ${{ secrets.FANTASY_ANDROID_KEY_ALIAS }}
+          FANTASY_ANDROID_KEY_PASSWORD: ${{ secrets.FANTASY_ANDROID_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in FANTASY_ANDROID_KEYSTORE_B64 FANTASY_ANDROID_KEYSTORE_PASSWORD FANTASY_ANDROID_KEY_ALIAS FANTASY_ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing protected GitHub secret: $name"
+              exit 1
+            fi
+          done
+          PROD_STORE="$RUNNER_TEMP/fantasy-release.p12"
+          printf '%s' "$FANTASY_ANDROID_KEYSTORE_B64" | base64 --decode > "$PROD_STORE"
+          chmod 600 "$PROD_STORE"
+          {
+            echo "FANTASY_ANDROID_KEYSTORE_PATH=$PROD_STORE"
+            echo "FANTASY_ANDROID_KEYSTORE_PASSWORD=$FANTASY_ANDROID_KEYSTORE_PASSWORD"
+            echo "FANTASY_ANDROID_KEY_ALIAS=$FANTASY_ANDROID_KEY_ALIAS"
+            echo "FANTASY_ANDROID_KEY_PASSWORD=$FANTASY_ANDROID_KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Build permanently signed Fantasy APK
+        env:
+          FANTASY_RELEASE_SIGNING: '1'
+        run: gradle -p android-packager :app:assembleFantasyRelease --rerun-tasks --stacktrace
+
+      - name: Verify Fantasy APK signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='android-packager/app/build/outputs/apk/fantasy/release/app-fantasy-release.apk'
+          test -s "$APK"
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          APKSIGNER="$(find "$SDK_ROOT/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -x "$APKSIGNER"
+          VERIFY_OUTPUT="$($APKSIGNER verify --verbose --print-certs "$APK")"
+          printf '%s\n' "$VERIFY_OUTPUT"
+          echo "$VERIFY_OUTPUT" | grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true'
+          if [ "$GITHUB_REF" = 'refs/heads/main' ]; then
+            EXPECTED='CDD191E286F8B40C1C03DF7CBFFA7EF13DFD61749ECD48041E52538D59D14D01'
+            ACTUAL="$(echo "$VERIFY_OUTPUT" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1 | tr -d ':' | tr '[:lower:]' '[:upper:]')"
+            test "$ACTUAL" = "$EXPECTED"
+          fi
+
       - name: Collect stable APK names
         shell: bash
         run: |
@@ -98,7 +167,7 @@ jobs:
           gh release create android-latest dist/*.apk dist/SHA256SUMS.txt \
             --target "${GITHUB_SHA}" \
             --title "CactusByte Android Apps — Latest" \
-            --notes "Real Android APK packages for the CactusByte Studios ecosystem. CactusByte v1.0.1 uses a dedicated launcher-safe circuit-cactus asset and corrected adaptive icon packaging for Samsung/Android launchers. These are sideload builds for direct installation; they are not browser shortcuts."
+            --notes "Real Android APK packages for the CactusByte Studios ecosystem. Fantasy Football Matrix Android v1.0.2 suppresses the visible Android pre-splash so launch hands directly into the fully branded CactusByte/Fantasy Matrix splash. Fantasy production APKs are pinned to a permanent release-signing certificate for future in-place updates."
 
       - name: Upload QA artifact bundle
         uses: actions/upload-artifact@v4
