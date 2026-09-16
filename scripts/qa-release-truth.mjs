@@ -16,15 +16,28 @@ check(records.length===13,"Release Truth tracks 12 apps plus the CactusByte hub"
 check(new Set(records).size===records.length,"Release Truth app IDs are unique");
 for(const id of ["cactusbyte-studios","noproblem","machzero","rapid-takeoff","acelynn-pro","pocketstomp","ghostlane","first-bearing","fantasy-matrix","scouttrace","shadownex-prime","terraflow-matrix","orbitgather"]){check(records.includes(id),`${id}: Release Truth record exists`)}
 
+check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.1"'),"CactusByte recorded web version remains v1.6.1");
+check(data.includes('recordedDeploymentId:"dpl_Ehm4aLFQCc2BGD5v8PpQBbgEpA6x"'),"CactusByte approved production deployment is recorded");
+check(data.includes('recordedGitSha:"69c0149f190cfe0ac0aa30508c24bde47bd40aac"'),"CactusByte approved production Git SHA is recorded");
 check(data.includes('appId:"acelynn-pro",recordedWebVersion:"v1.2.0"'),"Acelynn recorded live version is v1.2.0");
-check(data.includes('appId:"fantasy-matrix",recordedWebVersion:"v1.5.5"'),"Fantasy recorded live version is v1.5.5");
-check(data.includes('recordedDeploymentId:"dpl_6NR9LmgNvA8xvsvmKj92oG4XnMqn"'),"Fantasy latest verified production deployment is recorded");
+check(data.includes('appId:"fantasy-matrix",recordedWebVersion:"v1.6.11"'),"Fantasy recorded live version is v1.6.11");
+check(data.includes('recordedDeploymentId:"dpl_DKevZDEEBvQMgf9GRc2K5i8B5HKd"'),"Fantasy latest verified production deployment is recorded");
+check(data.includes('recordedGitSha:"bcf15e26ea28948a3a165b18c683513cba1e34f6"'),"Fantasy latest verified production Git SHA is recorded");
 check(data.includes('appId:"terraflow-matrix",recordedWebVersion:"v1.7.0",stagedWebVersion:"v1.15.0"'),"TerraFlow keeps v1.7.0 live and v1.15.0 staged");
 check(data.includes('recordedDeploymentId:"dpl_784aR3rSMoze7BMFuweYc5fDE6AR"'),"TerraFlow verified production deployment is recorded");
+check(data.includes('appId:"terraflow-matrix"')&&data.includes('detectedSource:"https://terraflow-matrix.vercel.app/"'),"TerraFlow detection uses its public production page");
+check(data.includes('appId:"orbitgather"')&&data.includes('detectedSource:"https://orbitgather-wahh.vercel.app/"'),"OrbitGather detection uses its public production page");
 
+const fantasyLine=apps.split("\n").find(line=>line.includes('id:"fantasy-matrix"'))||"";
+check(fantasyLine.includes('version:"v1.6.11"'),"Public Fantasy fallback is updated to v1.6.11");
+check(fantasyLine.includes('?v=1.6.11'),"Public Fantasy launch URL carries the current version marker");
 const terraLine=apps.split("\n").find(line=>line.includes('id:"terraflow-matrix"'))||"";
 check(terraLine.includes('version:"v1.7.0"'),"Public TerraFlow fallback remains verified live v1.7.0");
 check(!terraLine.includes("syncSource:"),"Public app registry cannot promote TerraFlow repository v1.15.0 to live");
+const orbitLine=apps.split("\n").find(line=>line.includes('id:"orbitgather"'))||"";
+check(orbitLine.includes('syncSource:"https://orbitgather-wahh.vercel.app/"'),"OrbitGather public sync source avoids private GitHub raw access");
+const pocketLine=apps.split("\n").find(line=>line.includes('id:"pocketstomp"'))||"";
+check(pocketLine.includes('version:"v1.0.0"'),"PocketStomp remains unchanged pending its own version-marker fix");
 
 check(engine.includes("liveVersion:record.recordedWebVersion"),"Reconciler always preserves recorded live version");
 check(!engine.includes("liveVersion:detected.version"),"Detected versions cannot auto-promote themselves to live");
