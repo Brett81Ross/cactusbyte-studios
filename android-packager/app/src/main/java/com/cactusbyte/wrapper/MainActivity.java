@@ -48,10 +48,15 @@ public class MainActivity extends Activity {
     @SuppressLint("SetJavaScriptEnabled")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setStatusBarColor(Color.rgb(5, 8, 7));
-        getWindow().setNavigationBarColor(Color.rgb(5, 8, 7));
+        boolean fantasyFlavor = BuildConfig.APPLICATION_ID.equals("com.cactusbyte.fantasyfootballmatrix");
+        int chromeColor = fantasyFlavor ? Color.rgb(4, 10, 6) : Color.rgb(5, 8, 7);
+        getWindow().setStatusBarColor(chromeColor);
+        getWindow().setNavigationBarColor(chromeColor);
 
         webView = new WebView(this);
+        if (BuildConfig.APPLICATION_ID.equals("com.cactusbyte.fantasyfootballmatrix")) {
+            webView.setBackgroundColor(Color.rgb(4, 10, 6));
+        }
         setContentView(webView);
 
         CookieManager.getInstance().setAcceptCookie(true);
