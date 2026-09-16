@@ -2,6 +2,12 @@ plugins {
     id("com.android.application")
 }
 
+val fantasyReleaseSigning = System.getenv("FANTASY_RELEASE_SIGNING") == "1"
+val fantasyKeystorePath = System.getenv("FANTASY_ANDROID_KEYSTORE_PATH")
+val fantasyKeystorePassword = System.getenv("FANTASY_ANDROID_KEYSTORE_PASSWORD")
+val fantasyKeyAlias = System.getenv("FANTASY_ANDROID_KEY_ALIAS")
+val fantasyKeyPassword = System.getenv("FANTASY_ANDROID_KEY_PASSWORD")
+
 android {
     namespace = "com.cactusbyte.wrapper"
     compileSdk = 35
@@ -11,6 +17,19 @@ android {
         targetSdk = 35
         versionCode = 2
         versionName = "1.0.1"
+    }
+
+    signingConfigs {
+        if (fantasyReleaseSigning) {
+            create("fantasyRelease") {
+                val path = fantasyKeystorePath ?: error("FANTASY_ANDROID_KEYSTORE_PATH is required")
+                storeFile = file(path)
+                storePassword = fantasyKeystorePassword ?: error("FANTASY_ANDROID_KEYSTORE_PASSWORD is required")
+                keyAlias = fantasyKeyAlias ?: error("FANTASY_ANDROID_KEY_ALIAS is required")
+                keyPassword = fantasyKeyPassword ?: error("FANTASY_ANDROID_KEY_PASSWORD is required")
+                storeType = "PKCS12"
+            }
+        }
     }
 
     flavorDimensions += "brand"
@@ -103,7 +122,11 @@ android {
         }
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (fantasyReleaseSigning) {
+                signingConfigs.getByName("fantasyRelease")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
