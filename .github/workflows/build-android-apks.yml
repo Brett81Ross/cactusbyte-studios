@@ -6,6 +6,7 @@ on:
     branches:
       - apk-icon-fix-v1
       - main
+      - hotfix/fantasy-native-splash-v1.0.2
     paths:
       - 'android-packager/**'
       - '.github/workflows/build-android-apks.yml'
@@ -30,6 +31,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+
+      - name: Verify Fantasy native splash handoff
+        run: python3 android-packager/verify_fantasy_splash.py
 
       - name: Install icon tooling
         run: python3 -m pip install --disable-pip-version-check pillow cairosvg
