@@ -66,6 +66,8 @@ android {
         create("fantasy") {
             dimension = "brand"
             applicationId = "com.cactusbyte.fantasyfootballmatrix"
+            versionCode = 3
+            versionName = "1.0.2"
             resValue("string", "app_name", "Fantasy Football Matrix")
             buildConfigField("String", "START_URL", "\"https://fantasy-football-selector-matrix.vercel.app/?v=1.5.4\"")
         }
