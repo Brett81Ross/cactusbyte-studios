@@ -156,18 +156,15 @@ jobs:
           cp android-packager/icon-previews/CactusByte-adaptive-preview.png dist/CactusByte-adaptive-preview.png
           sha256sum dist/*.apk > dist/SHA256SUMS.txt
 
-      - name: Publish stable APK release
+      - name: Publish Fantasy APK only
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          gh release delete android-latest --cleanup-tag --yes >/dev/null 2>&1 || true
-          gh release create android-latest dist/*.apk dist/SHA256SUMS.txt \
-            --target "${GITHUB_SHA}" \
-            --title "CactusByte Android Apps — Latest" \
-            --notes "Real Android APK packages for the CactusByte Studios ecosystem. Fantasy Football Matrix Android v1.0.2 suppresses the visible Android pre-splash so launch hands directly into the fully branded CactusByte/Fantasy Matrix splash. Fantasy production APKs are pinned to a permanent release-signing certificate for future in-place updates."
+          gh release view android-latest >/dev/null
+          gh release upload android-latest dist/Fantasy-Football-Matrix.apk --clobber
 
       - name: Upload QA artifact bundle
         uses: actions/upload-artifact@v4
