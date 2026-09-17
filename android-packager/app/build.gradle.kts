@@ -62,7 +62,7 @@ android {
             dimension = "brand"
             applicationId = "com.cactusbyte.acelynnpro"
             resValue("string", "app_name", "Acelynn Pro")
-            buildConfigField("String", "START_URL", "\"https://acelynn.vercel.app/acelynnpro.png\"")
+            buildConfigField("String", "START_URL", "\"https://acelynn.vercel.app/\"")
         }
         create("pocketstomp") {
             dimension = "brand"
