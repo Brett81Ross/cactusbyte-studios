@@ -131,7 +131,7 @@ jobs:
           echo "$VERIFY_OUTPUT" | grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true'
           if [ "$GITHUB_REF" = 'refs/heads/main' ]; then
             EXPECTED='CDD191E286F8B40C1C03DF7CBFFA7EF13DFD61749ECD48041E52538D59D14D01'
-            ACTUAL="$(echo "$VERIFY_OUTPUT" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1 | tr -d ':' | tr '[:lower:]' '[:upper:]')"
+            ACTUAL="$(echo "$VERIFY_OUTPUT" | sed -n 's/^V2 Signer: certificate SHA-256 digest: //p' | head -n 1 | tr -d ':' | tr '[:lower:]' '[:upper:]')"
             test "$ACTUAL" = "$EXPECTED"
           fi
 
