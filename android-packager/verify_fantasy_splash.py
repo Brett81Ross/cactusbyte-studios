@@ -55,6 +55,8 @@ assert "Build permanently signed Fantasy APK" in WORKFLOW
 assert ":app:assembleFantasyRelease" in WORKFLOW
 assert "apksigner" in WORKFLOW and "--print-certs" in WORKFLOW
 assert "CDD191E286F8B40C1C03DF7CBFFA7EF13DFD61749ECD48041E52538D59D14D01" in WORKFLOW, "Workflow must pin the permanent public certificate fingerprint"
+assert "V2 Signer: certificate SHA-256 digest:" in WORKFLOW, "Fingerprint parser must match current apksigner output"
+assert "Signer #1 certificate SHA-256 digest:" not in WORKFLOW, "Do not parse obsolete apksigner certificate label"
 
 # A Fantasy hotfix must not delete/recreate the ecosystem Android release or republish unrelated apps.
 assert "gh release delete android-latest" not in WORKFLOW, "Fantasy release must preserve existing ecosystem release assets"
