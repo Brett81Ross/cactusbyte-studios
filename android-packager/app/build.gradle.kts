@@ -6,7 +6,7 @@ plugins {
 }
 
 val permanentSigningEnabled = providers.environmentVariable("CACTUSBYTE_PERMANENT_SIGNING").orNull == "1"
-val permanentSigningFlavors = listOf(
+val allPermanentSigningFlavors = listOf(
     "cactusbyte",
     "noproblem",
     "machzero",
@@ -21,6 +21,23 @@ val permanentSigningFlavors = listOf(
     "terraflow",
     "orbitgather",
 )
+
+val requestedSigningFlavors = providers.environmentVariable("CACTUSBYTE_SIGNING_FLAVORS").orNull
+    ?.split(",")
+    ?.map { it.trim().lowercase() }
+    ?.filter { it.isNotEmpty() }
+    ?.toSet()
+
+val permanentSigningFlavors = if (requestedSigningFlavors == null) {
+    allPermanentSigningFlavors
+} else {
+    val unknown = requestedSigningFlavors - allPermanentSigningFlavors.toSet()
+    require(unknown.isEmpty()) { "Unknown permanent-signing flavor(s): ${unknown.sorted().joinToString(",")}" }
+    requestedSigningFlavors.toList()
+}
+
+fun permanentSigningSelected(flavor: String): Boolean =
+    permanentSigningEnabled && flavor in permanentSigningFlavors
 
 fun requiredSigningEnv(name: String): String =
     providers.environmentVariable(name).orNull
@@ -59,91 +76,91 @@ android {
             applicationId = "com.cactusbyte.studios"
             resValue("string", "app_name", "CactusByte")
             buildConfigField("String", "START_URL", "\"https://cactusbyte-studios.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-cactusbyte")
+            if (permanentSigningSelected("cactusbyte")
         }
         create("noproblem") {
             dimension = "brand"
             applicationId = "com.cactusbyte.noproblem"
             resValue("string", "app_name", "No Problem Pressure Washing Matrix")
             buildConfigField("String", "START_URL", "\"https://noproblem-pws.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-noproblem")
+            if (permanentSigningSelected("noproblem")
         }
         create("machzero") {
             dimension = "brand"
             applicationId = "com.cactusbyte.machzero"
             resValue("string", "app_name", "MachZero")
             buildConfigField("String", "START_URL", "\"https://machzero-beta.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-machzero")
+            if (permanentSigningSelected("machzero")
         }
         create("rapidtakeoff") {
             dimension = "brand"
             applicationId = "com.cactusbyte.rapidtakeoff"
             resValue("string", "app_name", "Rapid Takeoff")
             buildConfigField("String", "START_URL", "\"https://blueprint-estimator.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-rapidtakeoff")
+            if (permanentSigningSelected("rapidtakeoff")
         }
         create("acelynnpro") {
             dimension = "brand"
             applicationId = "com.cactusbyte.acelynnpro"
             resValue("string", "app_name", "Acelynn Pro")
             buildConfigField("String", "START_URL", "\"https://acelynn.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-acelynnpro")
+            if (permanentSigningSelected("acelynnpro")
         }
         create("pocketstomp") {
             dimension = "brand"
             applicationId = "com.cactusbyte.pocketstomp"
             resValue("string", "app_name", "PocketStomp")
             buildConfigField("String", "START_URL", "\"https://pocketstomp-v2-brett81ross.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-pocketstomp")
+            if (permanentSigningSelected("pocketstomp")
         }
         create("ghostlane") {
             dimension = "brand"
             applicationId = "com.cactusbyte.ghostlane"
             resValue("string", "app_name", "GhostLane")
             buildConfigField("String", "START_URL", "\"https://ghostlane-app.vercel.app/radar.html\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-ghostlane")
+            if (permanentSigningSelected("ghostlane")
         }
         create("firstbearing") {
             dimension = "brand"
             applicationId = "com.cactusbyte.firstbearing"
             resValue("string", "app_name", "First Bearing")
             buildConfigField("String", "START_URL", "\"https://first-bearing.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-firstbearing")
+            if (permanentSigningSelected("firstbearing")
         }
         create("fantasy") {
             dimension = "brand"
             applicationId = "com.cactusbyte.fantasyfootballmatrix"
             resValue("string", "app_name", "Fantasy Football Matrix")
             buildConfigField("String", "START_URL", "\"https://fantasy-football-selector-matrix.vercel.app/?v=1.5.5\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-fantasy")
+            if (permanentSigningSelected("fantasy")
         }
         create("scouttrace") {
             dimension = "brand"
             applicationId = "com.cactusbyte.scouttrace"
             resValue("string", "app_name", "Acelynn’s ScoutTrace")
             buildConfigField("String", "START_URL", "\"https://acelynn-scoutrace.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-scouttrace")
+            if (permanentSigningSelected("scouttrace")
         }
         create("shadownex") {
             dimension = "brand"
             applicationId = "com.cactusbyte.shadownexprime"
             resValue("string", "app_name", "ShadowNex Prime")
             buildConfigField("String", "START_URL", "\"https://shadownex-prime.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-shadownex")
+            if (permanentSigningSelected("shadownex")
         }
         create("terraflow") {
             dimension = "brand"
             applicationId = "com.cactusbyte.terraflow"
             resValue("string", "app_name", "TerraFlow Matrix")
             buildConfigField("String", "START_URL", "\"https://terraflow-matrix.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-terraflow")
+            if (permanentSigningSelected("terraflow")
         }
         create("orbitgather") {
             dimension = "brand"
             applicationId = "com.cactusbyte.orbitgather"
             resValue("string", "app_name", "OrbitGather")
             buildConfigField("String", "START_URL", "\"https://orbitgather-wahh.vercel.app/\"")
-            if (permanentSigningEnabled) signingConfig = signingConfigs.getByName("permanent-orbitgather")
+            if (permanentSigningSelected("orbitgather")
         }
 
         create("direct") {
