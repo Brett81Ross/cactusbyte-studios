@@ -43,6 +43,10 @@ jobs:
           printf '%s' "$KEYSTORE_ACELYNNPRO" | base64 --decode > "$path"
           chmod 600 "$path"
           echo "KEYSTORE_PATH_ACELYNNPRO=$path" >> "$GITHUB_ENV"
+      - name: Install icon tooling
+        run: python3 -m pip install --disable-pip-version-check pillow cairosvg
+      - name: Build branded launcher icons
+        run: python3 android-packager/fetch_icons.py
       - name: Build Acelynn Play release AAB
         run: gradle --no-daemon -p android-packager :app:bundleAcelynnproPlayRelease --stacktrace
       - name: Validate AAB signer
