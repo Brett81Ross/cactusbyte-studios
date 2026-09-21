@@ -69,6 +69,7 @@ public class MainActivity extends Activity {
     private Uri cameraUri;
     private boolean qaMode;
     private WebViewAssetLoader qaAssetLoader;
+    private boolean acelynnProductionMode;
     private boolean acelynnDirectRecoveryMode;
     private WebViewAssetLoader acelynnRecoveryAssetLoader;
     private boolean acelynnRecoveryBridgeActive;
@@ -82,9 +83,11 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(Color.rgb(5, 8, 7));
 
         qaMode = "qa".equals(BuildConfig.CHANNEL);
-        acelynnDirectRecoveryMode = !qaMode
-                && "direct".equals(BuildConfig.CHANNEL)
-                && ACELYNN_DIRECT_PACKAGE.equals(getPackageName());
+        acelynnProductionMode = !qaMode
+                && ACELYNN_DIRECT_PACKAGE.equals(getPackageName())
+                && ("direct".equals(BuildConfig.CHANNEL) || "play".equals(BuildConfig.CHANNEL));
+        acelynnDirectRecoveryMode = acelynnProductionMode
+                && "direct".equals(BuildConfig.CHANNEL);
         webView = new WebView(this);
         if (qaMode) {
             setUpQaContentView();
@@ -114,7 +117,7 @@ public class MainActivity extends Activity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setDatabaseEnabled(true);
-        webView.getSettings().setGeolocationEnabled(true);
+        webView.getSettings().setGeolocationEnabled(!acelynnProductionMode);
         webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
         webView.getSettings().setAllowFileAccess(false);
         webView.getSettings().setAllowContentAccess(true);
@@ -182,6 +185,10 @@ public class MainActivity extends Activity {
 
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                if (acelynnProductionMode) {
+                    callback.invoke(origin, false, false);
+                    return;
+                }
                 if (hasLocationPermission()) {
                     callback.invoke(origin, true, false);
                     return;
@@ -534,7 +541,7 @@ public class MainActivity extends Activity {
     }
 
     private void handleWebPermission(PermissionRequest request) {
-        if (acelynnDirectRecoveryMode) {
+        if (acelynnProductionMode) {
             if (!isAllowedAcelynnPermissionOrigin(request.getOrigin()) || !requestsOnlyAcelynnAudio(request)) {
                 request.deny();
                 return;
@@ -580,7 +587,7 @@ public class MainActivity extends Activity {
         }
         List<Intent> initial = new ArrayList<>();
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+        if (!acelynnProductionMode && cameraIntent.resolveActivity(getPackageManager()) != null) {
             try {
                 File cameraDir = new File(getCacheDir(), "camera");
                 if (!cameraDir.exists()) cameraDir.mkdirs();
@@ -634,7 +641,7 @@ public class MainActivity extends Activity {
         boolean granted = true;
         for (int value : grantResults) granted &= value == PackageManager.PERMISSION_GRANTED;
         if (requestCode == REQUEST_WEB_PERMISSIONS && pendingWebPermission != null) {
-            if (acelynnDirectRecoveryMode) {
+            if (acelynnProductionMode) {
                 if (granted && isAllowedAcelynnPermissionOrigin(pendingWebPermission.getOrigin())
                         && requestsOnlyAcelynnAudio(pendingWebPermission)) {
                     pendingWebPermission.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
@@ -646,7 +653,8 @@ public class MainActivity extends Activity {
             pendingWebPermission = null;
         }
         if (requestCode == REQUEST_GEO_PERMISSION && pendingGeoCallback != null) {
-            pendingGeoCallback.invoke(pendingGeoOrigin, granted || hasLocationPermission(), false);
+            pendingGeoCallback.invoke(pendingGeoOrigin,
+                    !acelynnProductionMode && (granted || hasLocationPermission()), false);
             pendingGeoCallback = null;
             pendingGeoOrigin = null;
         }
