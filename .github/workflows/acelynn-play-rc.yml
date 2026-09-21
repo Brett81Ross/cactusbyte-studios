@@ -72,8 +72,8 @@ jobs:
           grep -Fq 'applicationId = "com.cactusbyte.acelynnpro"' android-packager/app/build.gradle.kts
           grep -Fq 'targetSdk = 36' android-packager/app/build.gradle.kts
           grep -Fq 'compileSdk = 36' android-packager/app/build.gradle.kts
-          grep -Fq 'versionCode = 2' android-packager/app/build.gradle.kts
-          grep -Fq 'versionName = "1.0.1"' android-packager/app/build.gradle.kts
+          grep -Fq 'versionCode = 3' android-packager/app/build.gradle.kts
+          grep -Fq 'versionName = "1.2.0"' android-packager/app/build.gradle.kts
           grep -Fq 'create("play")' android-packager/app/build.gradle.kts
       - name: Verify Acelynn Play merged permission surface
         shell: bash
@@ -96,7 +96,7 @@ jobs:
       - name: Upload Play RC AAB and evidence
         uses: actions/upload-artifact@v4
         with:
-          name: acelynn-pro-play-rc1
+          name: acelynn-pro-play-v1.2.0-rc1
           path: |
             ${{ env.AAB }}
             ${{ runner.temp }}/jarsigner.txt
