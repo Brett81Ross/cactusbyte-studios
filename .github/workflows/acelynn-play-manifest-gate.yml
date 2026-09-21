@@ -1,0 +1,50 @@
+name: Acelynn Pro Play Manifest Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [acelynn-play-rc1]
+    paths:
+      - 'android-packager/app/src/acelynnproPlay/**'
+      - '.github/workflows/acelynn-play-manifest-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  manifest-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build unsigned/debug-signed Play manifest path
+        run: gradle --no-daemon -p android-packager :app:processAcelynnproPlayReleaseMainManifest
+      - name: Verify Acelynn Play permission surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest="$(find android-packager/app/build/intermediates -type f -path '*acelynnproPlayRelease*' -name AndroidManifest.xml | head -n1)"
+          test -n "$manifest"
+          grep -Fq 'android.permission.INTERNET' "$manifest"
+          grep -Fq 'android.permission.ACCESS_NETWORK_STATE' "$manifest"
+          grep -Fq 'android.permission.RECORD_AUDIO' "$manifest"
+          for p in android.permission.CAMERA android.permission.ACCESS_FINE_LOCATION android.permission.ACCESS_COARSE_LOCATION android.permission.POST_NOTIFICATIONS; do
+            if grep -Fq "$p" "$manifest"; then echo "Forbidden Acelynn Play permission remains: $p" >&2; exit 1; fi
+          done
+          echo "Acelynn Play manifest permission gate passed."
+      - name: Verify release identity remains unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'applicationId = "com.cactusbyte.acelynnpro"' android-packager/app/build.gradle.kts
+          grep -Fq 'targetSdk = 36' android-packager/app/build.gradle.kts
+          grep -Fq 'versionCode = 2' android-packager/app/build.gradle.kts
+          grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
+          echo "No deployment or publication performed."
