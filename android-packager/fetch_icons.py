@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from io import BytesIO
 import urllib.request
@@ -91,7 +92,16 @@ def adaptive_preview(foreground: Image.Image, bg: str, out: Path):
 
 
 def main():
-    for flavor, (source, bg) in APPS.items():
+    requested = os.environ.get("CACTUSBYTE_ICON_FLAVORS")
+    selected = APPS
+    if requested:
+        names = [name.strip().lower() for name in requested.split(",") if name.strip()]
+        unknown = [name for name in names if name not in APPS]
+        if unknown:
+            raise ValueError(f"Unknown icon flavor(s): {','.join(unknown)}")
+        selected = {name: APPS[name] for name in names}
+
+    for flavor, (source, bg) in selected.items():
         print(f"Loading {flavor}: {source}")
         img = decode(load_source(source), source)
         subject, bbox = subject_from_alpha(img)
