@@ -3,7 +3,7 @@ name: Acelynn Pro Play RC Gate
 on:
   workflow_dispatch:
   push:
-    branches: [acelynn-play-rc1]
+    branches: [android-release-acelynn-play-rc1]
     paths:
       - 'android-packager/**'
       - '.github/workflows/acelynn-play-rc.yml'
@@ -85,7 +85,7 @@ jobs:
           set -euo pipefail
           grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
           test ! -d .vercel/output
-          test "$GITHUB_REF_NAME" = 'acelynn-play-rc1'
+          test "$GITHUB_REF_NAME" = 'android-release-acelynn-play-rc1'
           echo "RC validation only; no Vercel deployment, production merge, or Play publication."
       - name: Upload Play RC AAB and evidence
         uses: actions/upload-artifact@v4
