@@ -28,9 +28,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.11.1'
+      - name: Verify runner Gradle
+        run: gradle --version
       - name: Materialize Acelynn permanent signing key
         shell: bash
         run: |
@@ -45,14 +44,13 @@ jobs:
           echo "KEYSTORE_PATH_ACELYNNPRO=$path" >> "$GITHUB_ENV"
       - name: Build Acelynn Play release AAB
         run: gradle --no-daemon -p android-packager :app:bundleAcelynnproPlayRelease --stacktrace
-      - name: Validate AAB identity and signer
+      - name: Validate AAB signer
         shell: bash
         run: |
           set -euo pipefail
           mapfile -t aabs < <(find android-packager/app/build/outputs/bundle -type f -iname '*acelynnpro*play*release*.aab' | sort)
           test "${#aabs[@]}" -eq 1
           AAB="${aabs[0]}"
-          unzip -p "$AAB" base/manifest/AndroidManifest.xml > "$RUNNER_TEMP/AndroidManifest.xml"
           jarsigner -verify -verbose -certs "$AAB" > "$RUNNER_TEMP/jarsigner.txt"
           jarsigner -verify "$AAB"
           keytool -printcert -jarfile "$AAB" -rfc > "$RUNNER_TEMP/aab-cert.pem"
@@ -71,6 +69,16 @@ jobs:
           grep -Fq 'versionCode = 2' android-packager/app/build.gradle.kts
           grep -Fq 'versionName = "1.0.1"' android-packager/app/build.gradle.kts
           grep -Fq 'create("play")' android-packager/app/build.gradle.kts
+      - name: Verify Acelynn Play merged permission surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest="$(find android-packager/app/build/intermediates -type f -path '*acelynnproPlayRelease*' -name AndroidManifest.xml | head -n1)"
+          test -n "$manifest"
+          grep -Fq 'android.permission.RECORD_AUDIO' "$manifest"
+          for p in android.permission.CAMERA android.permission.ACCESS_FINE_LOCATION android.permission.ACCESS_COARSE_LOCATION android.permission.POST_NOTIFICATIONS; do
+            ! grep -Fq "$p" "$manifest"
+          done
       - name: No-deploy guard
         shell: bash
         run: |
