@@ -21,11 +21,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.11.1'
-      - name: Build unsigned/debug-signed Play manifest path
-        run: gradle --no-daemon -p android-packager :app:processAcelynnproPlayReleaseMainManifest
+      - name: Verify runner Gradle
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle --version
+      - name: Build Play manifest path
+        run: gradle --no-daemon -p android-packager :app:processAcelynnproPlayReleaseMainManifest --stacktrace
       - name: Verify Acelynn Play permission surface
         shell: bash
         run: |
@@ -36,7 +38,10 @@ jobs:
           grep -Fq 'android.permission.ACCESS_NETWORK_STATE' "$manifest"
           grep -Fq 'android.permission.RECORD_AUDIO' "$manifest"
           for p in android.permission.CAMERA android.permission.ACCESS_FINE_LOCATION android.permission.ACCESS_COARSE_LOCATION android.permission.POST_NOTIFICATIONS; do
-            if grep -Fq "$p" "$manifest"; then echo "Forbidden Acelynn Play permission remains: $p" >&2; exit 1; fi
+            if grep -Fq "$p" "$manifest"; then
+              echo "Forbidden Acelynn Play permission remains: $p" >&2
+              exit 1
+            fi
           done
           echo "Acelynn Play manifest permission gate passed."
       - name: Verify release identity remains unchanged
@@ -45,6 +50,8 @@ jobs:
           set -euo pipefail
           grep -Fq 'applicationId = "com.cactusbyte.acelynnpro"' android-packager/app/build.gradle.kts
           grep -Fq 'targetSdk = 36' android-packager/app/build.gradle.kts
+          grep -Fq 'compileSdk = 36' android-packager/app/build.gradle.kts
           grep -Fq 'versionCode = 2' android-packager/app/build.gradle.kts
+          grep -Fq 'versionName = "1.0.1"' android-packager/app/build.gradle.kts
           grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
           echo "No deployment or publication performed."
