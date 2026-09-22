@@ -53,7 +53,8 @@ public class MainActivity extends Activity {
     private static final int REQUEST_GEO_PERMISSION = 4103;
     private static final int QA_MAX_JSON_BYTES = 6 * 1024 * 1024;
     private static final String QA_ASSET_HOST = "appassets.androidplatform.net";
-    private static final int ACELYNN_RECOVERY_MAX_JSON_BYTES = 6 * 1024 * 1024;\n    private static final int ACELYNN_EXPORT_MAX_JSON_BYTES = 25 * 1024 * 1024;
+    private static final int ACELYNN_RECOVERY_MAX_JSON_BYTES = 6 * 1024 * 1024;
+    private static final int ACELYNN_EXPORT_MAX_JSON_BYTES = 25 * 1024 * 1024;
     private static final String ACELYNN_DIRECT_PACKAGE = "com.cactusbyte.acelynnpro";
     private static final String ACELYNN_PRODUCTION_HOST = "acelynn.vercel.app";
     private static final String ACELYNN_RECOVERY_PATH = "/__cactusbyte_recovery__/";
