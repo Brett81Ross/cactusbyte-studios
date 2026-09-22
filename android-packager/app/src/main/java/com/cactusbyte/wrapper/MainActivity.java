@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_GEO_PERMISSION = 4103;
     private static final int QA_MAX_JSON_BYTES = 6 * 1024 * 1024;
     private static final String QA_ASSET_HOST = "appassets.androidplatform.net";
-    private static final int ACELYNN_RECOVERY_MAX_JSON_BYTES = 6 * 1024 * 1024;
+    private static final int ACELYNN_RECOVERY_MAX_JSON_BYTES = 6 * 1024 * 1024;\n    private static final int ACELYNN_EXPORT_MAX_JSON_BYTES = 25 * 1024 * 1024;
     private static final String ACELYNN_DIRECT_PACKAGE = "com.cactusbyte.acelynnpro";
     private static final String ACELYNN_PRODUCTION_HOST = "acelynn.vercel.app";
     private static final String ACELYNN_RECOVERY_PATH = "/__cactusbyte_recovery__/";
@@ -455,6 +455,77 @@ public class MainActivity extends Activity {
             Toast.makeText(this, "No app is available for this link.", Toast.LENGTH_SHORT).show();
         }
         return true;
+    }
+
+    private void installAcelynnExportHooks() {
+        if (!acelynnProductionMode) return;
+        String script = "(function(){" +
+                "if(window.__cactusAcelynnExportBridgeInstalled||!window.CactusAcelynnBridge)return;" +
+                "var nativeClick=HTMLAnchorElement.prototype.click;" +
+                "HTMLAnchorElement.prototype.click=function(){var a=this;" +
+                "if(a.download&&typeof a.href==='string'&&a.href.indexOf('blob:')===0){" +
+                "fetch(a.href).then(function(r){return r.text();}).then(function(t){window.CactusAcelynnBridge.saveJson(a.download,t);}).catch(function(){nativeClick.call(a);});return;}" +
+                "return nativeClick.call(a);};window.__cactusAcelynnExportBridgeInstalled=true;" +
+                "})();";
+        webView.evaluateJavascript(script, null);
+    }
+
+    private final class AcelynnExportBridge {
+        @JavascriptInterface
+        public void saveJson(String requestedName, String json) {
+            if (!acelynnProductionMode || json == null) return;
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            if (bytes.length == 0 || bytes.length > ACELYNN_EXPORT_MAX_JSON_BYTES) {
+                postToast("Acelynn Pro backup was not saved: invalid file size.");
+                return;
+            }
+            String safeName = sanitizeQaFileName(requestedName);
+            if (!safeName.startsWith("acelynn-pro-")) safeName = "acelynn-pro-full-backup.json";
+            try {
+                String location = writeAcelynnExportJson(safeName, bytes);
+                postToast("Saved " + safeName + " to " + location);
+            } catch (IOException | SecurityException ex) {
+                postToast("Acelynn Pro backup could not be saved.");
+            }
+        }
+    }
+
+    private String writeAcelynnExportJson(String fileName, byte[] bytes) throws IOException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Downloads.MIME_TYPE, "application/json");
+            values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/AcelynnPro");
+            values.put(MediaStore.Downloads.IS_PENDING, 1);
+            Uri item = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (item == null) throw new IOException("MediaStore insert failed");
+            boolean success = false;
+            try (OutputStream output = getContentResolver().openOutputStream(item, "w")) {
+                if (output == null) throw new IOException("MediaStore output stream unavailable");
+                output.write(bytes);
+                output.flush();
+                success = true;
+            } finally {
+                if (success) {
+                    ContentValues publish = new ContentValues();
+                    publish.put(MediaStore.Downloads.IS_PENDING, 0);
+                    getContentResolver().update(item, publish, null, null);
+                } else {
+                    getContentResolver().delete(item, null, null);
+                }
+            }
+            return "Downloads/AcelynnPro";
+        }
+        File root = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (root == null) throw new IOException("External files directory unavailable");
+        File dir = new File(root, "AcelynnPro");
+        if (!dir.exists() && !dir.mkdirs()) throw new IOException("Could not create Acelynn Pro download directory");
+        File target = new File(dir, fileName);
+        try (OutputStream output = new FileOutputStream(target, false)) {
+            output.write(bytes);
+            output.flush();
+        }
+        return target.getAbsolutePath();
     }
 
     private void installQaDownloadBridge() {
