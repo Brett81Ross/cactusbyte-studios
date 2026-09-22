@@ -99,6 +99,9 @@ public class MainActivity extends Activity {
         } else {
             setContentView(webView);
         }
+        if (acelynnProductionMode) {
+            webView.addJavascriptInterface(new AcelynnExportBridge(), "CactusAcelynnBridge");
+        }
         if (acelynnDirectRecoveryMode) {
             acelynnRecoveryAssetLoader = new WebViewAssetLoader.Builder()
                     .setDomain(ACELYNN_PRODUCTION_HOST)
@@ -150,6 +153,14 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
+                if (acelynnProductionMode) {
+                    String scheme = uri.getScheme();
+                    String host = uri.getHost();
+                    if ("https".equalsIgnoreCase(scheme) && ACELYNN_PRODUCTION_HOST.equalsIgnoreCase(host)) return false;
+                    if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+                        return openExternalHttp(uri);
+                    }
+                }
                 if (qaMode) {
                     String scheme = uri.getScheme();
                     String host = uri.getHost();
@@ -166,6 +177,9 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 if (qaMode && url != null && url.startsWith("https://" + QA_ASSET_HOST + "/")) {
                     installQaDownloadBridge();
+                }
+                if (acelynnProductionMode && isTrustedAcelynnProductionUrl(url)) {
+                    installAcelynnExportHooks();
                 }
                 if (acelynnDirectRecoveryMode && isAcelynnRecoveryUrl(url)) {
                     installAcelynnRecoveryHooks();
@@ -210,6 +224,10 @@ public class MainActivity extends Activity {
         });
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
+            if (acelynnProductionMode && url != null && url.startsWith("blob:")) {
+                webView.evaluateJavascript("(function(u,n){fetch(u).then(function(r){return r.text();}).then(function(t){if(window.CactusAcelynnBridge)window.CactusAcelynnBridge.saveJson(n,t);});})(" + org.json.JSONObject.quote(url) + "," + org.json.JSONObject.quote("acelynn-pro-full-backup.json") + ");", null);
+                return;
+            }
             if (qaMode && url != null && url.startsWith("blob:")) {
                 Toast.makeText(MainActivity.this, "QA export bridge could not capture this download.", Toast.LENGTH_SHORT).show();
                 return;
@@ -456,6 +474,17 @@ public class MainActivity extends Activity {
             Toast.makeText(this, "No app is available for this link.", Toast.LENGTH_SHORT).show();
         }
         return true;
+    }
+
+    private boolean isTrustedAcelynnProductionUrl(String url) {
+        if (url == null) return false;
+        try {
+            Uri uri = Uri.parse(url);
+            return "https".equalsIgnoreCase(uri.getScheme())
+                    && ACELYNN_PRODUCTION_HOST.equalsIgnoreCase(uri.getHost());
+        } catch (RuntimeException ignored) {
+            return false;
+        }
     }
 
     private void installAcelynnExportHooks() {
