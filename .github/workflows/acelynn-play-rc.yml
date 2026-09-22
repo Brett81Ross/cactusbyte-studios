@@ -55,6 +55,17 @@ jobs:
           mapfile -t apks < <(find android-packager/app/build/outputs/apk -type f -iname '*acelynnpro*play*release*.apk' | sort)
           test "${#apks[@]}" -eq 1
           echo "APK=${apks[0]}" >> "$GITHUB_ENV"
+      - name: Verify production export bridge wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java
+          grep -Fq 'webView.addJavascriptInterface(new AcelynnExportBridge(), "CactusAcelynnBridge")' "$src"
+          grep -Fq 'if (acelynnProductionMode && isTrustedAcelynnProductionUrl(url))' "$src"
+          grep -Fq 'installAcelynnExportHooks();' "$src"
+          grep -Fq 'if (acelynnProductionMode && url != null && url.startsWith("blob:"))' "$src"
+          grep -Fq 'ACELYNN_PRODUCTION_HOST.equalsIgnoreCase(host)' "$src"
+          echo "Production export bridge is attached, installed, blob-routed, and host-restricted."
       - name: Validate dogfood APK signer
         shell: bash
         run: |
