@@ -3,7 +3,7 @@ name: Acelynn Pro Play RC Gate
 on:
   workflow_dispatch:
   push:
-    branches: [android-release-acelynn-play-rc1]
+    branches: [android-release-acelynn-play-v1-2-1-rc1]
     paths:
       - 'android-packager/**'
       - '.github/workflows/acelynn-play-rc.yml'
@@ -72,8 +72,8 @@ jobs:
           grep -Fq 'applicationId = "com.cactusbyte.acelynnpro"' android-packager/app/build.gradle.kts
           grep -Fq 'targetSdk = 36' android-packager/app/build.gradle.kts
           grep -Fq 'compileSdk = 36' android-packager/app/build.gradle.kts
-          grep -Fq 'versionCode = 3' android-packager/app/build.gradle.kts
-          grep -Fq 'versionName = "1.2.0"' android-packager/app/build.gradle.kts
+          grep -Fq 'versionCode = 4' android-packager/app/build.gradle.kts
+          grep -Fq 'versionName = "1.2.1"' android-packager/app/build.gradle.kts
           grep -Fq 'create("play")' android-packager/app/build.gradle.kts
       - name: Verify Acelynn Play merged permission surface
         shell: bash
@@ -91,15 +91,15 @@ jobs:
           set -euo pipefail
           grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
           test ! -d .vercel/output
-          test "$GITHUB_REF_NAME" = 'android-release-acelynn-play-rc1'
+          test "$GITHUB_REF_NAME" = 'android-release-acelynn-play-v1-2-1-rc1'
           echo "RC validation only; no Vercel deployment, production merge, or Play publication."
       - name: Upload Play RC AAB and evidence
         uses: actions/upload-artifact@v4
         with:
-          name: acelynn-pro-play-v1.2.0-rc1
+          name: acelynn-pro-play-v1.2.1-rc1
           path: |
             ${{ env.AAB }}
             ${{ runner.temp }}/jarsigner.txt
           retention-days: 14
       - name: Gate passed
-        run: echo "Acelynn Pro Play RC1 gate passed."
+        run: echo "Acelynn Pro Play v1.2.1 RC1 gate passed."
