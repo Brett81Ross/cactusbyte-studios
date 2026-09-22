@@ -5,7 +5,8 @@ on:
   push:
     branches: [android-release-acelynn-play-v1-2-1-rc1]
     paths:
-      - 'android-packager/**'\n      - 'vercel.json'
+      - 'android-packager/**'
+      - 'vercel.json'
       - '.github/workflows/acelynn-play-rc.yml'
 
 permissions:
