@@ -50,7 +50,21 @@ jobs:
       - name: Build branded launcher icons
         run: python3 android-packager/fetch_icons.py
       - name: Build Acelynn Play release AAB
-        run: gradle --no-daemon -p android-packager :app:bundleAcelynnproPlayRelease --stacktrace
+        run: |
+          gradle --no-daemon -p android-packager :app:bundleAcelynnproPlayRelease :app:assembleAcelynnproPlayRelease --stacktrace
+          mapfile -t apks < <(find android-packager/app/build/outputs/apk -type f -iname '*acelynnpro*play*release*.apk' | sort)
+          test "${#apks[@]}" -eq 1
+          echo "APK=${apks[0]}" >> "$GITHUB_ENV"
+      - name: Validate dogfood APK signer
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$APK"
+          apksigner verify --print-certs "$APK" > "$RUNNER_TEMP/apk-signer.txt"
+          actual="$(apksigner verify --print-certs "$APK" | awk -F': ' '/Signer #1 certificate SHA-256 digest:/{gsub(":","",$2);print toupper($2);exit}')"
+          expected='FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230'
+          test "$actual" = "$expected"
+          echo "Dogfood APK permanent signer verified: $actual"
       - name: Validate AAB signer
         shell: bash
         run: |
@@ -97,10 +111,12 @@ jobs:
       - name: Upload Play RC AAB and evidence
         uses: actions/upload-artifact@v4
         with:
-          name: acelynn-pro-play-v1.2.1-rc1
+          name: acelynn-pro-play-v1.2.1-rc1-dogfood
           path: |
             ${{ env.AAB }}
+            ${{ env.APK }}
             ${{ runner.temp }}/jarsigner.txt
+            ${{ runner.temp }}/apk-signer.txt
           retention-days: 14
       - name: Gate passed
         run: echo "Acelynn Pro Play v1.2.1 RC1 gate passed."
