@@ -63,9 +63,10 @@ jobs:
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
           test -x "$APKSIGNER"
           "$APKSIGNER" verify --print-certs "$APK" > "$RUNNER_TEMP/apk-signer.txt"
-          actual="$("$APKSIGNER" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1 | tr -d ':' | tr '[:lower:]' '[:upper:]')"
+          actual="$("$APKSIGNER" verify --print-certs "$APK" | awk '/certificate SHA-256 digest:/{print $NF; exit}' | tr -d ':' | tr '[:lower:]' '[:upper:]')"
           expected='FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230'
           echo "Dogfood APK signer actual: $actual"
+          test -n "$actual"
           test "$actual" = "$expected"
           echo "Dogfood APK permanent signer verified: $actual"
       - name: Validate AAB signer
