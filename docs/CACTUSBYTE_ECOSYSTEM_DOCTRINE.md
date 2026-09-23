@@ -1,6 +1,6 @@
 # CactusByte Ecosystem Doctrine & Capability Registry
 
-**Canonical continuity document — v1.0 — September 23, 2026**
+**Canonical continuity document — v1.1 — September 23, 2026**
 
 > **Implementation truth:** the current repository/version.  
 > **Architectural continuity truth:** this document.
@@ -188,7 +188,26 @@ Required fields:
 
 ## 12. Cross-Ecosystem Reuse Rules
 
-- Search the target repository first, then the broader CactusByte ecosystem.
+### Mandatory full-portfolio code review
+
+Before designing or building any new capability—whether for an existing product or a future CactusByte app—review the **entire accessible CactusByte GitHub portfolio** for reusable code and proven implementation patterns. The review is not limited to the target repository or obvious sibling products.
+
+Search across all CactusByte repositories for relevant:
+
+- code, algorithms, utilities, and domain-neutral primitives
+- components and interaction patterns
+- services, APIs, adapters, and integrations
+- schemas, data contracts, and validation logic
+- infrastructure, caching, telemetry, authentication, and release tooling
+- tests, fixtures, QA gates, and operational guardrails
+
+Classify useful findings as **Reuse / Connect / Extend / Build**. If another CactusByte product already solves part of the problem, treat that implementation as an engineering asset and begin from the proven capability rather than recreating it.
+
+Do not blindly copy code between products. Preserve ownership boundaries and product independence. When a capability is genuinely domain-neutral and reuse reduces total ecosystem complexity, extract or generalize it at the appropriate shared CactusByte layer. Otherwise, consume it through an explicit interface or adapt the proven pattern locally.
+
+This full-portfolio review is a **standing pre-build requirement for current builds and future apps** and must occur before declaring a capability Missing or authorizing a new ABL implementation.
+
+- Search the target repository first for local ownership and context, then review the entire accessible CactusByte GitHub portfolio before declaring a gap.
 - Do not copy domain logic merely because another app has a visually similar feature.
 - Generalize only when the underlying capability is truly reusable and total complexity falls.
 - Keep product-specific branding, workflows, business rules, and data contracts separate.
@@ -239,6 +258,6 @@ Record material architectural changes and their reason.
 - Integrations enhance products; they do not manufacture dependency.
 - MCX is an operating company and proving ground, not a hard dependency.
 - Matrix owns exterior-cleaning intelligence; RIVETEX owns operations; connect rather than duplicate.
-- Audit before every ABL. **Reuse → Connect → Extend → Build only the proven gap.**
+- Audit before every ABL, including a full accessible CactusByte GitHub portfolio review. **Reuse → Connect → Extend → Build only the proven gap.**
 - QA and explicit approval gate production.
 - **Current repository/version = implementation truth. This document = architectural continuity truth.**
