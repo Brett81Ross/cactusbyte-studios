@@ -12,9 +12,15 @@ const failures=[];
 const check=(ok,msg)=>{if(!ok)failures.push(msg);else console.log(`✓ ${msg}`)};
 
 const records=[...data.matchAll(/appId:"([^"]+)"/g)].map(m=>m[1]);
-check(records.length===13,"Release Truth tracks 12 apps plus the CactusByte hub");
+const registryIds=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(m=>m[1]);
+check(registryIds.length>0,"Public app registry contains at least one app");
+check(new Set(registryIds).size===registryIds.length,"Public app registry IDs are unique");
 check(new Set(records).size===records.length,"Release Truth app IDs are unique");
-for(const id of ["cactusbyte-studios","noproblem","machzero","rapid-takeoff","acelynn-pro","pocketstomp","ghostlane","first-bearing","fantasy-matrix","scouttrace","shadownex-prime","terraflow-matrix","orbitgather"]){check(records.includes(id),`${id}: Release Truth record exists`)}
+check(records.includes("cactusbyte-studios"),"Release Truth includes the CactusByte hub");
+for(const id of registryIds){check(records.includes(id),`${id}: registered app has a Release Truth record`)}
+const orphanTruth=records.filter(id=>id!=="cactusbyte-studios"&&!registryIds.includes(id));
+check(orphanTruth.length===0,`Release Truth has no orphan app records${orphanTruth.length?`: ${orphanTruth.join(", ")}`:""}`);
+check(records.length===registryIds.length+1,"Release Truth tracks the live registry plus the CactusByte hub");
 
 check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.1"'),"CactusByte recorded web version remains v1.6.1");
 check(data.includes('recordedDeploymentId:"dpl_Ehm4aLFQCc2BGD5v8PpQBbgEpA6x"'),"CactusByte approved production deployment is recorded");
