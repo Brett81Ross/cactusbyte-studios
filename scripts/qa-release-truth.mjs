@@ -22,6 +22,22 @@ const orphanTruth=records.filter(id=>id!=="cactusbyte-studios"&&!registryIds.inc
 check(orphanTruth.length===0,`Release Truth has no orphan app records${orphanTruth.length?`: ${orphanTruth.join(", ")}`:""}`);
 check(records.length===registryIds.length+1,"Release Truth tracks the live registry plus the CactusByte hub");
 
+const registryLines=apps.split("\n").filter(line=>line.startsWith("{id:"));
+check(registryLines.length===registryIds.length,"Every registered app is represented by one parseable registry entry");
+const versionPattern=/version:"v\d+\.\d+\.\d+"/;
+const githubRepoPattern=/repo:"https:\/\/github\.com\/Brett81Ross\/[^"]+"/;
+const absoluteUrlPattern=/url:"https:\/\/[^"]+"/;
+for(const line of registryLines){
+ const id=(line.match(/id:"([^"]+)"/)||[])[1]||"unknown";
+ check(/name:"[^"]+™"/.test(line),`${id}: branded app name includes ™`);
+ check(versionPattern.test(line),`${id}: version uses vMAJOR.MINOR.PATCH`);
+ check(githubRepoPattern.test(line),`${id}: repository points to Brett81Ross GitHub`);
+ check(absoluteUrlPattern.test(line),`${id}: production launch URL is HTTPS`);
+ check(/logo:"[^"]+"/.test(line),`${id}: logo reference exists`);
+ check(/platform:"(?:Android \+ iOS|Web \+ Mobile)"/.test(line),`${id}: supported platform is declared`);
+ check(/capabilities:\[[^\]]+\]/.test(line),`${id}: capabilities are declared`);
+}
+
 check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.1"'),"CactusByte recorded web version remains v1.6.1");
 check(data.includes('recordedDeploymentId:"dpl_Ehm4aLFQCc2BGD5v8PpQBbgEpA6x"'),"CactusByte approved production deployment is recorded");
 check(data.includes('recordedGitSha:"69c0149f190cfe0ac0aa30508c24bde47bd40aac"'),"CactusByte approved production Git SHA is recorded");
