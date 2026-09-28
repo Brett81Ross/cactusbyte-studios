@@ -8,6 +8,7 @@ const engine=read("src/lib/release-truth.ts");
 const route=read("src/app/api/registry/route.ts");
 const apps=read("src/data/apps.ts");
 const env=read(".env.example");
+const packageJson=read("package.json");
 const failures=[];
 const check=(ok,msg)=>{if(!ok)failures.push(msg);else console.log(`✓ ${msg}`)};
 
@@ -69,6 +70,7 @@ check(engine.includes("record.recordedDeploymentId"),"Deployment evidence is com
 check(engine.includes("VERCEL_ACCESS_TOKEN")&&engine.includes("VERCEL_TEAM_ID"),"Vercel deployment verification uses server-only environment credentials");
 check(!engine.includes("NEXT_PUBLIC_VERCEL"),"Vercel verification credentials are never public client variables");
 check(env.includes("VERCEL_ACCESS_TOKEN")&&env.includes("VERCEL_TEAM_ID"),"Environment template documents deployment verification configuration");
+check(!packageJson.includes("next-pwa")&&!packageJson.includes("workbox"),"Hub package does not introduce service-worker/PWA runtime dependencies");
 
 check(route.includes("releaseTruthByApp")&&route.includes("resolveReleaseTruth"),"Registry API is powered by Release Truth");
 check(route.includes("truthModel:\"recorded-detected-deployed-v1\""),"Registry API identifies the v1.6 truth model");
