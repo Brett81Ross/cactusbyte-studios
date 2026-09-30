@@ -43,7 +43,7 @@ check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.1"'),"C
 check(data.includes('recordedDeploymentId:"dpl_Ehm4aLFQCc2BGD5v8PpQBbgEpA6x"'),"CactusByte approved production deployment is recorded");
 check(data.includes('recordedGitSha:"69c0149f190cfe0ac0aa30508c24bde47bd40aac"'),"CactusByte approved production Git SHA is recorded");
 check(data.includes('appId:"acelynn-pro",recordedWebVersion:"v1.2.0"'),"Acelynn recorded live version is v1.2.0");
-check(data.includes('appId:"fantasy-matrix",recordedWebVersion:"v1.6.12"'),"Fantasy recorded live version is v1.6.11");
+check(data.includes('appId:"fantasy-matrix",recordedWebVersion:"v1.6.12"'),"Fantasy recorded live version is v1.6.12");
 check(data.includes('recordedDeploymentId:"dpl_14C6MvFuqZApwokGqhu4cQ3sjtrd"'),"Fantasy latest verified production deployment is recorded");
 check(data.includes('recordedGitSha:"f48866d5f3fe434ceb09e63d9eef9f3fefed0bb6"'),"Fantasy latest verified production Git SHA is recorded");
 check(data.includes('appId:"terraflow-matrix",recordedWebVersion:"v1.7.0",stagedWebVersion:"v1.15.0"'),"TerraFlow keeps v1.7.0 live and v1.15.0 staged");
