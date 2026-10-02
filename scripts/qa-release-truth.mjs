@@ -30,7 +30,7 @@ check(data.includes('appId:"orbitgather"')&&data.includes('detectedSource:"https
 
 const fantasyLine=apps.split("\n").find(line=>line.includes('id:"fantasy-matrix"'))||"";
 check(fantasyLine.includes('version:"v1.6.12"'),"Public Fantasy fallback is updated to v1.6.12");
-check(fantasyLine.includes('?v=1.6.11'),"Public Fantasy launch URL carries the current version marker");
+check(fantasyLine.includes('?v=1.6.12'),"Public Fantasy launch URL carries the current version marker");
 const terraLine=apps.split("\n").find(line=>line.includes('id:"terraflow-matrix"'))||"";
 check(terraLine.includes('version:"v1.7.0"'),"Public TerraFlow fallback remains verified live v1.7.0");
 check(!terraLine.includes("syncSource:"),"Public app registry cannot promote TerraFlow repository v1.15.0 to live");
