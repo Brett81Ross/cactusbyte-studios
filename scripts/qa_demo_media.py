@@ -1,11 +1,16 @@
 from pathlib import Path
-import json, subprocess, sys
+import json, re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
 DEMO_DIR=ROOT/'public'/'demos'
-EXPECTED={
-'cactusbyte-studios','no-problem-pressure-washing-matrix','machzero','rapid-takeoff','acelynn-pro','pocketstomp','ghostlane','first-bearing','fantasy-football-matrix','acelynn-scouttrace','terraflow-matrix','orbitgather','shadownex-prime'
+APPS_SOURCE=(ROOT/'src'/'data'/'apps.ts').read_text()
+REGISTRY_IDS=set(re.findall(r'id:"([^"]+)"', APPS_SOURCE))
+DEMO_SLUG_OVERRIDES={
+    'noproblem':'no-problem-pressure-washing-matrix',
+    'fantasy-matrix':'fantasy-football-matrix',
+    'scouttrace':'acelynn-scouttrace',
 }
+EXPECTED={'cactusbyte-studios'} | {DEMO_SLUG_OVERRIDES.get(app_id,app_id) for app_id in REGISTRY_IDS}
 NEURAL_HANDLER='CactusByte American Male Neural Narration'
 files=sorted(DEMO_DIR.glob('*-60-second-demo.mp4'))
 seen={p.name.removesuffix('-60-second-demo.mp4') for p in files}
