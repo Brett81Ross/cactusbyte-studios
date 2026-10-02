@@ -1,12 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import AccountDock from "./account-dock";
-import BrandedShare from "./branded-share";
-import CactusByteAuthSurface from "./cactusbyte-auth-surface";
-import DemoHelp from "./demo-help";
-import LaunchBar from "./launch-bar";
-import PersonalizationLayer from "./personalization-layer";
-import SecureCheckoutBridge from "./secure-checkout-bridge";
-import TesterAppBridge from "./tester-app-bridge";
+import GlobalChrome from "./global-chrome";
 import "./globals.css";
 import "./mobile.css";
 import "./personalization.css";
@@ -50,7 +43,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body><LaunchBar/><BrandedShare/><CactusByteAuthSurface/><PersonalizationLayer/><TesterAppBridge/><SecureCheckoutBridge/><AccountDock/><DemoHelp/>{children}</body>
+      <body><GlobalChrome/>{children}</body>
     </html>
   );
 }
