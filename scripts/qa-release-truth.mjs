@@ -12,9 +12,12 @@ const failures=[];
 const check=(ok,msg)=>{if(!ok)failures.push(msg);else console.log(`✓ ${msg}`)};
 
 const records=[...data.matchAll(/appId:"([^"]+)"/g)].map(m=>m[1]);
-check(records.length===13,"Release Truth tracks 12 apps plus the CactusByte hub");
+const registryIds=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(m=>m[1]);
+const expectedRecords=["cactusbyte-studios",...registryIds];
 check(new Set(records).size===records.length,"Release Truth app IDs are unique");
-for(const id of ["cactusbyte-studios","noproblem","machzero","rapid-takeoff","acelynn-pro","pocketstomp","ghostlane","first-bearing","fantasy-matrix","scouttrace","shadownex-prime","terraflow-matrix","orbitgather"]){check(records.includes(id),`${id}: Release Truth record exists`)}
+check(records.length===expectedRecords.length,`Release Truth tracks all ${registryIds.length} registry apps plus the CactusByte hub`);
+check(expectedRecords.every(id=>records.includes(id)),"Every current app registry entry has a Release Truth record");
+check(records.every(id=>expectedRecords.includes(id)),"Release Truth has no orphan app records");
 
 check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.1"'),"CactusByte recorded web version remains v1.6.1");
 check(data.includes('recordedDeploymentId:"dpl_Ehm4aLFQCc2BGD5v8PpQBbgEpA6x"'),"CactusByte approved production deployment is recorded");
