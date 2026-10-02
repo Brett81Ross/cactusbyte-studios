@@ -11,10 +11,16 @@ DEMO_SLUG_OVERRIDES={
     'scouttrace':'acelynn-scouttrace',
 }
 EXPECTED={'cactusbyte-studios'} | {DEMO_SLUG_OVERRIDES.get(app_id,app_id) for app_id in REGISTRY_IDS}
+EMBED_SOURCE=(ROOT/'public'/'demo-embed.js').read_text()
+EMBED_NAMES=set(re.findall(r"^\s*'([^']+)':(?:'|\[)", EMBED_SOURCE, re.MULTILINE))
 NEURAL_HANDLER='CactusByte American Male Neural Narration'
 files=sorted(DEMO_DIR.glob('*-60-second-demo.mp4'))
 seen={p.name.removesuffix('-60-second-demo.mp4') for p in files}
 errors=[]
+if EMBED_NAMES!=EXPECTED:
+    errors.append(f'demo embed registry mismatch: missing={sorted(EXPECTED-EMBED_NAMES)} extra={sorted(EMBED_NAMES-EXPECTED)}')
+if '`https://cactusbyte-studios.vercel.app/demos/${app}-60-second-demo.mp4`' not in EMBED_SOURCE:
+    errors.append('demo embed video path template missing')
 if seen!=EXPECTED:
     errors.append(f'demo set mismatch: missing={sorted(EXPECTED-seen)} extra={sorted(seen-EXPECTED)}')
 
