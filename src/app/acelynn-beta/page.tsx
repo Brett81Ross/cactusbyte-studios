@@ -19,8 +19,8 @@ export default function AcelynnBetaPage() {
           <h1 id="beta-title">Help test <span>Acelynn Pro™</span></h1>
           <p className="beta-kicker">Hear the mix. See the problem. Make the move.</p>
           <p className="beta-lede">
-            Mix analysis for musicians and producers—frequency balance, revision comparison,
-            and actionable feedback without the guesswork.
+            Mix analysis for musicians, producers, and AI-music creators—frequency balance,
+            revision comparison, and actionable feedback without the guesswork.
           </p>
           <div className="beta-hero-actions">
             <a className="beta-button beta-button-primary" href={groupUrl} target="_blank" rel="noreferrer">Join Tester Group</a>
