@@ -12,6 +12,6 @@ import TesterAppBridge from "./tester-app-bridge";
 
 export default function GlobalChrome(){
   const pathname=usePathname();
-  if(pathname==="/acelynn-beta") return null;
+  if(pathname==="/acelynn-beta"||pathname==="/acelynn-beta/") return null;
   return <><LaunchBar/><BrandedShare/><CactusByteAuthSurface/><PersonalizationLayer/><TesterAppBridge/><SecureCheckoutBridge/><AccountDock/><DemoHelp/></>;
 }

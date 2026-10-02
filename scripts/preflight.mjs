@@ -20,6 +20,7 @@ const cactusId=read("src/lib/cactusbyte-id.ts");
 const firestoreRules=read("firestore.rules");
 const gitignore=read(".gitignore");
 const layout=read("src/app/layout.tsx");
+const chrome=read("src/app/global-chrome.tsx");
 const workflow=read(".github/workflows/atomic-qa.yml");
 const envExample=read(".env.example");
 const entitlementCloud=exists("src/lib/entitlements-cloud.ts")?read("src/lib/entitlements-cloud.ts"):"";
@@ -111,7 +112,7 @@ check(checkoutRoute.includes("adminAuth().verifyIdToken"),"Checkout launcher ver
 check(checkoutRoute.includes("createCheckoutReference"),"Checkout launcher creates a server-signed user/app reference");
 check(checkoutRoute.includes("prefilled_email"),"Checkout launcher prefills the verified CactusByte ID email");
 check(Boolean(checkoutBridge),"Secure checkout bridge is mounted in the client shell");
-check(layout.includes("SecureCheckoutBridge"),"Root layout mounts the secure checkout bridge");
+check(layout.includes("<GlobalChrome/>")&&chrome.includes("<SecureCheckoutBridge/>"),"Root layout mounts the secure checkout bridge through route-aware chrome");
 check(checkoutBridge.includes('/api/stripe/checkout-link'),"Storefront upgrade clicks route through the authenticated checkout launcher");
 check(page.includes("✓ Pro Active"),"Storefront replaces upgrade CTA with Pro Active for entitled apps");
 check(page.includes("Sign In to Upgrade"),"Storefront requires CactusByte ID before linked upgrades");

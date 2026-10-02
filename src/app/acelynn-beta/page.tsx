@@ -1,38 +1,66 @@
-export const metadata = {
-  title: "Acelynn Pro Beta Test | CactusByte Studios",
-  description: "Join the Acelynn Pro Android closed test on Google Play.",
-};
+import type { Metadata } from "next";
+import QRCode from "qrcode";
+import BetaActions, { ActionIcon } from "./beta-actions";
+import styles from "./beta.module.css";
 
+const betaUrl = "https://cactusbyte-studios.vercel.app/acelynn-beta";
 const groupUrl = "https://groups.google.com/g/acelynn-pro-testers";
 const playUrl = "https://play.google.com/apps/testing/com.cactusbyte.acelynnpro";
 
-export default function AcelynnBetaPage() {
+export const metadata: Metadata = {
+  title: "Acelynn Pro™ Android Beta",
+  description: "Help test Acelynn Pro. Join the tester group, opt into the Google Play closed test, and analyze your mixes.",
+  alternates: { canonical: betaUrl },
+  openGraph: { title: "Help test Acelynn Pro™", description: "Join the Android closed beta for musicians, producers, and AI-music creators.", url: betaUrl, images: ["/acelynn-beta-icon.png"] },
+  icons: { icon: "/acelynn-beta-icon.png", apple: "/acelynn-beta-icon.png" },
+};
+
+function Waveform({ className }: { className: string }) {
+  const heights = [3,5,4,8,12,7,18,10,24,13,8,32,17,10,20,45,70,112,156,95,52,27,42,18,31,12,24,55,26,13,35,18,9,28,14,43,20,10,31,8,18,6,12,5,8,3];
+  return <div className={className} aria-hidden="true">{heights.map((height, i) => <i key={i} style={{ height: `${height / 1.56}%` }} />)}</div>;
+}
+
+export default async function AcelynnBetaPage() {
+  const qrMarkup = await QRCode.toString(betaUrl, { type: "svg", errorCorrectionLevel: "H", margin: 4, color: { dark: "#063e48", light: "#ffffff" } });
   return (
-    <main className="beta-shell">
-      <section className="beta-card" aria-labelledby="beta-title">
-        <header className="beta-hero">
-          <div className="beta-wave" aria-hidden="true"><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/><span/></div>
-          <p className="beta-eyebrow">ACELYNN PRO™</p>
-          <h1 id="beta-title">Help test Acelynn Pro™</h1>
-          <div className="beta-badge">ANDROID CLOSED BETA</div>
-          <p className="beta-kicker">Hear the mix. See the problem. Make the move.</p>
-          <p className="beta-lede">Mix analysis for musicians, producers, and AI-music creators—frequency balance, revision comparison, and actionable feedback without the guesswork.</p>
-          <div className="beta-hero-actions">
-            <a className="beta-button beta-button-primary" href={groupUrl} target="_blank" rel="noreferrer">Join Tester Group</a>
-            <a className="beta-button beta-button-secondary" href={playUrl} target="_blank" rel="noreferrer">Get Acelynn Pro</a>
+    <main className={styles.page}>
+      <section className={styles.content} aria-labelledby="beta-title">
+        <header className={styles.hero}>
+          <div className={styles.brand}>
+            <Waveform className={styles.logoWave} />
+            <div className={styles.microphone}><img src="/acelynn-beta-icon.png" alt="Acelynn Pro microphone logo" width="1280" height="1280" fetchPriority="high" /></div>
           </div>
+          <div className={styles.titleRow}>
+            <Waveform className={styles.titleWave} />
+            <h1 id="beta-title">Help test <span>Acelynn Pro<sup>™</sup></span></h1>
+          </div>
+          <div className={styles.badge}>ANDROID CLOSED BETA</div>
+          <p className={styles.lede}>Analyze mixes with clarity, precision, and depth.</p>
+          <p className={styles.audience}>For musicians, producers, and AI-music creators.</p>
         </header>
 
-        <div className="beta-flow-label">THREE STEPS. THEN YOU&apos;RE IN.</div>
-        <div className="beta-steps">
-          <article className="beta-step"><span className="beta-number">1</span><div><h2>Join the tester group</h2><p>Use the Google account you use on Google Play.</p></div></article>
-          <article className="beta-step"><span className="beta-number">2</span><div><h2>Opt into the closed test</h2><p>With that same account, activate your Acelynn Pro tester access.</p></div></article>
-          <article className="beta-step"><span className="beta-number">3</span><div><h2>Install & test</h2><p>Run a real mix analysis, then send feedback to <a href="mailto:cactusbytestudios@gmail.com">cactusbytestudios@gmail.com</a>.</p></div></article>
+        <BetaActions betaUrl={betaUrl} groupUrl={groupUrl} playUrl={playUrl} qrMarkup={qrMarkup} />
+
+        <div className={styles.steps}>
+          <article className={styles.step}>
+            <span className={styles.number} aria-hidden="true">1</span>
+            <div><h2><a href={groupUrl} target="_blank" rel="noreferrer">Join the tester group</a></h2><p>You’ll need a Google account to join. Use the account you use on Google Play.</p></div>
+          </article>
+          <article className={styles.step}>
+            <span className={styles.number} aria-hidden="true">2</span>
+            <div><h2>Opt into the test</h2><a className={styles.getApp} href={playUrl} target="_blank" rel="noreferrer"><ActionIcon name="download" />Get Acelynn Pro</a></div>
+          </article>
+          <article className={styles.step}>
+            <span className={styles.number} aria-hidden="true">3</span>
+            <div><h2>Install &amp; test</h2><p>Install from Google Play after opting in, then put a real mix through its paces. We’d love your feedback!</p><p>Send feedback to: <a className={styles.feedback} href="mailto:cactusbytestudios@gmail.com">cactusbytestudios@gmail.com</a></p></div>
+          </article>
         </div>
 
-        <aside className="beta-note"><span aria-hidden="true">!</span><p><strong>Use one Google account all the way through.</strong> Different accounts can prevent access. Android/Google Play devices only.</p></aside>
-
-        <footer className="beta-footer"><a href="/">Cactus🌵Byte Studios™</a><span>•</span><span>Acelynn Pro™ closed test</span><span>•</span><span>v1.2.1</span></footer>
+        <aside className={styles.note}>
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M14 5a2.3 2.3 0 0 1 4 0l12 22a2 2 0 0 1-2 3H4a2 2 0 0 1-2-3Z"/><path d="M16 12v8m0 4v1"/></svg>
+          <div><h2>Important note</h2><p>Please use the same Google account to join the tester group and install the app. Different accounts can prevent access. This test is for Android devices.</p></div>
+        </aside>
+        <footer className={styles.footer}><a href="/">Cactus🌵Byte Studios™</a><span> · Acelynn Pro™ closed test · Beta page v1.2.2</span><span>All Rights Reserved</span></footer>
       </section>
     </main>
   );
