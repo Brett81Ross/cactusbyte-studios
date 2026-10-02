@@ -4,6 +4,7 @@ import path from "node:path";
 const root=process.cwd();
 const read=p=>fs.readFileSync(path.join(root,p),"utf8");
 const native=read("src/data/native-distribution.ts");
+const apps=read("src/data/apps.ts");
 const launch=read("src/app/launch-bar.tsx");
 const page=read("src/app/page.tsx");
 const vercel=read("vercel.json");
@@ -11,15 +12,18 @@ const failures=[];
 const check=(ok,msg)=>{if(!ok)failures.push(msg);else console.log(`✓ ${msg}`)};
 
 const ids=[...native.matchAll(/appId:"([^"]+)"/g)].map(m=>m[1]);
-check(ids.length===13,"Native distribution registry tracks 12 apps plus the CactusByte hub");
+const registryIds=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(m=>m[1]);
+const expectedIds=["cactusbyte-studios",...registryIds];
+check(ids.length===expectedIds.length,`Native distribution registry tracks all ${registryIds.length} apps plus the CactusByte hub`);
 check(new Set(ids).size===ids.length,"Native distribution app IDs are unique");
-for(const id of ["cactusbyte-studios","noproblem","machzero","rapid-takeoff","acelynn-pro","pocketstomp","ghostlane","first-bearing","fantasy-matrix","scouttrace","shadownex-prime","terraflow-matrix","orbitgather"])check(ids.includes(id),`${id}: native distribution record exists`);
+check(expectedIds.every(id=>ids.includes(id)),"Every current app registry entry has a native distribution record");
+check(ids.every(id=>expectedIds.includes(id)),"Native distribution registry has no orphan app records");
 
 const urls=[...native.matchAll(/legacyDirectUrl:`\$\{RELEASE_BASE\}\/([^`]+)`/g)].map(m=>m[1]);
-check(urls.length===13,"All native records have a current supported Direct APK asset");
+check(urls.length===expectedIds.length,"All native records have a current supported Direct APK asset");
 check(native.includes('RELEASE_BASE="https://github.com/Brett81Ross/cactusbyte-studios/releases/download/android-latest"'),"Native Direct links remain on the approved android-latest public release");
 check(!native.includes("android-release-v2-foundation")&&!native.includes("PERMANENT_KEYS_STAGED"),"Permanent-signing staging artifacts are not exposed as public downloads");
-check([...native.matchAll(/playUrl:null/g)].length===13,"Google Play is not falsely presented as published");
+check([...native.matchAll(/playUrl:null/g)].length===expectedIds.length,"Google Play is not falsely presented as published");
 check(native.includes('appId:"scouttrace"')&&native.includes('nativeRequiredFor:"full Android device-security scanning"'),"ScoutTrace clearly identifies the capability that requires native Android");
 
 check(launch.includes('nativeDistributionByApp'),"LaunchBar uses the centralized native distribution registry");
