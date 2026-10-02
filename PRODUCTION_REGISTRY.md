@@ -12,7 +12,7 @@ Originally verified on 2026-08-29. CactusByte Studios, Acelynn Pro, Fantasy Foot
 | PocketStomp™ | v1.0.0 | `pocketstomp-v2-brett81ross` | `pocketstomp-v2-brett81ross.vercel.app` | `Brett81Ross/pocketstomp` | `dpl_9RozD8FT12vvssxbDeVG3AayDyEg` |
 | GhostLane™ | v1.7.4 | `ghostlane-app` | `ghostlane-app.vercel.app` | `Brett81Ross/ghostlane-app` | `dpl_5BZVwAY5cYQPaxqGGSbCyRygABpE` |
 | First Bearing™ | v2.6.1 | `first-bearing` | `first-bearing.vercel.app` | `Brett81Ross/first-bearing` | `dpl_9HMRp4qv23LFLhTqvVcsXZCeZaiF` |
-| Fantasy Football Matrix™ | v1.5.5 | `fantasy-football-selector-matrix` | `fantasy-football-selector-matrix.vercel.app` | `Brett81Ross/fantasy-football-selector-matrix` | `dpl_6NR9LmgNvA8xvsvmKj92oG4XnMqn` |
+| Fantasy Football Matrix™ | v1.6.12 | `fantasy-football-selector-matrix` | `fantasy-football-selector-matrix.vercel.app` | `Brett81Ross/fantasy-football-selector-matrix` | `dpl_14C6MvFuqZApwokGqhu4cQ3sjtrd` |
 | Acelynn’s ScoutTrace™ | v1.2.1 | `acelynn-scoutrace` | `acelynn-scoutrace.vercel.app` | `Brett81Ross/acelynn_scoutrace` | `dpl_BYVPu6i8Xrbcts697rRCc1Mfpp7Q` |
 | ShadowNex Prime™ | v2.2.0 | `shadownex-prime` | `shadownex-prime.vercel.app` | `Brett81Ross/shadownex-prime` | `dpl_DEn8svsz4WxeXpp5Pqz2i12JinnC` |
 | TerraFlow Matrix™ | v1.7.0 live; v1.15.0 staged | `terraflow-matrix` | `terraflow-matrix.vercel.app` | `Brett81Ross/terraflow-matrix` | `dpl_784aR3rSMoze7BMFuweYc5fDE6AR` |
