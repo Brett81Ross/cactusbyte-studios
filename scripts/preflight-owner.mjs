@@ -23,6 +23,7 @@ const dock=exists("src/app/account-dock.tsx")?read("src/app/account-dock.tsx"):"
 const brandedShare=exists("src/app/branded-share.tsx")?read("src/app/branded-share.tsx"):"";
 const authSurface=exists("src/app/cactusbyte-auth-surface.tsx")?read("src/app/cactusbyte-auth-surface.tsx"):"";
 const layout=read("src/app/layout.tsx");
+const chrome=read("src/app/global-chrome.tsx");
 const mobile=exists("src/app/mobile.css")?read("src/app/mobile.css"):"";
 const rules=read("firestore.rules");
 const env=read(".env.example");
@@ -44,13 +45,13 @@ check(ownerStats.includes("isUserAuth")&&ownerStats.includes("ownerRestores24h")
 check(Boolean(portal)&&portal.includes("billingPortal.sessions.create"),"Stripe customer portal session route exists");
 check(portal.includes("subscription_cancel")&&portal.includes("payment_method_update"),"Stripe portal enables cancel-at-period-end and payment-method management");
 check(Boolean(dock)&&dock.includes("Manage Billing")&&dock.includes("Owner Health"),"Account dock exposes subscription management and owner-only health controls");
-check(layout.includes("<AccountDock/>")&&layout.includes('import "./mobile.css"'),"Account dock and phone stylesheet are mounted globally");
+check(layout.includes("<GlobalChrome/>")&&chrome.includes("<AccountDock/>")&&layout.includes('import "./mobile.css"'),"Account dock and phone stylesheet are mounted globally");
 check(mobile.includes("max-device-width:500px")&&mobile.includes(".grid{grid-template-columns:1fr!important}")&&mobile.includes(".grid.list{grid-template-columns:1fr!important}"),"Phone stylesheet forces a readable one-column app grid even in wide mobile/custom-tab viewports");
 check(Boolean(brandedShare)&&brandedShare.includes("CACTUSBYTE SHARE™")&&brandedShare.includes("Android / iOS Share"),"CactusByte branded QR share surface exists");
-check(layout.includes("<BrandedShare/>"),"CactusByte branded share surface is mounted globally");
+check(layout.includes("<GlobalChrome/>")&&chrome.includes("<BrandedShare/>"),"CactusByte branded share surface is mounted globally");
 check(Boolean(authSurface)&&authSurface.includes("Your email address is your CactusByte ID")&&authSurface.includes("Create a password")&&authSurface.includes("Forgot password?")&&authSurface.includes("Show password"),"CactusByte ID clearly explains email login, account creation and password visibility");
 check(firebaseRest.includes('accounts:sendOobCode')&&firebaseRest.includes('PASSWORD_RESET'),"Firebase password-reset email flow is implemented");
-check(layout.includes("<CactusByteAuthSurface/>"),"CactusByte ID account surface is mounted globally");
+check(layout.includes("<GlobalChrome/>")&&chrome.includes("<CactusByteAuthSurface/>"),"CactusByte ID account surface is mounted globally");
 check(authSurface.includes("Continue browsing without an account"),"CactusByte remains browseable without a forced sign-in wall");
 check((testerPass.match(/[a-f0-9]{64}/g)||[]).length===11&&testerPass.includes("timingSafeEqual"),"Exactly eleven tester coupon hashes are staged and verified without storing raw coupon codes");
 check(testerPass.includes("verifyIdToken")&&testerRedeem.includes("testerIdentity(request)"),"Tester coupon redemption is bound to a verified CactusByte ID");
