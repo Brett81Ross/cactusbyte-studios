@@ -652,7 +652,7 @@ public class MainActivity extends Activity {
 
     private void handleWebPermission(PermissionRequest request) {
         if (acelynnProductionMode) {
-            if (!isAllowedAcelynnPermissionOrigin(request.getOrigin()) || !requestsOnlyAcelynnAudio(request)) {
+            if (!isAllowedAcelynnPermissionOrigin(request.getOrigin()) || !requestsAcelynnAudio(request)) {
                 request.deny();
                 return;
             }
@@ -756,7 +756,7 @@ public class MainActivity extends Activity {
         if (requestCode == REQUEST_WEB_PERMISSIONS && pendingWebPermission != null) {
             if (acelynnProductionMode) {
                 if (granted && isAllowedAcelynnPermissionOrigin(pendingWebPermission.getOrigin())
-                        && requestsOnlyAcelynnAudio(pendingWebPermission)) {
+                        && requestsAcelynnAudio(pendingWebPermission)) {
                     pendingWebPermission.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
                 } else {
                     pendingWebPermission.deny();
