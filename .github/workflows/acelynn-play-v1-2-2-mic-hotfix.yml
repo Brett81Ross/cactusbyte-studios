@@ -7,7 +7,7 @@ on:
     paths:
       - 'android-packager/**'
       - 'vercel.json'
-      - '.github/workflows/acelynn-play-rc.yml'
+      - '.github/workflows/acelynn-play-v1-2-2-mic-hotfix.yml'
 
 permissions:
   contents: read
