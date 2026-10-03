@@ -1,4 +1,4 @@
-name: Acelynn Pro Play RC Gate
+name: Acelynn Pro 1.2.2 Microphone Hotfix Gate
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
     paths:
       - 'android-packager/**'
       - 'vercel.json'
-      - '.github/workflows/acelynn-play-rc.yml'
+      - '.github/workflows/acelynn-play-v1-2-2-mic-hotfix.yml'
 
 permissions:
   contents: read
@@ -16,35 +16,22 @@ jobs:
   play-rc:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    environment: android-release
     env:
-      CACTUSBYTE_PERMANENT_SIGNING: '1'
+      CACTUSBYTE_PERMANENT_SIGNING: '0'
       CACTUSBYTE_SIGNING_FLAVORS: 'acelynnpro'
       CACTUSBYTE_ICON_FLAVORS: 'acelynnpro'
-      KEYSTORE_ACELYNNPRO: ${{ secrets.KEYSTORE_ACELYNNPRO }}
-      KEYSTORE_PASSWORD_ACELYNNPRO: ${{ secrets.KEYSTORE_PASSWORD_ACELYNNPRO }}
-      KEY_PASSWORD_ACELYNNPRO: ${{ secrets.KEY_PASSWORD_ACELYNNPRO }}
-      KEY_ALIAS_ACELYNNPRO: ${{ secrets.KEY_ALIAS_ACELYNNPRO }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
       - name: Verify runner Gradle
         run: gradle --version
-      - name: Materialize Acelynn permanent signing key
-        shell: bash
-        run: |
-          set -euo pipefail
-          for v in KEYSTORE_ACELYNNPRO KEYSTORE_PASSWORD_ACELYNNPRO KEY_PASSWORD_ACELYNNPRO KEY_ALIAS_ACELYNNPRO; do
-            test -n "${!v:-}" || { echo "Missing $v" >&2; exit 1; }
-          done
-          mkdir -p "$RUNNER_TEMP/cactusbyte-signing"
-          path="$RUNNER_TEMP/cactusbyte-signing/acelynnpro.jks"
-          printf '%s' "$KEYSTORE_ACELYNNPRO" | base64 --decode > "$path"
-          chmod 600 "$path"
-          echo "KEYSTORE_PATH_ACELYNNPRO=$path" >> "$GITHUB_ENV"
       - name: Install icon tooling
         run: python3 -m pip install --disable-pip-version-check pillow cairosvg
       - name: Build branded launcher icons
@@ -66,35 +53,15 @@ jobs:
           grep -Fq 'if (acelynnProductionMode && url != null && url.startsWith("blob:"))' "$src"
           grep -Fq 'ACELYNN_PRODUCTION_HOST.equalsIgnoreCase(host)' "$src"
           echo "Production export bridge is attached, installed, blob-routed, and host-restricted."
-      - name: Validate dogfood APK signer
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f "$APK"
-          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
-          test -x "$APKSIGNER"
-          "$APKSIGNER" verify --print-certs "$APK" > "$RUNNER_TEMP/apk-signer.txt"
-          actual="$("$APKSIGNER" verify --print-certs "$APK" | awk '/certificate SHA-256 digest:/{print $NF; exit}' | tr -d ':' | tr '[:lower:]' '[:upper:]')"
-          expected='FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230'
-          echo "Dogfood APK signer actual: $actual"
-          test -n "$actual"
-          test "$actual" = "$expected"
-          echo "Dogfood APK permanent signer verified: $actual"
-      - name: Validate AAB signer
+      - name: Locate QA AAB and APK
         shell: bash
         run: |
           set -euo pipefail
           mapfile -t aabs < <(find android-packager/app/build/outputs/bundle -type f -iname '*acelynnpro*play*release*.aab' | sort)
           test "${#aabs[@]}" -eq 1
-          AAB="${aabs[0]}"
-          jarsigner -verify -verbose -certs "$AAB" > "$RUNNER_TEMP/jarsigner.txt"
-          jarsigner -verify "$AAB"
-          keytool -printcert -jarfile "$AAB" -rfc > "$RUNNER_TEMP/aab-cert.pem"
-          actual="$(keytool -printcert -file "$RUNNER_TEMP/aab-cert.pem" | awk -F': ' '/SHA256:/{gsub(":","",$2);print toupper($2);exit}')"
-          expected='FA956BB761F59AAD38FAEF4F4F561FBF8EB05C1A7CB6DD0E30C12D52CC153230'
-          test "$actual" = "$expected"
-          echo "AAB=$AAB" >> "$GITHUB_ENV"
-          echo "Acelynn Play AAB permanent signer verified: $actual"
+          echo "AAB=${aabs[0]}" >> "$GITHUB_ENV"
+          test -f "$APK"
+          echo "Hotfix QA artifacts built with non-production signing mode; permanent Play signing remains isolated."
       - name: Verify configured Play identity and API level
         shell: bash
         run: |
@@ -115,6 +82,18 @@ jobs:
           for p in android.permission.CAMERA android.permission.ACCESS_FINE_LOCATION android.permission.ACCESS_COARSE_LOCATION android.permission.POST_NOTIFICATIONS; do
             ! grep -Fq "$p" "$manifest"
           done
+      - name: Verify Acelynn microphone permission bridge hotfix
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=android-packager/app/src/main/java/com/cactusbyte/wrapper/MainActivity.java
+          grep -Fq 'private boolean requestsAcelynnAudio(PermissionRequest request)' "$src"
+          grep -Fq 'PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)' "$src"
+          grep -Fq 'request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE})' "$src"
+          grep -Fq 'boolean granted = grantResults.length > 0;' "$src"
+          ! grep -Fq 'requestsOnlyAcelynnAudio' "$src"
+          echo "Acelynn microphone permission bridge hotfix is present and stale strict helper is absent."
+
       - name: No-deploy guard
         shell: bash
         run: |
@@ -122,16 +101,17 @@ jobs:
           grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
           test ! -d .vercel/output
           test "$GITHUB_REF_NAME" = 'hotfix-acelynn-play-microphone-v1-2-2'
-          echo "RC validation only; no Vercel deployment, production merge, or Play publication."
+          test "$CACTUSBYTE_PERMANENT_SIGNING" = '0'
+          echo "Hotfix QA validation only; no permanent signing, Vercel deployment, production merge, or Play publication."
       - name: Upload Play RC AAB and evidence
         uses: actions/upload-artifact@v4
         with:
-          name: acelynn-pro-play-v1.2.2-microphone-hotfix-signed-rc
+          name: acelynn-pro-play-v1.2.2-microphone-hotfix-qa
           path: |
             ${{ env.AAB }}
             ${{ env.APK }}
-            ${{ runner.temp }}/jarsigner.txt
-            ${{ runner.temp }}/apk-signer.txt
           retention-days: 14
       - name: Gate passed
-        run: echo "Acelynn Pro Play v1.2.2 signed microphone hotfix RC gate passed."
+        run: echo "Acelynn Pro Play v1.2.2 microphone hotfix QA gate passed."
+
+# QA trigger: isolated Acelynn 1.2.2 microphone hotfix build
