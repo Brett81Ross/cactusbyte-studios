@@ -199,6 +199,13 @@ public class MainActivity extends Activity {
             }
 
             @Override
+            public void onPermissionRequestCanceled(PermissionRequest request) {
+                runOnUiThread(() -> {
+                    if (pendingWebPermission == request) pendingWebPermission = null;
+                });
+            }
+
+            @Override
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 if (acelynnProductionMode) {
                     callback.invoke(origin, false, false);
@@ -319,10 +326,12 @@ public class MainActivity extends Activity {
         return port == -1 || port == 443;
     }
 
-    private boolean requestsOnlyAcelynnAudio(PermissionRequest request) {
-        String[] resources = request.getResources();
-        if (resources.length != 1) return false;
-        return PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resources[0]);
+    private boolean requestsAcelynnAudio(PermissionRequest request) {
+        if (request == null) return false;
+        for (String resource : request.getResources()) {
+            if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) return true;
+        }
+        return false;
     }
 
     private void installAcelynnRecoveryHooks() {
@@ -651,6 +660,9 @@ public class MainActivity extends Activity {
                 request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
                 return;
             }
+            if (pendingWebPermission != null && pendingWebPermission != request) {
+                pendingWebPermission.deny();
+            }
             pendingWebPermission = request;
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_WEB_PERMISSIONS);
             return;
@@ -739,7 +751,7 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean granted = true;
+        boolean granted = grantResults.length > 0;
         for (int value : grantResults) granted &= value == PackageManager.PERMISSION_GRANTED;
         if (requestCode == REQUEST_WEB_PERMISSIONS && pendingWebPermission != null) {
             if (acelynnProductionMode) {
