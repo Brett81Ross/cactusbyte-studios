@@ -16,7 +16,6 @@ jobs:
   play-rc:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    environment: android-release
     env:
       CACTUSBYTE_PERMANENT_SIGNING: '1'
       CACTUSBYTE_SIGNING_FLAVORS: 'acelynnpro'
@@ -31,6 +30,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
       - name: Verify runner Gradle
         run: gradle --version
       - name: Materialize Acelynn permanent signing key
