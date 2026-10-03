@@ -147,3 +147,5 @@ jobs:
           retention-days: 14
       - name: Gate passed
         run: echo "Acelynn Pro Play v1.2.2 microphone hotfix QA gate passed."
+
+# QA trigger: isolated Acelynn 1.2.2 microphone hotfix build
