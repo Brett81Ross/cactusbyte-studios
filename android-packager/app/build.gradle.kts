@@ -103,6 +103,9 @@ android {
             dimension = "brand"
             applicationId = "com.cactusbyte.acelynnpro"
             resValue("string", "app_name", "Acelynn Pro")
+            versionCode = 8
+            versionName = "1.2.5"
+            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             buildConfigField("String", "START_URL", "\"https://acelynn.vercel.app/\"")
             if (permanentSigningSelected("acelynnpro")) signingConfig = signingConfigs.getByName("permanent-acelynnpro")
         }
@@ -252,6 +255,8 @@ androidComponents {
 }
 
 dependencies {
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
     implementation("androidx.core:core:1.15.0")
     implementation("androidx.webkit:webkit:1.17.0")
 }
