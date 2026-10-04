@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
@@ -51,6 +52,9 @@ public class MainActivity extends Activity {
     private static final int REQUEST_WEB_PERMISSIONS = 4101;
     private static final int REQUEST_FILE_CHOOSER = 4102;
     private static final int REQUEST_GEO_PERMISSION = 4103;
+    private static final int REQUEST_ACELYNN_MICROPHONE = 4104;
+    private static final String ACELYNN_MIC_PREFS = "acelynn-microphone-permission";
+    private static final String ACELYNN_MIC_ASKED_KEY = "asked";
     private static final int QA_MAX_JSON_BYTES = 6 * 1024 * 1024;
     private static final String QA_ASSET_HOST = "appassets.androidplatform.net";
     private static final int ACELYNN_RECOVERY_MAX_JSON_BYTES = 6 * 1024 * 1024;
@@ -229,6 +233,8 @@ public class MainActivity extends Activity {
                 return launchFileChooser(fileChooserParams);
             }
         });
+
+        if (acelynnProductionMode) ensureAcelynnMicrophonePermission();
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
             if (acelynnProductionMode && url != null && url.startsWith("blob:")) {
@@ -686,6 +692,36 @@ public class MainActivity extends Activity {
         ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), REQUEST_WEB_PERMISSIONS);
     }
 
+    private void ensureAcelynnMicrophonePermission() {
+        if (!acelynnProductionMode) return;
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) return;
+        boolean asked = getSharedPreferences(ACELYNN_MIC_PREFS, MODE_PRIVATE)
+                .getBoolean(ACELYNN_MIC_ASKED_KEY, false);
+        if (!asked || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
+            getSharedPreferences(ACELYNN_MIC_PREFS, MODE_PRIVATE)
+                    .edit().putBoolean(ACELYNN_MIC_ASKED_KEY, true).apply();
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQUEST_ACELYNN_MICROPHONE);
+        } else {
+            showAcelynnMicrophoneSettingsDialog();
+        }
+    }
+
+    private void showAcelynnMicrophoneSettingsDialog() {
+        if (!acelynnProductionMode || isFinishing()) return;
+        new AlertDialog.Builder(this)
+                .setTitle("Microphone access needed")
+                .setMessage("Acelynn Pro needs Android microphone permission for Live Analysis. Open Acelynn Pro app settings, choose Permissions, and allow Microphone.")
+                .setPositiveButton("Open app settings", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+                })
+                .setNegativeButton("Not now", null)
+                .show();
+    }
+
     private boolean hasLocationPermission() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
@@ -760,10 +796,14 @@ public class MainActivity extends Activity {
                     pendingWebPermission.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
                 } else {
                     pendingWebPermission.deny();
+                    if (!granted) showAcelynnMicrophoneSettingsDialog();
                 }
             } else if (granted) pendingWebPermission.grant(pendingWebPermission.getResources());
             else pendingWebPermission.deny();
             pendingWebPermission = null;
+        }
+        if (requestCode == REQUEST_ACELYNN_MICROPHONE && acelynnProductionMode && !granted) {
+            showAcelynnMicrophoneSettingsDialog();
         }
         if (requestCode == REQUEST_GEO_PERMISSION && pendingGeoCallback != null) {
             pendingGeoCallback.invoke(pendingGeoOrigin,
