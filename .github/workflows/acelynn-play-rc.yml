@@ -3,7 +3,7 @@ name: Acelynn Pro Play RC Gate
 on:
   workflow_dispatch:
   push:
-    branches: [hotfix-acelynn-play-microphone-v1-2-3]
+    branches: [hotfix-acelynn-play-microphone-v1-2-4]
     paths:
       - 'android-packager/**'
       - 'vercel.json'
@@ -102,8 +102,8 @@ jobs:
           grep -Fq 'applicationId = "com.cactusbyte.acelynnpro"' android-packager/app/build.gradle.kts
           grep -Fq 'targetSdk = 36' android-packager/app/build.gradle.kts
           grep -Fq 'compileSdk = 36' android-packager/app/build.gradle.kts
-          grep -Fq 'versionCode = 6' android-packager/app/build.gradle.kts
-          grep -Fq 'versionName = "1.2.3"' android-packager/app/build.gradle.kts
+          grep -Fq 'versionCode = 7' android-packager/app/build.gradle.kts
+          grep -Fq 'versionName = "1.2.4"' android-packager/app/build.gradle.kts
           grep -Fq 'create("play")' android-packager/app/build.gradle.kts
       - name: Verify Acelynn Play merged permission surface
         shell: bash
@@ -121,12 +121,12 @@ jobs:
           set -euo pipefail
           grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
           test ! -d .vercel/output
-          test "$GITHUB_REF_NAME" = 'hotfix-acelynn-play-microphone-v1-2-3'
+          test "$GITHUB_REF_NAME" = 'hotfix-acelynn-play-microphone-v1-2-4'
           echo "RC validation only; no Vercel deployment, production merge, or Play publication."
       - name: Upload Play RC AAB and evidence
         uses: actions/upload-artifact@v4
         with:
-          name: acelynn-pro-play-v1.2.3-microphone-hotfix-signed-rc
+          name: acelynn-pro-play-v1.2.4-microphone-hotfix-signed-rc
           path: |
             ${{ env.AAB }}
             ${{ env.APK }}
@@ -134,4 +134,4 @@ jobs:
             ${{ runner.temp }}/apk-signer.txt
           retention-days: 14
       - name: Gate passed
-        run: echo "Acelynn Pro Play v1.2.3 signed microphone hotfix RC gate passed."
+        run: echo "Acelynn Pro Play v1.2.4 signed microphone hotfix RC gate passed."
