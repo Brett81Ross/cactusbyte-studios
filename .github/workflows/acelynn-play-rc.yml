@@ -2,12 +2,6 @@ name: Acelynn Pro Play RC Gate
 
 on:
   workflow_dispatch:
-  push:
-    branches: [hotfix-acelynn-play-microphone-v1-2-4]
-    paths:
-      - 'android-packager/**'
-      - 'vercel.json'
-      - '.github/workflows/acelynn-play-rc.yml'
 
 permissions:
   contents: read
