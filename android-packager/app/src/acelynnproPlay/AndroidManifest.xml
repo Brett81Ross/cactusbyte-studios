@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- Chromium microphone device selection requires this normal permission
+         in addition to the runtime RECORD_AUDIO permission. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- Acelynn Play needs network access and microphone analysis only.
          Remove sensitive capabilities inherited from the shared wrapper. -->
     <uses-permission android:name="android.permission.CAMERA" tools:node="remove" />
