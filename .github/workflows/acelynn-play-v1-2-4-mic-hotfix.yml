@@ -2,6 +2,7 @@ name: Acelynn Pro 1.2.4 Microphone Hotfix Gate
 
 on:
   workflow_dispatch:
+  # 1.2.4 repair gate refresh
   push:
     branches: [hotfix-acelynn-play-microphone-v1-2-4]
     paths:
