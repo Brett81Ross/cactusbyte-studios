@@ -517,6 +517,29 @@ public class MainActivity extends Activity {
 
     private final class AcelynnExportBridge {
         @JavascriptInterface
+        public String microphonePermissionState() {
+            if (!acelynnProductionMode) return "unavailable";
+            return ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO)
+                    == PackageManager.PERMISSION_GRANTED ? "granted" : "denied";
+        }
+
+        @JavascriptInterface
+        public void requestMicrophonePermission() {
+            if (!acelynnProductionMode) return;
+            runOnUiThread(() -> ensureAcelynnMicrophonePermission());
+        }
+
+        @JavascriptInterface
+        public void openMicrophoneSettings() {
+            if (!acelynnProductionMode) return;
+            runOnUiThread(() -> {
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            });
+        }
+
+        @JavascriptInterface
         public void saveJson(String requestedName, String json) {
             if (!acelynnProductionMode || json == null) return;
             byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
