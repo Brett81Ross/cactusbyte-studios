@@ -3,7 +3,7 @@ name: Acelynn Pro 1.2.5 Runtime Microphone RC
 on:
   workflow_dispatch:
   push:
-    branches: [fix-acelynn-play-audio-permission-investigation]
+    branches: [hotfix-acelynn-play-microphone-v1-2-4]
     paths:
       - 'android-packager/**'
       - 'vercel.json'
@@ -139,7 +139,7 @@ jobs:
           set -euo pipefail
           grep -Eq '"deploymentEnabled"[[:space:]]*:[[:space:]]*false' vercel.json
           test ! -d .vercel/output
-          test "$GITHUB_REF_NAME" = 'fix-acelynn-play-audio-permission-investigation'
+          test "$GITHUB_REF_NAME" = 'hotfix-acelynn-play-microphone-v1-2-4'
           echo "RC validation only; no Vercel deployment, production merge, or Play publication."
       - name: Upload Play RC AAB and evidence
         uses: actions/upload-artifact@v4
