@@ -3,12 +3,6 @@ name: Acelynn Pro 1.2.4 Microphone Hotfix Gate
 on:
   workflow_dispatch:
   # 1.2.4 repair gate refresh
-  push:
-    branches: [hotfix-acelynn-play-microphone-v1-2-4]
-    paths:
-      - 'android-packager/**'
-      - 'vercel.json'
-      - '.github/workflows/acelynn-play-v1-2-4-mic-hotfix.yml'
 
 permissions:
   contents: read
