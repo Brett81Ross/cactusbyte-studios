@@ -19,6 +19,11 @@ for(const id of ["cactusbyte-studios","noproblem","machzero","rapid-takeoff","ac
 check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.1",stagedWebVersion:"v1.6.2"'),"CactusByte keeps v1.6.1 live and v1.6.2 staged");
 check(data.includes('recordedDeploymentId:"dpl_6EuSrgFV4SCWDkzpbM87RBjMnBiP"'),"CactusByte current production deployment is recorded");
 check(data.includes('recordedGitSha:"6975351c7fcfdc06c4822a8e420ba94fb71a07c0"'),"CactusByte current production Git SHA is recorded");
+check(data.includes('appId:"noproblem",recordedWebVersion:"v1.1.0"'),"SchismMatrix recorded live version is v1.1.0");
+const schismLine=apps.split("\n").find(line=>line.includes('id:"noproblem"'))||"";
+check(schismLine.includes('name:"SchismMatrix™"'),"Public registry uses the SchismMatrix product identity");
+check(schismLine.includes('version:"v1.1.0"'),"Public SchismMatrix fallback is v1.1.0");
+check(!schismLine.includes('name:"No Problem Pressure Washing Matrix™"'),"Legacy No Problem product identity is absent from the public registry");
 check(data.includes('appId:"acelynn-pro",recordedWebVersion:"v1.2.0"'),"Acelynn recorded live version is v1.2.0");
 check(data.includes('appId:"fantasy-matrix",recordedWebVersion:"v1.7.4"'),"Fantasy recorded live version is v1.7.4");
 check(data.includes('recordedDeploymentId:"dpl_FCtie3H1N2j8YPaXmeSJyeYNRsPL"'),"Fantasy latest verified production deployment is recorded");
