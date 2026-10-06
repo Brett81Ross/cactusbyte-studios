@@ -8,7 +8,7 @@ export async function GET() {
     {
       service: "CactusByte Core™",
       version: "0.3-development",
-      studioVersion: "1.6.1",
+      studioVersion: "1.6.2",
       state: "development",
       infrastructure: {
         registry: "connected",
@@ -28,7 +28,7 @@ export async function GET() {
         byteLinkTransport: "development",
         ideaRadarWorker,
       },
-      note: "CactusByte ID, cloud persistence, community and the Stripe storefront are connected. CactusByte v1.6.1 adds the VIP tester unlock cinematic while preserving the v1.6 Release Truth, Native Launch, responsive tablet/multi-window support, Owner Health, and read-only Android Migration Center. Permanent-signing cutover remains a separate owner-approved operation.",
+      note: "CactusByte ID, cloud persistence, community and the Stripe storefront are connected. CactusByte v1.6.2 reconciles portfolio release truth, corrects SchismMatrix and Fantasy production records, and tightens mobile/Fold storefront presentation while preserving identity, entitlement, Native Launch, Owner Health, and Android migration safeguards. Permanent-signing cutover remains a separate owner-approved operation.",
     },
     { headers: { "Cache-Control": "no-store" } }
   );

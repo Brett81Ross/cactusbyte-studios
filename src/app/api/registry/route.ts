@@ -8,7 +8,7 @@ export const revalidate=300;
 type PublicRegistryRecord={
  id:string;
  version:string;
- status:"Live"|"Repository";
+ status:"Live"|"Testing"|"Development"|"Repository";
  synced:boolean;
  aligned:boolean;
  truthState:"verified"|"recorded"|"staged"|"mismatch"|"deployment-mismatch";
