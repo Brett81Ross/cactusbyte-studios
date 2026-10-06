@@ -17,6 +17,7 @@ Reconciled again on 2026-10-06 for CactusByte v1.6.2 Registry Truth. The canonic
 | ShadowNex Prime™ | v2.2.0 | `shadownex-prime` | `shadownex-prime.vercel.app` | `Brett81Ross/shadownex-prime` | `dpl_DEn8svsz4WxeXpp5Pqz2i12JinnC` |
 | TerraFlow Matrix™ | v1.7.0 live; v1.15.0 staged | `terraflow-matrix` | `terraflow-matrix.vercel.app` | `Brett81Ross/terraflow-matrix` | `dpl_784aR3rSMoze7BMFuweYc5fDE6AR` |
 | OrbitGather™ | v0.5.0 | `orbitgather` | `orbitgather-wahh.vercel.app` | `Brett81Ross/orbitgather` | `dpl_7EWSQfWGDyJAGs2hJanjwC7LCt8E` |
+| RIVETEX™ | v0.18.0 | `rivetex` | `rivetex.cactusbytestudios.com` | `Brett81Ross/rivetex` | `dpl_Gi6ak3qMcXZgLZpfYvbRyFH2SPtS` (READY; rollback candidate) |
 
 ## CactusByte production verification
 
