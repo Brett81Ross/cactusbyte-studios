@@ -12,9 +12,9 @@ const failures=[];
 const check=(ok,msg)=>{if(!ok)failures.push(msg);else console.log(`✓ ${msg}`)};
 
 const records=[...data.matchAll(/appId:"([^"]+)"/g)].map(m=>m[1]);
-check(records.length===13,"Release Truth tracks 12 apps plus the CactusByte hub");
+check(records.length===14,"Release Truth tracks 13 apps plus the CactusByte hub");
 check(new Set(records).size===records.length,"Release Truth app IDs are unique");
-for(const id of ["cactusbyte-studios","noproblem","machzero","rapid-takeoff","acelynn-pro","pocketstomp","ghostlane","first-bearing","fantasy-matrix","scouttrace","shadownex-prime","terraflow-matrix","orbitgather"]){check(records.includes(id),`${id}: Release Truth record exists`)}
+for(const id of ["cactusbyte-studios","noproblem","machzero","rapid-takeoff","acelynn-pro","pocketstomp","ghostlane","first-bearing","fantasy-matrix","scouttrace","shadownex-prime","terraflow-matrix","orbitgather","rivetex"]){check(records.includes(id),`${id}: Release Truth record exists`)}
 
 check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.1",stagedWebVersion:"v1.6.2"'),"CactusByte keeps v1.6.1 live and v1.6.2 staged");
 check(data.includes('recordedDeploymentId:"dpl_6EuSrgFV4SCWDkzpbM87RBjMnBiP"'),"CactusByte current production deployment is recorded");
@@ -28,6 +28,7 @@ check(data.includes('appId:"acelynn-pro",recordedWebVersion:"v1.2.0"'),"Acelynn 
 check(data.includes('appId:"fantasy-matrix",recordedWebVersion:"v1.7.4"'),"Fantasy recorded live version is v1.7.4");
 check(data.includes('recordedDeploymentId:"dpl_FCtie3H1N2j8YPaXmeSJyeYNRsPL"'),"Fantasy latest verified production deployment is recorded");
 check(data.includes('recordedGitSha:"1a27f8d6744aba859a37115d87aebe38ef501c88"'),"Fantasy latest verified production Git SHA is recorded");
+check(data.includes('appId:"rivetex",recordedWebVersion:"v0.18.0"'),"RIVETEX recorded live version is v0.18.0");
 check(data.includes('appId:"terraflow-matrix",recordedWebVersion:"v1.7.0",stagedWebVersion:"v1.15.0"'),"TerraFlow keeps v1.7.0 live and v1.15.0 staged");
 check(data.includes('recordedDeploymentId:"dpl_784aR3rSMoze7BMFuweYc5fDE6AR"'),"TerraFlow verified production deployment is recorded");
 check(data.includes('appId:"terraflow-matrix"')&&data.includes('detectedSource:"https://terraflow-matrix.vercel.app/"'),"TerraFlow detection uses its public production page");
