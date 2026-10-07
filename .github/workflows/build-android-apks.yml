@@ -7,7 +7,6 @@ on:
       - apk-icon-fix-v1
       - main
       - release/fantasy-native-splash-v1.0.2
-      - fix/schismmatrix-native-branding
     paths:
       - 'android-packager/**'
       - '.github/workflows/build-android-apks.yml'
