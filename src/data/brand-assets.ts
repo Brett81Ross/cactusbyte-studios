@@ -21,6 +21,15 @@ export const cactusByteBrand: BrandAsset = {
 };
 
 export const brandAssets: Record<string, BrandAsset> = {
+  "kitchen-bearing": {
+    appId: "kitchen-bearing",
+    name: "Kitchen Bearing™",
+    src: "/kitchen-bearing-mark.svg",
+    status: "verified",
+    source: "Brett81Ross/kitchen-first",
+    sourcePath: "public/kitchen-bearing-icon.svg",
+    note: "Kitchen Bearing compass mark sourced from current READY PWA work."
+  },
   noproblem: {
     appId: "noproblem",
     name: "SchismMatrix™",
