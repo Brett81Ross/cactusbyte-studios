@@ -10,7 +10,8 @@ const fail=[];
 const check=(ok,message)=>{(ok?pass:fail).push(message)};
 
 const pkg=JSON.parse(read("package.json"));
-const page=read("src/app/page.tsx");
+const rootPage=read("src/app/page.tsx");
+const page=read("src/app/studio/page.tsx");
 const apps=read("src/data/apps.ts");
 const releases=read("src/data/releases.ts");
 const apiManifest=read("src/app/api/manifest/route.ts");
@@ -38,7 +39,8 @@ const pageVersion=page.match(/const V="([^"]+)"/)?.[1];
 const manifestVersion=apiManifest.match(/version:"([^"]+)"/)?.[1];
 const coreVersion=core.match(/studioVersion:\s*"([^"]+)"/)?.[1];
 
-check(pageVersion===pkg.version,`UI version matches package.json (${pkg.version})`);
+check(pageVersion===pkg.version,`Studio UI version matches package.json (${pkg.version})`);
+check(rootPage.includes('export {default} from "./storefront/page";'),"Public root resolves to the premium storefront");
 check(manifestVersion===pkg.version,`Manifest API version matches package.json (${pkg.version})`);
 check(coreVersion===pkg.version,`Core API studioVersion matches package.json (${pkg.version})`);
 
