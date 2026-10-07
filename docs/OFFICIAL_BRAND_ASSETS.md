@@ -24,7 +24,7 @@ The redesigned Cactus🌵Byte Studios™ UI may use only an owner-approved or ca
 | Acelynn Pro™ | VERIFIED | production `/acelynnpro.png` |
 | GhostLane™ | VERIFIED | `Brett81Ross/ghostlane-app/logo-gl.png` |
 | First Bearing™ | VERIFIED | `Brett81Ross/first-bearing/first-bearing-app-icon-512-v260.png` |
-| Fantasy Football Matrix™ | VERIFIED | `Brett81Ross/fantasy-football-selector-matrix/icons/ffm-logo-512.png` |
+| Fantasy Football Matrix™ | VERIFIED | `Brett81Ross/fantasy-football-selector-matrix/icons/ffm-user-logo.svg` |
 | Acelynn’s ScoutTrace™ | VERIFIED | `Brett81Ross/acelynn_scoutrace/scouttrace-icon.svg` |
 | ShadowNex Prime™ | VERIFIED | `Brett81Ross/shadownex-prime/brand/shadownex-mark.webp` |
 | TerraFlow Matrix™ | VERIFIED | `Brett81Ross/terraflow-matrix/assets/terraflow-icon.svg` |
@@ -48,4 +48,4 @@ Allowed interim treatment: product name as text with an "Official logo pending r
 
 ### Fantasy Football Matrix™ refinement
 
-CactusByte now uses the canonical production `/icons/ffm-logo-512.png` asset directly from Fantasy Football Matrix, as declared by its production manifest. The prior `ffm-mark.svg` remains a source-repository asset but is no longer the storefront/registry logo because its browser-rendered text/shield treatment looked distorted at card size.
+CactusByte now uses the source-controlled `icons/ffm-user-logo.svg` asset from Fantasy Football Matrix. The app manifest also declares this asset as the maskable icon, and it avoids both browser-font distortion and broken external PNG loading. The prior `ffm-mark.svg` remains a source-repository asset but is no longer the storefront/registry logo because its browser-rendered text/shield treatment looked distorted at card size.
