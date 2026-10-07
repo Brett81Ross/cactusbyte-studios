@@ -22,6 +22,8 @@ for(const viewport of viewports){
    await expect(page.getByText("FEATURED APP")).toBeVisible();
    await expect(page.locator("h1").filter({hasText:"Acelynn Pro"})).toBeVisible();
    await expect(page.getByRole("heading",{name:"Our Apps",exact:true})).toBeVisible();
+   await expect(page.locator('[data-app="fantasy-matrix"] img[src="/ffm-user-logo.svg"]').first()).toBeVisible();
+   await expect(page.locator('img[src="/ffm-mark.svg"]')).toHaveCount(0);
    await expect(page.getByRole("heading",{name:"Categories",exact:true})).toBeVisible();
    await expect(page.locator("footer").getByText("Your apps. One launchpad.")).toBeVisible();
    await expect(page.getByRole("button",{name:/Android App/})).toHaveCount(0);
@@ -38,7 +40,7 @@ for(const viewport of viewports){
       .filter(x=>x.height<38||x.width<38);
     const escapedImages=Array.from(document.images).filter(visible).filter(img=>{
       const r=img.getBoundingClientRect();
-      const host=img.closest("article,button,a,[class*=logo],[class*=wordmark]")?.getBoundingClientRect();
+      const host=img.closest("article,button,a,[class*=logo],[class*=wordmark],[class*=railPromo]")?.getBoundingClientRect();
       return !host||r.left<host.left-2||r.right>host.right+2||r.top<host.top-2||r.bottom>host.bottom+2;
     }).length;
     return{overflow,smallControls,escapedImages};

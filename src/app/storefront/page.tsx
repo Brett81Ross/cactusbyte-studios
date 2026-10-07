@@ -113,7 +113,7 @@ export default function StorefrontPage(){
         <a href="/studio#releases"><i>◌</i><span>Updates</span></a>
         <a href="/studio"><i>○</i><span>Profile</span></a>
       </nav>
-      <div className={styles.railPromo}><small>YOUR APPS.</small><strong>ONE<br/>LAUNCHPAD.</strong><b>🌵</b></div>
+      <div className={styles.railPromo}><small>YOUR APPS.</small><strong>ONE<br/>LAUNCHPAD.</strong>{cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}</div>
     </aside>
 
     <div className={styles.main}>
