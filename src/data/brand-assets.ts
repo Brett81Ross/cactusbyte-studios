@@ -81,11 +81,11 @@ export const brandAssets: Record<string, BrandAsset> = {
   "fantasy-matrix": {
     appId: "fantasy-matrix",
     name: "Fantasy Football Matrix™",
-    src: "https://fantasy-football-selector-matrix.vercel.app/icons/ffm-logo-512.png",
+    src: "/ffm-user-logo.svg",
     status: "verified",
     source: "Brett81Ross/fantasy-football-selector-matrix",
-    sourcePath: "icons/ffm-logo-512.png",
-    note: "Canonical 512×512 app icon served directly by Fantasy Football Matrix production and declared by its manifest."
+    sourcePath: "icons/ffm-user-logo.svg",
+    note: "Owner/source FFM user logo from the canonical Fantasy Football Matrix repository; also declared as the maskable icon in its manifest."
   },
   scouttrace: {
     appId: "scouttrace",
