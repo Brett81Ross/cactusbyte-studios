@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 
-const page=readFileSync(new URL("../src/app/page.tsx",import.meta.url),"utf8");
+const page=readFileSync(new URL("../src/app/studio/page.tsx",import.meta.url),"utf8");
 
 assert.match(
  page,
