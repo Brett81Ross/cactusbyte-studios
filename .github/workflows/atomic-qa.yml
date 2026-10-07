@@ -36,6 +36,14 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
       - name: Run Fold, Android, and iPhone responsive QA
         run: npm run qa:responsive
+      - name: Keep CactusByte storefront visual QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cactusbyte-storefront-visual-qa
+          path: /tmp/cactusbyte-storefront-*.png
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Keep Acelynn beta visual QA evidence
         if: always()
         uses: actions/upload-artifact@v4
