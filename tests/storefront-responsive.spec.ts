@@ -21,6 +21,7 @@ for(const viewport of viewports){
    await expect(page.getByText("CactusByte, built to browse.")).toBeVisible();
    await expect(page.getByRole("heading",{name:"Our apps",exact:true})).toBeVisible();
    await expect(page.getByRole("heading",{name:"Categories",exact:true})).toBeVisible();
+   await expect(page.getByRole("button",{name:/Android App/})).toHaveCount(0);
 
    const audit=await page.evaluate(()=>{
     const doc=document.documentElement,body=document.body;
@@ -56,6 +57,17 @@ test("PocketStomp never falls back to the rejected icon",async({page})=>{
  await expect(pocketCard).toBeVisible();
  await pocketCard.getByRole("button",{name:"Details"}).click();
  await expect(page.getByText("Official logo pending recovery. No substitute artwork is being used.")).toBeVisible();
+});
+
+test("Fold layout uses a side navigation rail instead of covering cards",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});
+ await page.goto("/storefront",{waitUntil:"domcontentloaded"});
+ const nav=page.getByRole("navigation",{name:"CactusByte navigation"});
+ const rect=await nav.boundingBox();
+ expect(rect).not.toBeNull();
+ expect(rect!.left).toBeLessThan(30);
+ expect(rect!.top).toBeGreaterThan(80);
+ expect(rect!.width).toBeLessThan(100);
 });
 
 test("verified app cards expose official-logo labels",async({page})=>{
