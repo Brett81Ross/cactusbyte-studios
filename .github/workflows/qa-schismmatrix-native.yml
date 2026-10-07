@@ -1,0 +1,69 @@
+name: SchismMatrix Native QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'android-packager/**'
+      - '.github/workflows/qa-schismmatrix-native.yml'
+  push:
+    branches:
+      - fix/schismmatrix-native-branding
+    paths:
+      - 'android-packager/**'
+      - '.github/workflows/qa-schismmatrix-native.yml'
+
+jobs:
+  build-schismmatrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Install icon tooling
+        run: python3 -m pip install --disable-pip-version-check pillow cairosvg
+
+      - name: Verify SchismMatrix branding contract
+        run: python3 android-packager/verify_schismmatrix_branding.py
+
+      - name: Build only SchismMatrix launcher assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0, 'android-packager')
+          import fetch_icons
+          fetch_icons.APPS = {'noproblem': fetch_icons.APPS['noproblem']}
+          fetch_icons.main()
+          PY
+
+      - name: Build SchismMatrix APK
+        run: gradle -p android-packager :app:assembleNoproblemRelease --stacktrace
+
+      - name: Verify SchismMatrix APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='android-packager/app/build/outputs/apk/noproblem/release/app-noproblem-release.apk'
+          test -s "$APK"
+          echo "SchismMatrix APK built: $(stat -c%s "$APK") bytes"
+
+      - name: Upload SchismMatrix QA APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: schismmatrix-android-qa
+          path: android-packager/app/build/outputs/apk/noproblem/release/app-noproblem-release.apk
+          retention-days: 7
