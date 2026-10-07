@@ -62,11 +62,11 @@
 }
 .heroCard:after{
   content:"";position:absolute;inset:0;background:
-    linear-gradient(90deg,rgba(1,7,11,.98) 0%,rgba(2,9,14,.9) 32%,rgba(2,9,14,.48) 58%,rgba(2,9,14,.08) 100%),
-    radial-gradient(circle at 18% 45%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 34rem);
+    linear-gradient(90deg,rgba(1,7,11,.98) 0%,rgba(2,9,14,.94) 34%,rgba(2,9,14,.84) 66%,rgba(2,9,14,.7) 100%),
+    radial-gradient(circle at 18% 45%,color-mix(in srgb,var(--accent) 28%,transparent),transparent 34rem);
   pointer-events:none
 }
-.heroVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center right;filter:saturate(1.08) contrast(1.04)}
+.heroVideo{position:absolute;inset:-3%;width:106%;height:106%;object-fit:cover;object-position:center right;opacity:.36;filter:saturate(1.28) contrast(1.08) brightness(.58) blur(1.6px);transform:scale(1.03)}
 .heroWash{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.22));pointer-events:none}
 .heroContent{position:relative;z-index:3;width:min(560px,58%);padding:42px 46px 38px;display:flex;flex-direction:column;justify-content:center;min-height:390px}
 .featureBadge{
@@ -198,7 +198,7 @@
 .brandWarning{position:relative;z-index:2;border:1px solid rgba(255,193,92,.26);background:rgba(255,193,92,.06);border-radius:13px;padding:11px;color:#f2d198;font-size:.76rem}
 .demoModal{width:min(760px,100%)}.demoTitle{display:flex;align-items:center;gap:13px;padding-right:50px;margin-bottom:14px}.demoTitle small{color:var(--cb2);font-size:.6rem;letter-spacing:.13em}.demoTitle h2{margin:3px 0 0}
 .demoModal video{width:100%;max-height:70vh;border-radius:18px;background:#000;border:1px solid var(--line)}
-@media(max-width:1080px){
+@media(max-width:1199px){
   .main{width:calc(100% - 190px);margin-left:180px;padding-left:14px;padding-right:14px}
   .rail{width:150px}.railBrand span{display:none}.railBrand{justify-content:center}
   .appShelf{grid-template-columns:repeat(3,minmax(0,1fr))}.allGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -208,7 +208,7 @@
   .page{padding-bottom:92px}.main{width:100%;margin:0;padding:9px 12px 96px}.rail,.topbar{display:none}
   .mobileHeader{display:flex;align-items:center;justify-content:space-between;min-height:58px;position:sticky;top:0;z-index:30;padding:7px 0;background:rgba(2,8,12,.94);backdrop-filter:blur(16px)}
   .mobileSearch{display:flex;margin:4px 0 10px}.mobileBrand img{width:34px;height:34px}.mobileBrand b{font-size:1rem}
-  .heroCard{min-height:318px;border-radius:23px}.heroCard:after{background:linear-gradient(0deg,rgba(1,7,11,.98),rgba(1,7,11,.78) 44%,rgba(1,7,11,.16))}
+  .heroCard{min-height:318px;border-radius:23px}.heroCard:after{background:linear-gradient(0deg,rgba(1,7,11,.98),rgba(1,7,11,.88) 48%,rgba(1,7,11,.58)),radial-gradient(circle at 50% 18%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 18rem)}
   .heroVideo{object-position:center}.heroContent{width:100%;min-height:318px;padding:22px;justify-content:flex-end}
   .heroIdentity{margin:15px 0 8px;gap:12px}.heroIdentity h1{font-size:2.2rem}.heroIdentity p{font-size:.88rem}.heroDescription{font-size:.82rem;max-width:88%}
   .logoLarge{width:76px;height:76px;border-radius:20px}.wordmarkLarge{min-width:0;min-height:76px}
