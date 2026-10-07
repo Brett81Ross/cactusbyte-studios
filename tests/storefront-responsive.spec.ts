@@ -51,9 +51,9 @@ test("PocketStomp never falls back to the rejected icon",async({page})=>{
  await page.goto("/storefront",{waitUntil:"domcontentloaded"});
  const rejected=page.locator('img[src*="pocketstomp-icon.png"]');
  await expect(rejected).toHaveCount(0);
- const pocket=page.getByText("PocketStomp™").last();
- await expect(pocket).toBeVisible();
- await pocket.click();
+ const pocketCard=page.locator("article").filter({hasText:"PocketStomp™"}).last();
+ await expect(pocketCard).toBeVisible();
+ await pocketCard.getByRole("button",{name:"Details"}).click();
  await expect(page.getByText("Official logo pending recovery. No substitute artwork is being used.")).toBeVisible();
 });
 
