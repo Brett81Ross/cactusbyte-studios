@@ -22,7 +22,7 @@ for(const viewport of viewports){
    await expect(page.getByText("FEATURED APP")).toBeVisible();
    await expect(page.locator("h1").filter({hasText:"Acelynn Pro"})).toBeVisible();
    await expect(page.getByRole("heading",{name:"Our Apps",exact:true})).toBeVisible();
-   await expect(page.locator('[data-app="fantasy-matrix"] img[src="/ffm-logo-512.png"]').first()).toBeVisible();
+   await expect(page.locator('[data-app="fantasy-matrix"] img[src="https://fantasy-football-selector-matrix.vercel.app/icons/ffm-logo-512.png"]').first()).toBeVisible();
    await expect(page.locator('img[src="/ffm-mark.svg"]')).toHaveCount(0);
    await expect(page.getByRole("heading",{name:"Categories",exact:true})).toBeVisible();
    await expect(page.locator("footer").getByText("Your apps. One launchpad.")).toBeVisible();
