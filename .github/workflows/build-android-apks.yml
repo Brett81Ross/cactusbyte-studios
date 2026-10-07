@@ -141,6 +141,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           cp android-packager/app/build/outputs/apk/cactusbyte/release/app-cactusbyte-release.apk dist/CactusByte-Studios.apk
+          cp android-packager/app/build/outputs/apk/noproblem/release/app-noproblem-release.apk dist/SchismMatrix.apk
           cp android-packager/app/build/outputs/apk/noproblem/release/app-noproblem-release.apk dist/No-Problem-Pressure-Washing-Matrix.apk
           cp android-packager/app/build/outputs/apk/machzero/release/app-machzero-release.apk dist/MachZero.apk
           cp android-packager/app/build/outputs/apk/rapidtakeoff/release/app-rapidtakeoff-release.apk dist/Rapid-Takeoff.apk
@@ -156,7 +157,7 @@ jobs:
           cp android-packager/icon-previews/CactusByte-adaptive-preview.png dist/CactusByte-adaptive-preview.png
           sha256sum dist/*.apk > dist/SHA256SUMS.txt
 
-      - name: Publish Fantasy APK only
+      - name: Publish Fantasy and SchismMatrix APKs
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -165,6 +166,7 @@ jobs:
           set -euo pipefail
           gh release view android-latest >/dev/null
           gh release upload android-latest dist/Fantasy-Football-Matrix.apk --clobber
+          gh release upload android-latest dist/SchismMatrix.apk dist/No-Problem-Pressure-Washing-Matrix.apk --clobber
 
       - name: Upload QA artifact bundle
         uses: actions/upload-artifact@v4
