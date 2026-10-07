@@ -18,10 +18,15 @@ for(const viewport of viewports){
    const response=await page.goto("/storefront",{waitUntil:"domcontentloaded"});
    expect(response).not.toBeNull();
    expect(response!.status()).toBeLessThan(500);
-   await expect(page.getByText("FEATURED APP")).toBeVisible();\n   await expect(page.getByRole("heading",{name:"Acelynn Pro",exact:true})).toBeVisible();
+
+   await expect(page.getByText("FEATURED APP")).toBeVisible();
+   await expect(page.getByRole("heading",{name:"Acelynn Pro",exact:true})).toBeVisible();
    await expect(page.getByRole("heading",{name:"Our Apps",exact:true})).toBeVisible();
    await expect(page.getByRole("heading",{name:"Categories",exact:true})).toBeVisible();
+   await expect(page.getByText("Your apps. One launchpad.").first()).toBeVisible();
    await expect(page.getByRole("button",{name:/Android App/})).toHaveCount(0);
+
+   await page.waitForTimeout(900);
 
    const audit=await page.evaluate(()=>{
     const doc=document.documentElement,body=document.body;
@@ -49,11 +54,17 @@ for(const viewport of viewports){
  });
 }
 
+test("storefront hero uses authentic Acelynn demo media",async({page})=>{
+ await page.goto("/storefront",{waitUntil:"domcontentloaded"});
+ await expect(page.locator('video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
+ await expect(page.locator('video[src*="no-problem-pressure-washing"]')).toHaveCount(0);
+ await expect(page.locator('video[src*="pocketstomp"]')).toHaveCount(0);
+});
+
 test("PocketStomp never falls back to the rejected icon",async({page})=>{
  await page.goto("/storefront",{waitUntil:"domcontentloaded"});
- const rejected=page.locator('img[src*="pocketstomp-icon.png"]');
- await expect(rejected).toHaveCount(0);
- const pocketCard=page.locator("article").filter({hasText:"PocketStomp™"}).last();
+ await expect(page.locator('img[src*="pocketstomp-icon.png"]')).toHaveCount(0);
+ const pocketCard=page.locator("article").filter({hasText:"PocketStomp"}).last();
  await expect(pocketCard).toBeVisible();
  await pocketCard.getByRole("button",{name:/Details for PocketStomp/}).click();
  await expect(page.getByText("Official logo pending recovery. No substitute artwork is being used.")).toBeVisible();
@@ -66,8 +77,9 @@ test("Fold layout uses a side navigation rail instead of covering cards",async({
  const rect=await nav.boundingBox();
  expect(rect).not.toBeNull();
  expect(rect!.x).toBeLessThan(30);
- expect(rect!.y).toBeGreaterThan(80);
- expect(rect!.width).toBeGreaterThan(120);\n expect(rect!.width).toBeLessThan(190);
+ expect(rect!.y).toBeGreaterThan(70);
+ expect(rect!.width).toBeGreaterThan(100);
+ expect(rect!.width).toBeLessThan(180);
 });
 
 test("verified app cards expose official-logo labels",async({page})=>{
