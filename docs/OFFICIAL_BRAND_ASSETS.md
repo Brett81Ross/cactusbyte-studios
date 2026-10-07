@@ -1,7 +1,7 @@
 # CactusByte Official Brand Asset Inventory
 
 **ABL-CB-REDESIGN-01**  
-Branch: `abl/cactusbyte-v1-7-0-storefront-redesign-r2`
+Branch: `abl/cactusbyte-v1-7-1-storefront-refine-ffm`
 
 ## Locked rule
 
@@ -24,7 +24,7 @@ The redesigned Cactus🌵Byte Studios™ UI may use only an owner-approved or ca
 | Acelynn Pro™ | VERIFIED | production `/acelynnpro.png` |
 | GhostLane™ | VERIFIED | `Brett81Ross/ghostlane-app/logo-gl.png` |
 | First Bearing™ | VERIFIED | `Brett81Ross/first-bearing/first-bearing-app-icon-512-v260.png` |
-| Fantasy Football Matrix™ | VERIFIED | `Brett81Ross/fantasy-football-selector-matrix/icons/ffm-mark.svg` |
+| Fantasy Football Matrix™ | VERIFIED | `Brett81Ross/fantasy-football-selector-matrix/icons/ffm-logo-512.png` |
 | Acelynn’s ScoutTrace™ | VERIFIED | `Brett81Ross/acelynn_scoutrace/scouttrace-icon.svg` |
 | ShadowNex Prime™ | VERIFIED | `Brett81Ross/shadownex-prime/brand/shadownex-mark.webp` |
 | TerraFlow Matrix™ | VERIFIED | `Brett81Ross/terraflow-matrix/assets/terraflow-icon.svg` |
@@ -44,3 +44,8 @@ Allowed interim treatment: product name as text with an "Official logo pending r
 ## Implementation note
 
 `src/data/brand-assets.ts` is the production-facing source of truth for storefront artwork. The redesign must render app logos through this map rather than trusting legacy registry logo URLs.
+
+
+### Fantasy Football Matrix™ refinement
+
+CactusByte now uses the canonical `icons/ffm-logo-512.png` asset declared by the Fantasy Football Matrix production manifest. The prior `ffm-mark.svg` remains a source-repository asset but is no longer the storefront/registry logo because its browser-rendered text/shield treatment looked distorted at card size.
