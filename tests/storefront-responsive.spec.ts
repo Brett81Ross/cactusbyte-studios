@@ -40,7 +40,7 @@ for(const viewport of viewports){
       .filter(x=>x.height<38||x.width<38);
     const escapedImages=Array.from(document.images).filter(visible).filter(img=>{
       const r=img.getBoundingClientRect();
-      const host=img.closest("article,button,a,[class*=logo],[class*=wordmark]")?.getBoundingClientRect();
+      const host=img.closest("article,button,a,[class*=logo],[class*=wordmark],[class*=railPromo]")?.getBoundingClientRect();
       return !host||r.left<host.left-2||r.right>host.right+2||r.top<host.top-2||r.bottom>host.bottom+2;
     }).length;
     return{overflow,smallControls,escapedImages};
