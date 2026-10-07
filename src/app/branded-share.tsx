@@ -18,7 +18,7 @@ const buttonStyle={
 
 function brandedQrUrl(url:string){
  const data=encodeURIComponent(url);
- return `https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=16&color=07100d&bgcolor=f2fffb&data=${data}`;
+ return `https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=32&color=07100d&bgcolor=ffffff&data=${data}`;
 }
 
 export default function BrandedShare(){
@@ -79,10 +79,10 @@ export default function BrandedShare(){
     <button aria-label="Close branded share" onClick={()=>setOpen(false)} style={{...buttonStyle,minWidth:48,padding:0,fontSize:"1.35rem"}}>×</button>
    </div>
 
-   <div style={{margin:"18px auto",width:"min(340px,88vw)",borderRadius:24,padding:13,background:"linear-gradient(135deg,#00d5be,#6dffe3 52%,#0a6e64)",boxShadow:"0 0 35px rgba(0,213,190,.18)"}}>
-    <div style={{position:"relative",borderRadius:17,padding:14,background:"#f2fffb",overflow:"hidden"}}>
+   <div style={{margin:"18px auto",width:"min(340px,88vw)",borderRadius:20,padding:10,background:"linear-gradient(135deg,#00d5be,#6dffe3 52%,#0a6e64)",boxShadow:"0 0 35px rgba(0,213,190,.18)"}}>
+    <div style={{position:"relative",borderRadius:12,padding:16,background:"#fff",overflow:"hidden"}}>
      <img src={qrSrc} alt="CactusByte Studios branded QR code" style={{display:"block",width:"100%",aspectRatio:"1",objectFit:"contain"}}/>
-     <span style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",width:72,height:72,borderRadius:20,display:"grid",placeItems:"center",background:"#07100d",border:"6px solid #f2fffb",boxShadow:"0 8px 24px rgba(0,0,0,.24)"}}><img src="/logo2.png" alt="" style={{width:58,height:58,objectFit:"contain",borderRadius:14}}/></span>
+     <span style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",width:52,height:52,borderRadius:13,display:"grid",placeItems:"center",background:"#07100d",border:"4px solid #fff",boxShadow:"0 8px 24px rgba(0,0,0,.24)"}}><img src="/logo2.png" alt="" style={{width:42,height:42,objectFit:"contain",borderRadius:9}}/></span>
     </div>
     <div style={{padding:"12px 8px 3px",textAlign:"center",color:"#02100d"}}><strong style={{display:"block",fontSize:"1.12rem"}}>{BRAND_TITLE}</strong><span style={{display:"block",fontSize:".72rem",fontWeight:800,letterSpacing:".12em",marginTop:3}}>ONE STUDIO · ONE LAUNCHPAD</span></div>
    </div>

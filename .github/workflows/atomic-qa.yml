@@ -23,8 +23,7 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Install media probe
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install media probe\n        timeout-minutes: 3\n        run: |\n          if command -v ffprobe >/dev/null 2>&1; then\n            ffprobe -version >/dev/null\n          else\n            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 update\n            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 install -y ffmpeg\n          fi
       - name: Audit all 60-second demo MP4s
         run: python3 scripts/qa_demo_media.py
       - name: Verify SchismMatrix native branding

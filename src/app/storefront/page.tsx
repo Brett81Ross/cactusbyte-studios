@@ -232,6 +232,7 @@ function WideCard({app,open,details}:{app:StudioApp;open:(app:StudioApp)=>void;d
 }
 
 function BrandMark({app,large=false}:{app:StudioApp;large?:boolean}){
+  if(app.id==="pocketstomp")return <div className={large?styles.pocketStompMarkLarge:styles.pocketStompMark} aria-label="PocketStomp PS logo"><b>PS</b></div>;
   const brand=verifiedBrandAsset(app.id);
   if(!brand)return <div className={large?styles.wordmarkLarge:styles.wordmark} aria-label={`${app.shortName} official logo pending recovery`}><span>{app.shortName}</span><small>Official logo pending recovery</small></div>;
   return <div className={large?styles.logoLarge:styles.logo}><img src={brand.src!} alt={`${app.shortName} official logo`}/></div>;
