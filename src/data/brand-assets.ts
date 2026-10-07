@@ -110,6 +110,15 @@ export const brandAssets: Record<string, BrandAsset> = {
     source: "Brett81Ross/terraflow-matrix",
     sourcePath: "assets/terraflow-icon.svg"
   },
+  "hustle-first": {
+    appId: "hustle-first",
+    name: "Hustle First™",
+    src: "https://hustle-first.vercel.app/hf-logo-mark.svg",
+    status: "verified",
+    source: "Brett81Ross/hustle-first",
+    sourcePath: "public/hf-logo-mark.svg",
+    note: "Use the approved HF production mark."
+  },
   orbitgather: {
     appId: "orbitgather",
     name: "OrbitGather™",
