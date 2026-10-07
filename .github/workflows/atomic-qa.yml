@@ -23,8 +23,7 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Install media probe
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Verify media probe\n        run: |\n          command -v ffprobe >/dev/null 2>&1 || { echo "ffprobe is required but missing from the GitHub runner"; exit 1; }\n          ffprobe -version | head -n 1
       - name: Audit all 60-second demo MP4s
         run: python3 scripts/qa_demo_media.py
       - name: Verify SchismMatrix native branding
