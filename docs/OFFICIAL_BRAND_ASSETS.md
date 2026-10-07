@@ -48,4 +48,4 @@ Allowed interim treatment: product name as text with an "Official logo pending r
 
 ### Fantasy Football Matrix™ refinement
 
-CactusByte now uses the canonical `icons/ffm-logo-512.png` asset declared by the Fantasy Football Matrix production manifest. The prior `ffm-mark.svg` remains a source-repository asset but is no longer the storefront/registry logo because its browser-rendered text/shield treatment looked distorted at card size.
+CactusByte now uses the canonical production `/icons/ffm-logo-512.png` asset directly from Fantasy Football Matrix, as declared by its production manifest. The prior `ffm-mark.svg` remains a source-repository asset but is no longer the storefront/registry logo because its browser-rendered text/shield treatment looked distorted at card size.
