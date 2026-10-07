@@ -2,7 +2,7 @@ import fs from "node:fs";
 
 const firebase=fs.readFileSync("src/lib/firebase-rest.ts","utf8");
 const identity=fs.readFileSync("src/lib/cactusbyte-id.ts","utf8");
-const page=fs.readFileSync("src/app/page.tsx","utf8");
+const page=fs.readFileSync("src/app/studio/page.tsx","utf8");
 
 const ownerRestore=identity.indexOf("const ownerSession=await restoreTrustedOwner()");
 const firebaseFallback=identity.indexOf("if(!s)s=await getFreshSession()",ownerRestore);
