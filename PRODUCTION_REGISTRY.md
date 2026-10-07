@@ -4,7 +4,7 @@ Reconciled again on 2026-10-06 for CactusByte v1.6.2 Registry Truth. The canonic
 
 | App | Version | Canonical Vercel project | Production domain | Source repository | Verified production / rollback deployment |
 | --- | --- | --- | --- | --- | --- |
-| Cactus🌵Byte Studios™ | v1.6.2 live | `cactusbyte-studios` | `cactusbyte-studios.vercel.app` | `Brett81Ross/cactusbyte-studios` | LIVE `dpl_CXKjaxvWqjXL16Z5vP1hQQ8jAo92` (`38517865dc7c6f5970fcdf7ff3876feb15874793`); prior READY rollback `dpl_6EuSrgFV4SCWDkzpbM87RBjMnBiP` |
+| Cactus🌵Byte Studios™ | v1.6.2 live; v1.7.0 staged | `cactusbyte-studios` | `cactusbyte-studios.vercel.app` | `Brett81Ross/cactusbyte-studios` | LIVE `dpl_CXKjaxvWqjXL16Z5vP1hQQ8jAo92` (`38517865dc7c6f5970fcdf7ff3876feb15874793`); prior READY rollback `dpl_6EuSrgFV4SCWDkzpbM87RBjMnBiP` |
 | SchismMatrix™ | v1.1.0 | `noproblem-pws` | `noproblem-pws.vercel.app` | `Brett81Ross/noproblem.pws` | `dpl_9gsBxE429wPha5RiHr3R5EZrdJCu` (READY; rollback candidate) |
 | MachZero™ | v1.4.1 | `machzero` | `machzero-beta.vercel.app` | `Brett81Ross/machzero` | `dpl_5t8AKxs6k63T9mGHZEAPiZTBLsaP` |
 | Rapid Takeoff™ | v0.3.0 | `blueprint-estimator` | `blueprint-estimator.vercel.app` | `Brett81Ross/blueprint_estimator-` | `dpl_9W2ZV2dzc5kRLivsQruRgAR4TyqC` |

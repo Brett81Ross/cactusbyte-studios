@@ -27,7 +27,7 @@ for(const viewport of viewports){
   test("hub remains readable, touchable, and contained",async({page})=>{
    const pageErrors:string[]=[];
    page.on("pageerror",error=>pageErrors.push(error.message));
-   const response=await page.goto("/",{waitUntil:"domcontentloaded"});
+   const response=await page.goto("/studio",{waitUntil:"domcontentloaded"});
    expect(response).not.toBeNull();
    expect(response!.status()).toBeLessThan(500);
    await page.waitForTimeout(900);
@@ -79,7 +79,7 @@ for(const viewport of viewports){
 
 test("Android launch dialog fits the Fold cover",async({page})=>{
  await page.setViewportSize({width:360,height:748});
- await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.goto("/studio",{waitUntil:"domcontentloaded"});
  await page.getByRole("button",{name:/Android App/}).first().click();
  const dialog=page.getByRole("dialog",{name:/CactusByte Studios launch options/});
  await expect(dialog).toBeVisible();
@@ -95,7 +95,7 @@ test("Android launch dialog fits the Fold cover",async({page})=>{
 
 test("Native Launch dialog remains appropriately bounded on a large tablet",async({page})=>{
  await page.setViewportSize({width:1366,height:1024});
- await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.goto("/studio",{waitUntil:"domcontentloaded"});
  await page.getByRole("button",{name:/Android App/}).first().click();
  const dialog=page.getByRole("dialog",{name:/CactusByte Studios launch options/});
  await expect(dialog).toBeVisible();
@@ -115,7 +115,7 @@ test.describe("iPad desktop-style UA and touch",()=>{
  });
  test("iPad-as-Mac stays on web access and never offers the Android download",async({page})=>{
   await page.addInitScript(()=>Object.defineProperty(navigator,"maxTouchPoints",{configurable:true,get:()=>5}));
-  await page.goto("/",{waitUntil:"domcontentloaded"});
+  await page.goto("/studio",{waitUntil:"domcontentloaded"});
   const webApps=page.getByRole("button",{name:"Web Apps"}).first();
   await expect(webApps).toBeVisible();
   await webApps.click();

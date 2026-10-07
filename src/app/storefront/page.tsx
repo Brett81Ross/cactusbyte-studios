@@ -166,7 +166,7 @@ export default function StorefrontPage(){
         <div className={styles.allGrid}>{apps.map(app=><StoreCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
       </StoreSection>
 
-      <footer className={styles.footer}><span>Cactus🌵Byte Studios™</span><small>Your apps. One launchpad.</small></footer>
+      <footer className={styles.footer}><span>Cactus🌵Byte Studios™ v1.7.0</span><small>Your apps. One launchpad.</small></footer>
     </div>
 
     <nav className={styles.bottomNav} aria-label="CactusByte navigation">

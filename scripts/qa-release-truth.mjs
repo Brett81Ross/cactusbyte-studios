@@ -16,7 +16,7 @@ check(records.length===14,"Release Truth tracks 13 apps plus the CactusByte hub"
 check(new Set(records).size===records.length,"Release Truth app IDs are unique");
 for(const id of ["cactusbyte-studios","noproblem","machzero","rapid-takeoff","acelynn-pro","pocketstomp","ghostlane","first-bearing","fantasy-matrix","scouttrace","shadownex-prime","terraflow-matrix","orbitgather","rivetex"]){check(records.includes(id),`${id}: Release Truth record exists`)}
 
-check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.2"'),"CactusByte recorded live version is v1.6.2");
+check(data.includes('appId:"cactusbyte-studios",recordedWebVersion:"v1.6.2",stagedWebVersion:"v1.7.0"'),"CactusByte keeps v1.6.2 recorded live while v1.7.0 is staged for the approved storefront release");
 check(data.includes('recordedDeploymentId:"dpl_CXKjaxvWqjXL16Z5vP1hQQ8jAo92"'),"CactusByte current production deployment is recorded");
 check(data.includes('recordedGitSha:"38517865dc7c6f5970fcdf7ff3876feb15874793"'),"CactusByte current production Git SHA is recorded");
 check(data.includes('appId:"noproblem",recordedWebVersion:"v1.1.0"'),"SchismMatrix recorded live version is v1.1.0");
