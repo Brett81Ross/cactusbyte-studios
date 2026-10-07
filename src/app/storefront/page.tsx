@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect,useMemo,useState} from "react";
+import {useEffect,useMemo,useState,type ReactNode} from "react";
 import {studioApps,type StudioApp} from "../../data/apps";
 import {brandAssets,cactusByteBrand,verifiedBrandAsset} from "../../data/brand-assets";
 import styles from "./storefront.module.css";
@@ -250,7 +250,7 @@ export default function StorefrontPage(){
   </main>
 }
 
-function StoreSection({id,kicker,title,action,children}:{id?:string;kicker:string;title:string;action?:string;children:React.ReactNode}){
+function StoreSection({id,kicker,title,action,children}:{id?:string;kicker:string;title:string;action?:string;children:ReactNode}){
   return <section className={styles.section} id={id}>
     <div className={styles.sectionHead}>
       <div><small>{kicker}</small><h2>{title}</h2></div>
