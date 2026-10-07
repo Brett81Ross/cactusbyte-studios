@@ -65,8 +65,8 @@ test("Fold layout uses a side navigation rail instead of covering cards",async({
  const nav=page.getByRole("navigation",{name:"CactusByte navigation"});
  const rect=await nav.boundingBox();
  expect(rect).not.toBeNull();
- expect(rect!.left).toBeLessThan(30);
- expect(rect!.top).toBeGreaterThan(80);
+ expect(rect!.x).toBeLessThan(30);
+ expect(rect!.y).toBeGreaterThan(80);
  expect(rect!.width).toBeLessThan(100);
 });
 
