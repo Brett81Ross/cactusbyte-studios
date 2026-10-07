@@ -43,7 +43,9 @@ android {
         create("noproblem") {
             dimension = "brand"
             applicationId = "com.cactusbyte.noproblem"
-            resValue("string", "app_name", "No Problem Pressure Washing Matrix")
+            versionCode = 3
+            versionName = "1.1.0"
+            resValue("string", "app_name", "SchismMatrix")
             buildConfigField("String", "START_URL", "\"https://noproblem-pws.vercel.app/\"")
         }
         create("machzero") {

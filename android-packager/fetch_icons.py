@@ -13,7 +13,7 @@ ASSETS = PACKAGER / "assets"
 PREVIEW_ROOT = PACKAGER / "icon-previews"
 APPS = {
     "cactusbyte": ("asset:cactusbyte-launcher.svg", "#050807"),
-    "noproblem": ("https://noproblem-pws.vercel.app/app-icon-192.webp", "#081422"),
+    "noproblem": ("https://noproblem-pws.vercel.app/assets/schismmatrix-symbol.svg", "#06131c"),
     "machzero": ("https://machzero-beta.vercel.app/logo1.jpg", "#050505"),
     "rapidtakeoff": ("https://blueprint-estimator.vercel.app/icon.svg", "#07131f"),
     "acelynnpro": ("https://acelynn.vercel.app/acelynnpro.png", "#020607"),

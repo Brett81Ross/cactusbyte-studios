@@ -27,6 +27,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Audit all 60-second demo MP4s
         run: python3 scripts/qa_demo_media.py
+      - name: Verify SchismMatrix native branding
+        run: python3 android-packager/verify_schismmatrix_branding.py
+
       - name: Run atomic preflight and production build
         run: npm run preflight
       - name: Install responsive QA browsers
