@@ -6,6 +6,11 @@ on:
     paths:
       - 'android-packager/**'
       - '.github/workflows/qa-schismmatrix-native.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'android-packager/**'
+      - '.github/workflows/qa-schismmatrix-native.yml'
 jobs:
   build-schismmatrix:
     runs-on: ubuntu-latest
