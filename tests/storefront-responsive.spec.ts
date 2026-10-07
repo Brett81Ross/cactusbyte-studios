@@ -19,8 +19,8 @@ for(const viewport of viewports){
    expect(response).not.toBeNull();
    expect(response!.status()).toBeLessThan(500);
    await expect(page.getByText("CactusByte, built to browse.")).toBeVisible();
-   await expect(page.getByText("Our apps")).toBeVisible();
-   await expect(page.getByText("Categories")).toBeVisible();
+   await expect(page.getByRole("heading",{name:"Our apps",exact:true})).toBeVisible();
+   await expect(page.getByRole("heading",{name:"Categories",exact:true})).toBeVisible();
 
    const audit=await page.evaluate(()=>{
     const doc=document.documentElement,body=document.body;
