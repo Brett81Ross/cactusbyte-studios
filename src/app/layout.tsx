@@ -18,7 +18,7 @@ const metadataBase = new URL(
 export const metadata: Metadata = {
   metadataBase,
   title: "Cactus🌵Byte Studios™",
-  description: "The official Cactus🌵Byte Studios™ command center for apps, launches, updates, and sharing.",
+  description: "The official Cactus🌵Byte Studios™ launchpad for discovering, opening, and managing the CactusByte app ecosystem.",
   applicationName: "Cactus🌵Byte Studios™",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Cactus🌵Byte Studios™",
-    description: "One command center for the Cactus🌵Byte Studios™ app ecosystem.",
+    description: "Your apps. One launchpad. The Cactus🌵Byte Studios™ app ecosystem.",
     images: ["/logo2.png"],
     type: "website",
   },
