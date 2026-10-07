@@ -15,7 +15,7 @@ for(const viewport of viewports){
   test("stays contained and product-led",async({page})=>{
    const errors:string[]=[];
    page.on("pageerror",error=>errors.push(error.message));
-   const response=await page.goto("/storefront",{waitUntil:"domcontentloaded"});
+   const response=await page.goto("/",{waitUntil:"domcontentloaded"});
    expect(response).not.toBeNull();
    expect(response!.status()).toBeLessThan(500);
 
@@ -55,14 +55,14 @@ for(const viewport of viewports){
 }
 
 test("storefront hero uses authentic Acelynn demo media",async({page})=>{
- await page.goto("/storefront",{waitUntil:"domcontentloaded"});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
  await expect(page.locator('#home video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
  await expect(page.locator('video[src*="no-problem-pressure-washing"]')).toHaveCount(0);
  await expect(page.locator('video[src*="pocketstomp"]')).toHaveCount(0);
 });
 
 test("PocketStomp never falls back to the rejected icon",async({page})=>{
- await page.goto("/storefront",{waitUntil:"domcontentloaded"});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
  await expect(page.locator('img[src*="pocketstomp-icon.png"]')).toHaveCount(0);
  const pocketCard=page.locator("article").filter({hasText:"PocketStomp"}).last();
  await expect(pocketCard).toBeVisible();
@@ -72,7 +72,7 @@ test("PocketStomp never falls back to the rejected icon",async({page})=>{
 
 test("Fold layout uses a side navigation rail instead of covering cards",async({page})=>{
  await page.setViewportSize({width:1104,height:884});
- await page.goto("/storefront",{waitUntil:"domcontentloaded"});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
  const nav=page.getByRole("navigation",{name:"CactusByte sections"});
  const rect=await nav.boundingBox();
  expect(rect).not.toBeNull();
@@ -83,7 +83,7 @@ test("Fold layout uses a side navigation rail instead of covering cards",async({
 });
 
 test("verified app cards expose official-logo labels",async({page})=>{
- await page.goto("/storefront",{waitUntil:"domcontentloaded"});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
  await expect(page.getByAltText("Acelynn Pro official logo").first()).toBeVisible();
  await expect(page.getByAltText("SchismMatrix official logo").first()).toBeVisible();
  await expect(page.getByAltText("Fantasy Matrix official logo").first()).toBeVisible();
