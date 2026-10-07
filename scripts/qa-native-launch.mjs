@@ -5,7 +5,7 @@ const root=process.cwd();
 const read=p=>fs.readFileSync(path.join(root,p),"utf8");
 const native=read("src/data/native-distribution.ts");
 const launch=read("src/app/launch-bar.tsx");
-const page=read("src/app/page.tsx");
+const page=read("src/app/studio/page.tsx");
 const vercel=read("vercel.json");
 const failures=[];
 const check=(ok,msg)=>{if(!ok)failures.push(msg);else console.log(`✓ ${msg}`)};
@@ -38,4 +38,4 @@ check(page.includes('onClick={()=>void installApp()}'),"Existing header Install 
 check(vercel.includes('"deploymentEnabled":false'),"Vercel deployment remains disabled during Native Launch staging");
 
 if(failures.length){for(const failure of failures)console.error(`✗ ${failure}`);console.error(`\n${failures.length} Native Launch QA failure(s)`);process.exit(1)}
-console.log("\nCactusByte v1.6 Native Launch Router QA passed");
+console.log("\nCactusByte Native Launch Router QA passed");
