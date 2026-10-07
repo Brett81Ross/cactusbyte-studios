@@ -232,3 +232,15 @@
   .appShelf{grid-template-columns:repeat(3,minmax(0,1fr))}.allGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(prefers-reduced-motion:reduce){.heroVideo,.continueMedia,.wideMedia{display:none}.page *{scroll-behavior:auto!important}}
+
+/* PocketStomp — mirror the approved live skate UI instead of a generic yellow storefront card. */
+.pocketStompMark,.pocketStompMarkLarge{position:relative;z-index:2;display:grid;place-items:center;color:#ff1493;background:repeating-conic-gradient(#fff 0 25%,#050505 0 50%) 0 0/16px 16px;border:3px solid #fff;outline:3px solid #050505;box-shadow:5px 5px 0 #03bce8;transform:skew(-7deg)}
+.pocketStompMark{width:58px;height:58px}.pocketStompMarkLarge{width:100px;height:100px}
+.pocketStompMark b,.pocketStompMarkLarge b{font:italic 950 25px/1 Arial Black,Impact,sans-serif;text-shadow:2px 2px #050505}.pocketStompMarkLarge b{font-size:42px}
+.storeCard[data-app="pocketstomp"]{--accent:#ff1493;color:#050505;border:4px solid #050505;border-radius:0;background:linear-gradient(135deg,#c8ff00 0 62%,#ffe600 62% 74%,#03bce8 74%);box-shadow:7px 7px 0 #ff1493}
+.storeCard[data-app="pocketstomp"] .cardAura{inset:0;width:auto;height:auto;border-radius:0;background:repeating-conic-gradient(from 45deg at 50% 50%,rgba(5,5,5,.08) 0 25%,transparent 0 50%) 0 0/28px 28px}
+.storeCard[data-app="pocketstomp"] .cardCategory{color:#050505;background:#ffe600;border:2px solid #050505;align-self:flex-start;padding:3px 6px}
+.storeCard[data-app="pocketstomp"] h3{color:#050505;text-transform:uppercase;font-style:italic;font-weight:950;text-shadow:2px 2px 0 #ff1493}
+.storeCard[data-app="pocketstomp"] p{color:#171717;font-weight:800}
+.storeCard[data-app="pocketstomp"] .cardButtons button{color:#fff;background:#ff1493;border:3px solid #050505;border-radius:0;box-shadow:3px 3px 0 #050505}
+.storeCard[data-app="pocketstomp"] .cardButtons .cardDetails{color:#050505;background:#03bce8;border:3px solid #050505}
