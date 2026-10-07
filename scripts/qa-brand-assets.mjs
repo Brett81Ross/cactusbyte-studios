@@ -11,7 +11,7 @@ const check=(ok,msg)=>(ok?pass:fail).push(msg);
 const ids=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(m=>m[1]);
 for(const id of ids)check(brands.includes(`appId: "${id}"`),`${id}: brand map entry exists`);
 check(brands.includes('appId: "cactusbyte-studios"')&&brands.includes('src: "/logo2.png"'),"CactusByte uses the current canonical logo2.png asset");
-check(brands.includes('appId: "fantasy-matrix"')&&brands.includes('src: "https://fantasy-football-selector-matrix.vercel.app/icons/ffm-logo-512.png"'),"Fantasy Football Matrix uses the canonical production 512x512 app icon");
+check(brands.includes('appId: "fantasy-matrix"')&&brands.includes('src: "/ffm-user-logo.svg"'),"Fantasy Football Matrix uses the real source-controlled FFM user logo");
 check(!brands.includes('src: "/ffm-mark.svg"'),"FFM storefront branding no longer uses the distorted SVG mark");
 check(brands.includes('appId: "pocketstomp"')&&brands.includes('status: "unresolved"'),"PocketStomp is explicitly unresolved");
 check(!brands.includes('pocketstomp-v2-brett81ross.vercel.app/pocketstomp-icon.png'),"Rejected PocketStomp production icon cannot enter the verified brand map");
