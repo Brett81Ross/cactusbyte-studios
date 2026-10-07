@@ -58,6 +58,16 @@ Status: Building — no item in this document authorizes a Vercel deployment by 
 - [ ] Produce 75–90 second narrated walkthrough videos for complex workflows: OrbitGather, TerraFlow, Rapid Takeoff, ShadowNex Prime, No Problem Matrix, and PocketStomp
 - [ ] Keep concise 60-second videos for focused workflows unless an app-specific review shows more detail is needed
 
+## Hustle First™ v0.35.0
+
+- [x] Verify canonical source `Brett81Ross/hustle-first`, Vercel project `hustle-first`, and production domain `hustle-first.vercel.app`
+- [x] Record READY production deployment `dpl_7JFcyFJsgGG9Pn5pcM1SuGam7R7d` and commit `98d999df0ad0c869b9950a15ecb5f05228f31fbc`
+- [x] Register the approved HF production mark without inventing replacement branding
+- [x] Add Hustle First to the CactusByte storefront, app registry, Release Center data, and Marketplace category
+- [x] Preserve Hustle First authentication, marketplace, photos, messaging, appointments, and production ownership boundaries; CactusByte integration does not rewrite its auth model
+- [ ] Run CactusByte atomic QA and responsive storefront checks before the one approved production deployment
+- [ ] Verify the CactusByte production card opens `https://hustle-first.vercel.app/` and reports v0.35.0 after release
+
 ## OrbitGather™ v0.5.0
 
 - [ ] Compare the current private GitHub source against the earlier staged private-lead foundation before merging any features
