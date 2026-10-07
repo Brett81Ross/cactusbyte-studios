@@ -15,7 +15,7 @@
   border-radius:25px;background:linear-gradient(180deg,rgba(6,18,25,.96),rgba(3,10,14,.95));
   backdrop-filter:blur(18px);padding:14px 10px;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.34)
 }
-.railBrand,.mobileBrand{display:flex;align-items:center;gap:9px;color:inherit;text-decoration:none}
+.railBrand,.mobileBrand{display:flex;align-items:center;gap:9px;color:inherit;text-decoration:none}.mobileBrand{min-height:44px;padding:3px 0}
 .railBrand img,.mobileBrand img{width:38px;height:38px;object-fit:contain;border-radius:12px}
 .railBrand span,.mobileBrand span{display:grid;line-height:1}
 .railBrand b,.mobileBrand b{font-size:.91rem;letter-spacing:-.035em}
