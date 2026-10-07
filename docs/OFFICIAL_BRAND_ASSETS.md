@@ -1,7 +1,7 @@
 # CactusByte Official Brand Asset Inventory
 
 **ABL-CB-REDESIGN-01**  
-Branch: `abl/cactusbyte-v1-7-0-storefront-redesign`
+Branch: `abl/cactusbyte-v1-7-0-storefront-redesign-r2`
 
 ## Locked rule
 
