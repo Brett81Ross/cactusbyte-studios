@@ -1,10 +1,11 @@
 # Cactus🌵Byte Studios™ Production Registry
 
-Reconciled again on 2026-10-06 for CactusByte v1.6.2 Registry Truth. The canonical CactusByte hub is live at `cactusbyte-studios.vercel.app` on v1.6.2. SchismMatrix™ production is v1.1.0, Fantasy Football Matrix™ production is v1.7.4, and TerraFlow Matrix™ remains v1.7.0 live with newer work staged separately. This registry records verified production truth and preserves deployment/rollback evidence; staged repository work is not promoted to production truth without a verified deployment.
+Reconciled on 2026-10-07 for CactusByte v1.7.0 production truth with v1.7.1 staged. The canonical CactusByte hub is live at `cactusbyte-studios.vercel.app` on v1.7.0. SchismMatrix™ production is v1.1.0, Fantasy Football Matrix™ production is v1.7.4, and TerraFlow Matrix™ remains v1.7.0 live with newer work staged separately. This registry records verified production truth and preserves deployment/rollback evidence; staged repository work is not promoted to production truth without a verified deployment.
 
 | App | Version | Canonical Vercel project | Production domain | Source repository | Verified production / rollback deployment |
 | --- | --- | --- | --- | --- | --- |
-| Cactus🌵Byte Studios™ | v1.6.2 live; v1.7.0 staged | `cactusbyte-studios` | `cactusbyte-studios.vercel.app` | `Brett81Ross/cactusbyte-studios` | LIVE `dpl_CXKjaxvWqjXL16Z5vP1hQQ8jAo92` (`38517865dc7c6f5970fcdf7ff3876feb15874793`); prior READY rollback `dpl_6EuSrgFV4SCWDkzpbM87RBjMnBiP` |
+| Cactus🌵Byte Studios™ | v1.7.0 live; v1.7.1 staged | `cactusbyte-studios` | `cactusbyte-studios.vercel.app` | `Brett81Ross/cactusbyte-studios` | LIVE `dpl_9vPM58vHPDY3BxocE7dFPLZYGb2N` (`07d00fb6f60dd45d360875c410d68a659dcae99a`); prior READY rollback `dpl_CXKjaxvWqjXL16Z5vP1hQQ8jAo92` |
+| Hustle First™ | v0.35.0 | `hustle-first` | `hustle-first.vercel.app` | `Brett81Ross/hustle-first` | `dpl_7JFcyFJsgGG9Pn5pcM1SuGam7R7d` (`98d999df0ad0c869b9950a15ecb5f05228f31fbc`; READY; rollback candidate) |
 | SchismMatrix™ | v1.1.0 | `noproblem-pws` | `noproblem-pws.vercel.app` | `Brett81Ross/noproblem.pws` | `dpl_9gsBxE429wPha5RiHr3R5EZrdJCu` (READY; rollback candidate) |
 | MachZero™ | v1.4.1 | `machzero` | `machzero-beta.vercel.app` | `Brett81Ross/machzero` | `dpl_5t8AKxs6k63T9mGHZEAPiZTBLsaP` |
 | Rapid Takeoff™ | v0.3.0 | `blueprint-estimator` | `blueprint-estimator.vercel.app` | `Brett81Ross/blueprint_estimator-` | `dpl_9W2ZV2dzc5kRLivsQruRgAR4TyqC` |
@@ -21,10 +22,11 @@ Reconciled again on 2026-10-06 for CactusByte v1.6.2 Registry Truth. The canonic
 
 ## CactusByte production verification
 
-- Current canonical deployment: `dpl_CXKjaxvWqjXL16Z5vP1hQQ8jAo92`.
-- Current deployment Git SHA: `38517865dc7c6f5970fcdf7ff3876feb15874793`.
+- Current canonical deployment: `dpl_9vPM58vHPDY3BxocE7dFPLZYGb2N`.
+- Current deployment Git SHA: `07d00fb6f60dd45d360875c410d68a659dcae99a`.
+- Hustle First™ v0.35.0 is verified READY at `hustle-first.vercel.app` and staged for CactusByte storefront inclusion.
 - Canonical domain: `https://cactusbyte-studios.vercel.app/`.
-- Live hub reports v1.6.2; post-deploy truth reconciliation is recorded in main.
+- Live hub reports v1.7.0; v1.7.1 ecosystem integration is staged pending approval.
 - Registry truth preserves Acelynn Pro web v1.2.0, Fantasy Football Matrix v1.7.4, SchismMatrix v1.1.0, and TerraFlow v1.7.0 while keeping unreleased/staged work separate.
 - Owner Health remains fail-closed when unauthenticated (`OWNER_REQUIRED`).
 - No Vercel runtime errors were found in the release smoke-test window.

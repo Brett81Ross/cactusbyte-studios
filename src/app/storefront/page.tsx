@@ -8,9 +8,10 @@ import styles from "./storefront.module.css";
 const RECENT_KEY="cb-storefront-recent-v3";
 const featuredIds=["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"];
 const quickIds=["acelynn-pro","fantasy-matrix","first-bearing"];
-const newIds=["noproblem","first-bearing","fantasy-matrix"];
+const newIds=["hustle-first","noproblem","first-bearing","fantasy-matrix"];
 const categories=[
   {name:"Music & Audio",label:"Music",icon:"♫",hint:"Mix & create"},
+  {name:"Marketplace",label:"Marketplace",icon:"◇",hint:"Buy · sell · trade"},
   {name:"Business",label:"Business",icon:"▣",hint:"Build & grow"},
   {name:"Field Tools",label:"Field Tools",icon:"⌁",hint:"Get it done"},
   {name:"Sports",label:"Sports",icon:"◉",hint:"Play smarter"},
@@ -31,6 +32,7 @@ const storefrontCopy:Record<string,{tagline:string;category:string;short:string}
   scouttrace:{tagline:"Mobile security and device-intelligence tools.",category:"Field Tools",short:"Device intelligence in your pocket."},
   "shadownex-prime":{tagline:"Live global situational intelligence from public spatial data.",category:"Field Tools",short:"See the bigger picture."},
   "terraflow-matrix":{tagline:"Mobile landscaping, mowing, lawn care, and irrigation workflows.",category:"Field Tools",short:"Field work that flows."},
+  "hustle-first":{tagline:"Private community marketplace for selling, trading, giving away items, and offering services.",category:"Marketplace",short:"Real people. Real deals. Keep opportunity moving."},
   orbitgather:{tagline:"Contractor lead intelligence and opportunity discovery.",category:"Business",short:"Find the next opportunity."}
 };
 
@@ -60,6 +62,7 @@ const cardAccent:Record<string,string>={
   scouttrace:"#38d5c8",
   "shadownex-prime":"#21a8c8",
   "terraflow-matrix":"#4cc66d",
+  "hustle-first":"#00e5d6",
   orbitgather:"#4da7ff"
 };
 
@@ -166,7 +169,7 @@ export default function StorefrontPage(){
         <div className={styles.allGrid}>{apps.map(app=><StoreCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
       </StoreSection>
 
-      <footer className={styles.footer}><span>Cactus🌵Byte Studios™ v1.7.0</span><small>Your apps. One launchpad.</small></footer>
+      <footer className={styles.footer}><span>Cactus🌵Byte Studios™ v1.7.1</span><small>Your apps. One launchpad.</small></footer>
     </div>
 
     <nav className={styles.bottomNav} aria-label="CactusByte navigation">

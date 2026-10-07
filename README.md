@@ -4,7 +4,7 @@ Cactus🌵Byte Studios™ is the mobile-first command center for the CactusByte 
 
 ## Version
 
-**1.4.0**
+**1.7.1**
 
 ## Current foundation
 
