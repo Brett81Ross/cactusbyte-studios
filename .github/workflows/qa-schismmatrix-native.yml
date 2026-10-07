@@ -59,6 +59,19 @@ jobs:
           test -s "$APK"
           echo "SchismMatrix APK built: $(stat -c%s "$APK") bytes"
 
+      - name: Publish SchismMatrix release asset
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='android-packager/app/build/outputs/apk/noproblem/release/app-noproblem-release.apk'
+          test -s "$APK"
+          cp "$APK" "$RUNNER_TEMP/SchismMatrix.apk"
+          gh release view android-latest >/dev/null
+          gh release upload android-latest "$RUNNER_TEMP/SchismMatrix.apk" --clobber
+
       - name: Upload SchismMatrix QA APK
         uses: actions/upload-artifact@v4
         with:
