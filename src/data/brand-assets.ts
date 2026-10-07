@@ -81,10 +81,11 @@ export const brandAssets: Record<string, BrandAsset> = {
   "fantasy-matrix": {
     appId: "fantasy-matrix",
     name: "Fantasy Football Matrix™",
-    src: "/ffm-mark.svg",
+    src: "/ffm-logo-512.png",
     status: "verified",
     source: "Brett81Ross/fantasy-football-selector-matrix",
-    sourcePath: "icons/ffm-mark.svg"
+    sourcePath: "icons/ffm-logo-512.png",
+    note: "Canonical 512×512 app icon declared by the Fantasy Football Matrix production manifest."
   },
   scouttrace: {
     appId: "scouttrace",
