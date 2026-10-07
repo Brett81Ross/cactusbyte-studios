@@ -4,7 +4,12 @@ import type { NextRequest } from "next/server";
 export const runtime = "edge";
 
 export async function GET(request: NextRequest) {
-  const logoUrl = new URL("/logo2.png", request.url).toString();
+  const logoUrl = new URL("/logo2.png", request.url);
+  const logoResponse = await fetch(logoUrl);
+  if (!logoResponse.ok) {
+    return new Response("CactusByte logo unavailable", { status: 502 });
+  }
+  const logoData = await logoResponse.arrayBuffer();
 
   return new ImageResponse(
     (
@@ -20,7 +25,7 @@ export async function GET(request: NextRequest) {
         }}
       >
         <img
-          src={logoUrl}
+          src={logoData as unknown as string}
           alt=""
           width="157"
           height="157"
