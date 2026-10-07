@@ -11,6 +11,9 @@ on:
     paths:
       - 'android-packager/**'
       - '.github/workflows/qa-schismmatrix-native.yml'
+permissions:
+  contents: write
+
 jobs:
   build-schismmatrix:
     runs-on: ubuntu-latest
