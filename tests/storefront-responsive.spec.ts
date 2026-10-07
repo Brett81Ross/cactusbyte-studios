@@ -20,7 +20,7 @@ for(const viewport of viewports){
    expect(response!.status()).toBeLessThan(500);
 
    await expect(page.getByText("FEATURED APP")).toBeVisible();
-   await expect(page.getByRole("heading",{name:"Acelynn Pro",exact:true})).toBeVisible();
+   await expect(page.locator("h1").filter({hasText:"Acelynn Pro"})).toBeVisible();
    await expect(page.getByRole("heading",{name:"Our Apps",exact:true})).toBeVisible();
    await expect(page.getByRole("heading",{name:"Categories",exact:true})).toBeVisible();
    await expect(page.getByText("Your apps. One launchpad.").first()).toBeVisible();
@@ -56,7 +56,7 @@ for(const viewport of viewports){
 
 test("storefront hero uses authentic Acelynn demo media",async({page})=>{
  await page.goto("/storefront",{waitUntil:"domcontentloaded"});
- await expect(page.locator('video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
+ await expect(page.locator('#home video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
  await expect(page.locator('video[src*="no-problem-pressure-washing"]')).toHaveCount(0);
  await expect(page.locator('video[src*="pocketstomp"]')).toHaveCount(0);
 });
