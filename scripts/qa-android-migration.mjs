@@ -11,12 +11,17 @@ const check=(ok,message)=>{(ok?pass:fail).push(message)};
 const data=exists("src/data/android-migration.ts")?read("src/data/android-migration.ts"):"";
 const route=exists("src/app/api/owner/migration/route.ts")?read("src/app/api/owner/migration/route.ts"):"";
 const dock=exists("src/app/account-dock.tsx")?read("src/app/account-dock.tsx"):"";
+const apps=exists("src/data/apps.ts")?read("src/data/apps.ts"):"";
 const vercel=JSON.parse(read("vercel.json"));
 
 const states=["LEGACY","BACKUP_READY","RESTORE_VERIFIED","CUTOVER_READY","PERMANENT","PLAY_READY"];
 check(Boolean(data)&&Boolean(route),"Android Migration Center data and owner API exist");
 check(states.every(state=>data.includes(`"${state}"`)||route.includes(`"${state}"`)),"Locked six-state Android migration model is represented exactly");
-check((data.match(/legacy\("/g)||[]).length===13,"Migration registry contains exactly 13 CactusByte Android app identities");
+const ecosystemIds=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(match=>match[1]);
+const migrationIds=[...data.matchAll(/legacy\("([^"]+)"/g)].map(match=>match[1]);
+const expectedIds=["cactusbyte-studios",...ecosystemIds];
+check(expectedIds.length===migrationIds.length&&expectedIds.every(id=>migrationIds.includes(id)),"Migration registry covers CactusByte Studios plus every ecosystem app exactly once");
+check(data.includes('legacy("hustle-first","Hustle First","hustlefirst",null)')&&data.includes('legacy("rivetex","RIVETEX","rivetex",null)'),"Unverified Hustle First and RIVETEX Android package IDs fail closed instead of being invented");
 check(data.includes("backupVerified:false")&&data.includes("restoreVerified:false")&&data.includes("cutoverReadinessVerified:false"),"No app is advanced without recorded backup, restore, and cutover-readiness evidence");
 check(data.includes('return"LEGACY"')&&data.indexOf('if(evidence.backupVerified)')<data.indexOf('return"LEGACY"'),"Migration state is derived from evidence and fails closed to LEGACY");
 check(route.includes("ownerIdentity(request)")&&route.includes('status:403'),"Migration Center is restricted to existing owner authority");
