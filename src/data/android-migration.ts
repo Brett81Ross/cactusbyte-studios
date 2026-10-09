@@ -12,15 +12,16 @@ export type AndroidMigrationRecord={
  appId:string;
  name:string;
  flavor:string;
- packageId:string;
+ packageId:string|null;
  evidence:AndroidMigrationEvidence;
 };
 
 const none:AndroidMigrationEvidence={backupVerified:false,restoreVerified:false,cutoverReadinessVerified:false,permanentInstallVerified:false,playPublished:false};
-const legacy=(appId:string,name:string,flavor:string,packageId:string):AndroidMigrationRecord=>({appId,name,flavor,packageId,evidence:{...none}});
+const legacy=(appId:string,name:string,flavor:string,packageId:string|null):AndroidMigrationRecord=>({appId,name,flavor,packageId,evidence:{...none}});
 
 export const androidMigrationRecords:AndroidMigrationRecord[]=[
  legacy("cactusbyte-studios","CactusByte Studios","cactusbyte","com.cactusbyte.studios"),
+ legacy("hustle-first","Hustle First","hustlefirst",null),
  legacy("noproblem","No Problem Pressure Washing Matrix","noproblem","com.cactusbyte.noproblem"),
  legacy("machzero","MachZero","machzero","com.cactusbyte.machzero"),
  legacy("rapid-takeoff","Rapid Takeoff","rapidtakeoff","com.cactusbyte.rapidtakeoff"),
@@ -32,7 +33,8 @@ export const androidMigrationRecords:AndroidMigrationRecord[]=[
  legacy("scouttrace","Acelynn's ScoutTrace","scouttrace","com.cactusbyte.scouttrace"),
  legacy("shadownex-prime","ShadowNex Prime","shadownex","com.cactusbyte.shadownexprime"),
  legacy("terraflow-matrix","TerraFlow Matrix","terraflow","com.cactusbyte.terraflow"),
- legacy("orbitgather","OrbitGather","orbitgather","com.cactusbyte.orbitgather")
+ legacy("orbitgather","OrbitGather","orbitgather","com.cactusbyte.orbitgather"),
+ legacy("rivetex","RIVETEX","rivetex",null)
 ];
 
 export function deriveAndroidMigrationState(evidence:AndroidMigrationEvidence):AndroidMigrationState{
