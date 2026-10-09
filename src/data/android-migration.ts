@@ -21,7 +21,8 @@ const legacy=(appId:string,name:string,flavor:string,packageId:string):AndroidMi
 
 export const androidMigrationRecords:AndroidMigrationRecord[]=[
  legacy("cactusbyte-studios","CactusByte Studios","cactusbyte","com.cactusbyte.studios"),
- legacy("noproblem","No Problem Pressure Washing Matrix","noproblem","com.cactusbyte.noproblem"),
+ legacy("hustle-first","Hustle First","hustlefirst","com.cactusbyte.hustlefirst"),
+ legacy("noproblem","SchismMatrix","noproblem","com.cactusbyte.noproblem"),
  legacy("machzero","MachZero","machzero","com.cactusbyte.machzero"),
  legacy("rapid-takeoff","Rapid Takeoff","rapidtakeoff","com.cactusbyte.rapidtakeoff"),
  legacy("acelynn-pro","Acelynn Pro","acelynnpro","com.cactusbyte.acelynnpro"),
