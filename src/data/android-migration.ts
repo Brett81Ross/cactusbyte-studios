@@ -20,7 +20,7 @@ const none:AndroidMigrationEvidence={backupVerified:false,restoreVerified:false,
 const legacy=(appId:string,name:string,flavor:string,packageId:string|null):AndroidMigrationRecord=>({appId,name,flavor,packageId,evidence:{...none}});
 
 export const androidMigrationRecords:AndroidMigrationRecord[]=[
- legacy("cactusbyte-studios","CactusByte Studios","cactusbyte","com.cactusbyte.studios"),
+ legacy("cactusbyte-studios","CactusByte Studios","cactusbyte",null),
  legacy("hustle-first","Hustle First","hustlefirst",null),
  legacy("noproblem","No Problem Pressure Washing Matrix","noproblem","com.cactusbyte.noproblem"),
  legacy("machzero","MachZero","machzero","com.cactusbyte.machzero"),
