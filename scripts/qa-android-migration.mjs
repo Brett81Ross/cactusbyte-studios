@@ -22,6 +22,7 @@ const migrationIds=[...data.matchAll(/legacy\("([^"]+)"/g)].map(match=>match[1])
 const expectedIds=["cactusbyte-studios",...ecosystemIds];
 check(expectedIds.length===migrationIds.length&&expectedIds.every(id=>migrationIds.includes(id)),"Migration registry covers CactusByte Studios plus every ecosystem app exactly once");
 check(data.includes('legacy("hustle-first","Hustle First","hustlefirst",null)')&&data.includes('legacy("rivetex","RIVETEX","rivetex",null)'),"Unverified Hustle First and RIVETEX Android package IDs fail closed instead of being invented");
+check(data.includes('legacy("cactusbyte-studios","CactusByte Studios","cactusbyte",null)'),"CactusByte Android package identity fails closed until a native wrapper or signed package manifest verifies it");
 check(data.includes("backupVerified:false")&&data.includes("restoreVerified:false")&&data.includes("cutoverReadinessVerified:false"),"No app is advanced without recorded backup, restore, and cutover-readiness evidence");
 check(data.includes('return"LEGACY"')&&data.indexOf('if(evidence.backupVerified)')<data.indexOf('return"LEGACY"'),"Migration state is derived from evidence and fails closed to LEGACY");
 check(route.includes("ownerIdentity(request)")&&route.includes('status:403'),"Migration Center is restricted to existing owner authority");
