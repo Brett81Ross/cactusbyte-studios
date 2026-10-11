@@ -232,3 +232,50 @@
   .appShelf{grid-template-columns:repeat(3,minmax(0,1fr))}.allGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(prefers-reduced-motion:reduce){.heroVideo,.continueMedia,.wideMedia{display:none}.page *{scroll-behavior:auto!important}}
+
+
+/* SLB7 — storefront mockup fidelity: stronger hierarchy, denser premium shelves, cleaner Fold composition */
+@media(min-width:921px){
+  .main{width:min(1320px,calc(100% - 220px));padding-top:20px}
+  .heroCard{min-height:430px;border-radius:31px}
+  .heroContent{min-height:430px;padding:50px 52px 44px}
+  .heroIdentity h1{font-size:clamp(2.7rem,4.7vw,5rem)}
+  .section{margin:38px 0}
+  .sectionHead{margin-bottom:15px}
+  .appShelf{gap:13px}
+  .storeCard{min-height:270px;padding:17px;border-radius:23px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+  .storeCard:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 38%,rgba(120,210,222,.17));box-shadow:0 20px 46px rgba(0,0,0,.28),0 0 32px color-mix(in srgb,var(--accent) 8%,transparent)}
+  .continueCard,.wideCard,.categoryShelf button{transition:transform .18s ease,border-color .18s ease}
+  .continueCard:hover,.wideCard:hover,.categoryShelf button:hover{transform:translateY(-2px);border-color:rgba(95,239,229,.32)}
+}
+@media(min-width:1081px){
+  .appShelf{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .appShelf .storeCard{min-height:224px;display:grid;grid-template-columns:68px 1fr;grid-template-rows:auto auto 1fr auto;column-gap:15px}
+  .appShelf .storeCard .logo,.appShelf .storeCard .wordmark{grid-row:1/4;width:68px;height:68px;min-height:68px}
+  .appShelf .storeCard .cardCategory{margin-top:2px}
+  .appShelf .storeCard h3{font-size:1.12rem}
+  .appShelf .storeCard p{font-size:.78rem}
+  .appShelf .storeCard .cardButtons{grid-column:1/-1}
+  .allGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+}
+@media(min-width:760px) and (max-width:920px){
+  .heroCard{min-height:370px}
+  .heroContent{min-height:370px;width:68%}
+  .appShelf{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .categoryShelf{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:759px){
+  .page{background:radial-gradient(circle at 50% -8%,rgba(0,229,210,.13),transparent 24rem),linear-gradient(180deg,#02080c,#010507 68%,#02080c)}
+  .mobileHeader{padding-inline:3px}
+  .heroCard{box-shadow:0 20px 55px rgba(0,0,0,.42)}
+  .sectionHead{padding-inline:2px}
+  .appShelf{margin-inline:-2px;padding-inline:2px}
+  .storeCard{border-color:rgba(120,210,222,.21);box-shadow:0 12px 32px rgba(0,0,0,.24)}
+  .bottomNav{padding-bottom:max(7px,env(safe-area-inset-bottom))}
+}
+@media(min-width:700px) and (max-width:980px) and (orientation:landscape){
+  .main{padding-right:18px}
+  .heroCard{min-height:340px}
+  .heroContent{min-height:340px;width:64%;padding:30px 34px}
+  .continueShelf,.newShelf{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
