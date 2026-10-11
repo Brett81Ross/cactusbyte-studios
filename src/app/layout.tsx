@@ -23,9 +23,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
+      { url: "/logo2.png", type: "image/png" },
       { url: "/pwa-icon-192", type: "image/png", sizes: "192x192" },
       { url: "/pwa-icon-512", type: "image/png", sizes: "512x512" },
     ],
+    shortcut: [{ url: "/logo2.png", type: "image/png" }],
     apple: [{ url: "/pwa-icon-192", type: "image/png", sizes: "192x192" }],
   },
   openGraph: {
