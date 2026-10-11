@@ -141,7 +141,7 @@ export default function StorefrontPage(){
           <p className={styles.heroDescription}>{copyFor(heroApp).tagline}</p>
           <div className={styles.heroButtons}><button onClick={()=>open(heroApp)}>Open</button><button className={styles.outlineButton} onClick={()=>setDemo(heroApp)}>▶ Watch Demo</button></div>
         </div>
-        <div className={styles.heroBrandLine}>Your apps. One launchpad.</div>
+        <div className={styles.heroBrandLine}>CACTUS🌵BYTE ORIGINAL · Your apps. One launchpad.</div>
         <div className={styles.heroDots}><b/><span/><span/><span/></div>
       </section>
 
@@ -166,7 +166,7 @@ export default function StorefrontPage(){
         <div className={styles.allGrid}>{apps.map(app=><StoreCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
       </StoreSection>
 
-      <footer className={styles.footer}><span>Cactus🌵Byte Studios™ v1.7.0</span><small>Your apps. One launchpad.</small></footer>
+      <footer className={styles.footer}><span>Cactus🌵Byte Studios™ v1.7.0</span><small>Technology built for real problems · Your apps. One launchpad.</small></footer>
     </div>
 
     <nav className={styles.bottomNav} aria-label="CactusByte navigation">
