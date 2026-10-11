@@ -22,8 +22,11 @@ export const metadata: Metadata = {
   applicationName: "Cactus🌵Byte Studios™",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/logo2.png",
-    apple: "/logo2.png",
+    icon: [
+      { url: "/pwa-icon-192", type: "image/png", sizes: "192x192" },
+      { url: "/pwa-icon-512", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/pwa-icon-192", type: "image/png", sizes: "192x192" }],
   },
   openGraph: {
     title: "Cactus🌵Byte Studios™",
