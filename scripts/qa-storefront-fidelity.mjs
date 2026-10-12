@@ -19,4 +19,4 @@ const checks=[
 let failed=0;for(const [name,ok] of checks){console.log(`${ok?"✓":"✗"} ${name}`);if(!ok)failed++}
 console.log(`\n${checks.length-failed} passed · ${failed} failed`);if(failed)process.exit(1);
 
-// SLB8 final QA trigger — registry-aware responsive assertion.
+// SLB8 final QA trigger — registry-aware responsive assertion; exact count-label locator.
