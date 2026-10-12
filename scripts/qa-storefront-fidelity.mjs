@@ -14,9 +14,11 @@ const checks=[
  ["Fold landscape receives explicit composition",css.includes("@media(min-width:700px) and (max-width:980px) and (orientation:landscape)")],
  ["SLB8 storefront polish is locked",page.includes('STOREFRONT_VERSION="1.8.0"')&&page.includes("View All Apps")&&page.includes("Explore Apps ↓")&&css.includes("SLB8 — premium storefront density")],
  ["Initial portfolio density is intentionally capped",page.includes("apps.slice(0,8)")],
+ ["SLB9 visual collision cleanup is locked",css.includes("SLB9 — mockup-fidelity cleanup")&&css.includes(".heroVideo{opacity:.58")&&css.includes(".wideCard .wideDetails{display:none}")],
+ ["Unresolved brands stay text-only without duplicate long card labels",page.includes('large?app.shortName:"LOGO"')&&page.includes('large?"Official logo pending recovery":"Pending"')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 let failed=0;for(const [name,ok] of checks){console.log(`${ok?"✓":"✗"} ${name}`);if(!ok)failed++}
 console.log(`\n${checks.length-failed} passed · ${failed} failed`);if(failed)process.exit(1);
 
-// SLB8 final QA trigger — behavior-based responsive expansion assertion.
+// SLB9 final QA trigger — mockup-fidelity collision cleanup.
