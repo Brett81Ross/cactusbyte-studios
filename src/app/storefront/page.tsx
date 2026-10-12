@@ -238,6 +238,6 @@ function WideCard({app,open,details}:{app:StudioApp;open:(app:StudioApp)=>void;d
 
 function BrandMark({app,large=false}:{app:StudioApp;large?:boolean}){
   const brand=verifiedBrandAsset(app.id);
-  if(!brand)return <div className={large?styles.wordmarkLarge:styles.wordmark} aria-label={`${app.shortName} official logo pending recovery`}><span>{app.shortName}</span><small>Official logo pending recovery</small></div>;
+  if(!brand)return <div className={large?styles.wordmarkLarge:styles.wordmark} aria-label={`${app.shortName} official logo pending recovery`}><span>{large?app.shortName:"LOGO"}</span><small>{large?"Official logo pending recovery":"Pending"}</small></div>;
   return <div className={large?styles.logoLarge:styles.logo}><img src={brand.src!} alt={`${app.shortName} official logo`}/></div>;
 }
