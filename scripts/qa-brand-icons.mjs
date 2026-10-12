@@ -1,3 +1,4 @@
+// Browser + installed-shortcut brand identity regression gate.
 import fs from "node:fs";
 
 const layout=fs.readFileSync("src/app/layout.tsx","utf8");
