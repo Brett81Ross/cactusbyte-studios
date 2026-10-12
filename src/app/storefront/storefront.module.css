@@ -279,3 +279,105 @@
   .heroContent{min-height:340px;width:64%;padding:30px 34px}
   .continueShelf,.newShelf{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+
+/* SLB8 — premium storefront density, clearer hierarchy, stronger launchpad affordances */
+.heroExplore{min-height:48px;display:grid;place-items:center;padding:0 8px;color:#c9fffa;text-decoration:none;font-size:.78rem;font-weight:850;letter-spacing:.02em}
+.showAllButton{min-height:48px;margin:16px auto 0;padding:0 20px;border:1px solid var(--lineStrong);border-radius:14px;background:linear-gradient(145deg,rgba(9,28,34,.9),rgba(4,14,18,.96));color:var(--cb2);font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px}
+.showAllButton span{font-size:1rem}
+@media(min-width:1081px){
+  .heroCard{min-height:452px}
+  .heroContent{min-height:452px;width:min(610px,55%);padding:54px 58px 48px}
+  .heroCard:after{background:linear-gradient(90deg,rgba(1,7,11,.99) 0%,rgba(2,9,14,.93) 31%,rgba(2,9,14,.54) 57%,rgba(2,9,14,.05) 100%),radial-gradient(circle at 18% 45%,color-mix(in srgb,var(--accent) 25%,transparent),transparent 34rem)}
+  .heroIdentity{margin-top:25px}
+  .heroDescription{font-size:1.02rem}
+  .appShelf .storeCard{min-height:230px}
+  .section:nth-of-type(n+3){border-top:1px solid rgba(95,239,229,.07);padding-top:31px}
+  .allGrid .storeCard{min-height:255px}
+}
+@media(min-width:760px) and (max-width:1080px){
+  .heroExplore{grid-column:1/-1;justify-self:start}
+  .allGrid .storeCard{min-height:245px}
+}
+@media(max-width:759px){
+  .heroExplore{display:none}
+  .heroCard{min-height:336px}
+  .heroContent{min-height:336px}
+  .section{margin:30px 0}
+  .continueCard,.wideCard{border-radius:19px}
+  .showAllButton{width:100%;margin-top:12px}
+}
+@media(max-width:430px){
+  .heroCard{min-height:326px}
+  .heroContent{min-height:326px}
+  .appShelf .storeCard{min-width:180px;max-width:180px}
+  .sectionHead h2{font-size:1.48rem}
+}
+
+
+/* SLB9 — mockup-fidelity cleanup: remove visual collisions, strengthen hero legibility, stabilize Fold cards */
+.heroVideo{opacity:.58;filter:saturate(.92) contrast(1.06) brightness(.72);transform:scale(1.025);transform-origin:center right}
+.wordmark{width:58px;height:58px;min-height:58px;padding:6px;place-items:center;text-align:center}
+.wordmark span{font-size:.62rem;letter-spacing:.11em}.wordmark small{font-size:.5rem;margin-top:1px}
+.storeCard,.wideCard,.continueCard{isolation:isolate}
+.storeCard h3,.storeCard p,.wideCard h3,.wideCard p,.continueCard>span{min-width:0}
+
+@media(min-width:1081px){
+  .heroVideo{opacity:.5;object-position:68% center}
+  .heroCard:before{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(180deg,rgba(1,7,11,.44),transparent 24%,transparent 72%,rgba(1,7,11,.28));pointer-events:none}
+  .heroContent{z-index:4}
+  .heroBrandLine,.heroDots{z-index:5}
+  .appShelf .storeCard{padding:18px}
+  .appShelf .storeCard .cardButtons{margin-top:16px}
+  .sectionHead h2{line-height:1.02}
+}
+
+@media(min-width:760px) and (max-width:1080px){
+  .heroVideo{opacity:.42;object-position:72% center;filter:saturate(.86) contrast(1.05) brightness(.6)}
+  .wideCard{min-height:174px;grid-template-columns:58px minmax(0,1fr);grid-template-rows:1fr auto;align-items:center;column-gap:12px;row-gap:11px}
+  .wideCard .logo,.wideCard .wordmark{grid-column:1;grid-row:1}
+  .wideCard>div:not(.logo):not(.wordmark):not(.wideShade){grid-column:2;grid-row:1;min-width:0}
+  .wideCard>button:not(.wideDetails){grid-column:1/-1;grid-row:2;width:100%;min-height:44px}
+  .wideCard .wideDetails{display:none}
+  .wideCard p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .newShelf{align-items:stretch}
+}
+
+@media(max-width:759px){
+  .heroVideo{opacity:.34;object-position:66% center;filter:saturate(.82) contrast(1.08) brightness(.52);transform:scale(1.08)}
+  .heroCard:after{background:linear-gradient(0deg,rgba(1,7,11,.99) 0%,rgba(1,7,11,.94) 42%,rgba(1,7,11,.62) 72%,rgba(1,7,11,.4) 100%),radial-gradient(circle at 72% 18%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 48%)}
+  .heroIdentity{align-items:center}
+  .heroButtons{position:relative;z-index:5}
+  .newShelf{gap:9px}
+  .wideCard{min-height:132px;grid-template-columns:52px minmax(0,1fr) auto;grid-template-rows:auto;align-items:center;padding:13px;gap:10px}
+  .wideCard .logo,.wideCard .wordmark{width:52px;height:52px;min-height:52px}
+  .wideCard>div:not(.logo):not(.wordmark):not(.wideShade){min-width:0}
+  .wideCard>button:not(.wideDetails){min-height:42px;padding:0 13px}
+  .wideCard .wideDetails{display:none}
+  .wideCard p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .allGrid .storeCard{min-height:212px}
+}
+
+@media(max-width:430px){
+  .sectionHead{align-items:flex-end}
+  .sectionHead h2{font-size:1.28rem;line-height:1.05}
+  .sectionHead a{font-size:.68rem;white-space:nowrap}
+  .storeCard{border-radius:18px}
+  .allGrid{gap:8px}
+  .allGrid .storeCard{min-height:204px;padding:12px}
+  .allGrid .storeCard h3{font-size:.96rem}
+  .allGrid .storeCard p{font-size:.68rem;line-height:1.34}
+  .wideCard h3{font-size:.98rem}
+  .wideCard p{font-size:.68rem}
+  .footer{font-size:.72rem}
+}
+
+@media(min-width:1081px) and (max-width:1240px){
+  .newShelf{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+  .wideCard{min-height:178px;grid-template-columns:56px minmax(0,1fr);grid-template-rows:1fr auto;align-items:center;column-gap:11px;row-gap:12px;padding:14px}
+  .wideCard .logo,.wideCard .wordmark{grid-column:1;grid-row:1;width:56px;height:56px;min-height:56px}
+  .wideCard>div:not(.logo):not(.wordmark):not(.wideShade){grid-column:2;grid-row:1;min-width:0}
+  .wideCard>button:not(.wideDetails){grid-column:1/-1;grid-row:2;width:100%;min-width:0;min-height:44px;padding:0 14px}
+  .wideCard .wideDetails{display:none}
+  .wideCard p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}

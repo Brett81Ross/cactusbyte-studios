@@ -90,3 +90,16 @@ test("verified app cards expose official-logo labels",async({page})=>{
  await expect(page.getByAltText("First Bearing official logo").first()).toBeVisible();
  await expect(page.getByAltText("RIVETEX official logo").first()).toBeVisible();
 });
+
+
+test("SLB8 portfolio stays focused until the user asks for all apps",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const portfolio=page.locator("#all-apps");
+ const viewAll=portfolio.getByRole("button",{name:/View All Apps/});
+ await expect(viewAll).toBeVisible();
+ await expect(portfolio.locator("article")).toHaveCount(8);
+ await viewAll.click();
+ const expandedCount=await portfolio.locator("article").count();
+ expect(expandedCount).toBeGreaterThan(8);
+ await expect(portfolio.getByRole("button",{name:/Show Less/})).toBeVisible();
+});
