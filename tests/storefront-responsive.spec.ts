@@ -95,9 +95,12 @@ test("verified app cards expose official-logo labels",async({page})=>{
 test("SLB8 portfolio stays focused until the user asks for all apps",async({page})=>{
  await page.goto("/",{waitUntil:"domcontentloaded"});
  const portfolio=page.locator("#all-apps");
+ const availableText=await portfolio.locator("div").filter({hasText:/^\\d+ available$/}).first().textContent();
+ const available=Number(availableText?.match(/\\d+/)?.[0]??0);
+ expect(available).toBeGreaterThan(8);
  await expect(portfolio.getByRole("button",{name:/View All Apps/})).toBeVisible();
  await expect(portfolio.locator("article")).toHaveCount(8);
  await portfolio.getByRole("button",{name:/View All Apps/}).click();
- await expect(portfolio.locator("article")).toHaveCount(13);
+ await expect(portfolio.locator("article")).toHaveCount(available);
  await expect(portfolio.getByRole("button",{name:/Show Less/})).toBeVisible();
 });
