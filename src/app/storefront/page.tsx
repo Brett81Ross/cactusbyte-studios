@@ -6,6 +6,7 @@ import {brandAssets,cactusByteBrand,verifiedBrandAsset} from "../../data/brand-a
 import styles from "./storefront.module.css";
 
 const RECENT_KEY="cb-storefront-recent-v3";
+const STOREFRONT_VERSION="1.8.0";
 const featuredIds=["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"];
 const quickIds=["acelynn-pro","fantasy-matrix","first-bearing"];
 const newIds=["noproblem","first-bearing","fantasy-matrix"];
@@ -76,6 +77,7 @@ export default function StorefrontPage(){
   const[selected,setSelected]=useState<StudioApp|null>(null);
   const[demo,setDemo]=useState<StudioApp|null>(null);
   const[mobileSearch,setMobileSearch]=useState(false);
+  const[showAll,setShowAll]=useState(false);
 
   useEffect(()=>{try{const raw=localStorage.getItem(RECENT_KEY);setRecentIds(raw?JSON.parse(raw):[])}catch{}},[]);
 
@@ -90,6 +92,8 @@ export default function StorefrontPage(){
     const haystack=`${app.name} ${app.shortName} ${copy.tagline} ${copy.category}`.toLowerCase();
     return (!q||haystack.includes(q.toLowerCase()))&&(category==="All Apps"||copy.category===category);
   }),[q,category]);
+
+  const visibleApps=showAll||q||category!=="All Apps"?apps:apps.slice(0,8);
 
   function remember(app:StudioApp){
     const next=[app.id,...recentIds.filter(id=>id!==app.id)].slice(0,5);
@@ -139,7 +143,7 @@ export default function StorefrontPage(){
           <span className={styles.featureBadge}>FEATURED APP</span>
           <div className={styles.heroIdentity}><BrandMark app={heroApp} large/><div><h1>{heroApp.shortName}</h1><p>{copyFor(heroApp).short}</p></div></div>
           <p className={styles.heroDescription}>{copyFor(heroApp).tagline}</p>
-          <div className={styles.heroButtons}><button onClick={()=>open(heroApp)}>Open</button><button className={styles.outlineButton} onClick={()=>setDemo(heroApp)}>▶ Watch Demo</button></div>
+          <div className={styles.heroButtons}><button onClick={()=>open(heroApp)}>Open App</button><button className={styles.outlineButton} onClick={()=>setDemo(heroApp)}>▶ Watch Demo</button><a className={styles.heroExplore} href="#apps">Explore Apps ↓</a></div>
         </div>
         <div className={styles.heroBrandLine}>CACTUS🌵BYTE ORIGINAL · Your apps. One launchpad.</div>
         <div className={styles.heroDots}><b/><span/><span/><span/></div>
@@ -163,10 +167,11 @@ export default function StorefrontPage(){
 
       <StoreSection id="all-apps" kicker="CACTUSBYTE PORTFOLIO" title={category==="All Apps"?"All Apps":category}>
         <div className={styles.portfolioHead}><span>{apps.length} available</span>{category!=="All Apps"&&<button onClick={()=>setCategory("All Apps")}>Clear filter</button>}</div>
-        <div className={styles.allGrid}>{apps.map(app=><StoreCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
+        <div className={styles.allGrid}>{visibleApps.map(app=><StoreCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
+        {!q&&category==="All Apps"&&apps.length>8&&<button className={styles.showAllButton} onClick={()=>setShowAll(v=>!v)}>{showAll?"Show Less":"View All Apps"} <span>{showAll?"↑":"↓"}</span></button>}
       </StoreSection>
 
-      <footer className={styles.footer}><span>Cactus🌵Byte Studios™ v1.7.0</span><small>Technology built for real problems · Your apps. One launchpad.</small></footer>
+      <footer className={styles.footer}><span>Cactus🌵Byte Studios™ v{STOREFRONT_VERSION}</span><small>Technology built for real problems · Your apps. One launchpad.</small></footer>
     </div>
 
     <nav className={styles.bottomNav} aria-label="CactusByte navigation">
