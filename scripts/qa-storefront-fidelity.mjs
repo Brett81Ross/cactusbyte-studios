@@ -12,6 +12,8 @@ const checks=[
  ["Featured desktop cards use denser mockup composition",css.includes(".appShelf .storeCard{min-height:224px;display:grid")],
  ["Phone storefront keeps horizontal featured shelf",css.includes("@media(max-width:759px)")&&css.includes(".appShelf{margin-inline:-2px")],
  ["Fold landscape receives explicit composition",css.includes("@media(min-width:700px) and (max-width:980px) and (orientation:landscape)")],
+ ["SLB8 storefront polish is locked",page.includes('STOREFRONT_VERSION="1.8.0"')&&page.includes("View All Apps")&&page.includes("Explore Apps ↓")&&css.includes("SLB8 — premium storefront density")],
+ ["Initial portfolio density is intentionally capped",page.includes("apps.slice(0,8)")],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 let failed=0;for(const [name,ok] of checks){console.log(`${ok?"✓":"✗"} ${name}`);if(!ok)failed++}
