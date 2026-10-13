@@ -6,7 +6,7 @@ import {brandAssets,cactusByteBrand,verifiedBrandAsset} from "../../data/brand-a
 import styles from "./storefront.module.css";
 
 const RECENT_KEY="cb-storefront-recent-v4";
-const STOREFRONT_VERSION="1.9.0";
+const STOREFRONT_VERSION="1.8.0";
 
 const featuredIds=["acelynn-pro","first-bearing","fantasy-matrix","hustle-first","rivetex"];
 const moreIds=["shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","pocketstomp"];
