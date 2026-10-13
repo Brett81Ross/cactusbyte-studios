@@ -8,6 +8,8 @@
     linear-gradient(180deg,#030408 0%,#05070a 46%,#020306 100%);
 }
 .page *{box-sizing:border-box}
+.page img{display:block;max-width:100%;max-height:100%}
+.brandLockup,.mobileBrand,.topActions a,.logo,.logoLarge{overflow:hidden}
 .page button,.page a,.page input{font:inherit}
 .page button{cursor:pointer}
 .brandRail{
