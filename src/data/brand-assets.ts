@@ -24,7 +24,7 @@ export const brandAssets: Record<string, BrandAsset> = {
   noproblem: {
     appId: "noproblem",
     name: "SchismMatrix™",
-    src: "https://noproblem-pws.vercel.app/assets/schismmatrix-symbol.svg",
+    src: "/brand/schismmatrix.svg",
     status: "verified",
     source: "Brett81Ross/noproblem.pws",
     sourcePath: "assets/schismmatrix-symbol.svg"
@@ -32,7 +32,7 @@ export const brandAssets: Record<string, BrandAsset> = {
   machzero: {
     appId: "machzero",
     name: "MachZero™",
-    src: "https://machzero-beta.vercel.app/logo1.jpg",
+    src: "/brand/machzero.jpg",
     status: "verified",
     source: "Brett81Ross/machzero",
     sourcePath: "logo1.jpg"
@@ -40,7 +40,7 @@ export const brandAssets: Record<string, BrandAsset> = {
   "rapid-takeoff": {
     appId: "rapid-takeoff",
     name: "Rapid Takeoff™",
-    src: "https://blueprint-estimator.vercel.app/icon.svg",
+    src: "/brand/rapid-takeoff.svg",
     status: "verified",
     source: "Brett81Ross/blueprint_estimator-",
     sourcePath: "app/icon.svg"
@@ -65,15 +65,16 @@ export const brandAssets: Record<string, BrandAsset> = {
   ghostlane: {
     appId: "ghostlane",
     name: "GhostLane™",
-    src: "https://ghostlane-app.vercel.app/logo-gl.png",
-    status: "verified",
-    source: "Brett81Ross/ghostlane-app",
-    sourcePath: "logo-gl.png"
+    src: null,
+    status: "unresolved",
+    source: "Brand recovery required",
+    sourcePath: "logo-gl.png",
+    note: "The repository logo-gl.png currently resolves as an empty source asset in GitHub. Do not display a broken remote image or invent a replacement."
   },
   "first-bearing": {
     appId: "first-bearing",
     name: "First Bearing™",
-    src: "https://first-bearing.vercel.app/first-bearing-app-icon-512-v260.png",
+    src: "/brand/first-bearing.png",
     status: "verified",
     source: "Brett81Ross/first-bearing",
     sourcePath: "first-bearing-app-icon-512-v260.png"
@@ -89,7 +90,7 @@ export const brandAssets: Record<string, BrandAsset> = {
   scouttrace: {
     appId: "scouttrace",
     name: "Acelynn’s ScoutTrace™",
-    src: "https://acelynn-scoutrace.vercel.app/scouttrace-icon.svg",
+    src: "/brand/scouttrace.svg",
     status: "verified",
     source: "Brett81Ross/acelynn_scoutrace",
     sourcePath: "scouttrace-icon.svg"
@@ -105,7 +106,7 @@ export const brandAssets: Record<string, BrandAsset> = {
   "terraflow-matrix": {
     appId: "terraflow-matrix",
     name: "TerraFlow Matrix™",
-    src: "https://terraflow-matrix.vercel.app/assets/terraflow-icon.svg",
+    src: "/brand/terraflow.svg",
     status: "verified",
     source: "Brett81Ross/terraflow-matrix",
     sourcePath: "assets/terraflow-icon.svg"
@@ -113,7 +114,7 @@ export const brandAssets: Record<string, BrandAsset> = {
   "hustle-first": {
     appId: "hustle-first",
     name: "Hustle First™",
-    src: "https://hustle-first.vercel.app/hf-logo-mark.svg",
+    src: "/brand/hustle-first.svg",
     status: "verified",
     source: "Brett81Ross/hustle-first",
     sourcePath: "public/hf-logo-mark.svg",
@@ -130,7 +131,7 @@ export const brandAssets: Record<string, BrandAsset> = {
   rivetex: {
     appId: "rivetex",
     name: "RIVETEX™",
-    src: "https://rivetex.cactusbytestudios.com/assets/rivetex-app.webp",
+    src: "/brand/rivetex.webp",
     status: "verified",
     source: "Brett81Ross/rivetex",
     sourcePath: "assets/rivetex-app.webp"
