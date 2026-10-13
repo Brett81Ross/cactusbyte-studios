@@ -19,7 +19,7 @@ for(const viewport of viewports){
    expect(response).not.toBeNull();
    expect(response!.status()).toBeLessThan(500);
 
-   await expect(page.getByText("FEATURED APP")).toBeVisible();
+   await expect(page.getByText("FEATURED APP",{exact:true})).toBeVisible();
    await expect(page.locator("h1").filter({hasText:"Acelynn Pro"})).toBeVisible();
    await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
    await expect(page.getByRole("heading",{name:"More from CactusByte Studios",exact:true})).toBeVisible();
