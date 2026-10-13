@@ -12,7 +12,7 @@ const viewports=[
 for(const viewport of viewports){
  test.describe(`storefront · ${viewport.name}`,()=>{
   test.use({viewport:{width:viewport.width,height:viewport.height},hasTouch:true});
-  test("stays contained and product-led",async({page})=>{
+  test("stays contained and matches the approved product hierarchy",async({page})=>{
    const errors:string[]=[];
    page.on("pageerror",error=>errors.push(error.message));
    const response=await page.goto("/",{waitUntil:"domcontentloaded"});
@@ -21,9 +21,10 @@ for(const viewport of viewports){
 
    await expect(page.getByText("FEATURED APP")).toBeVisible();
    await expect(page.locator("h1").filter({hasText:"Acelynn Pro"})).toBeVisible();
-   await expect(page.getByRole("heading",{name:"Our Apps",exact:true})).toBeVisible();
-   await expect(page.getByRole("heading",{name:"Categories",exact:true})).toBeVisible();
-   await expect(page.locator("footer").getByText("Your apps. One launchpad.")).toBeVisible();
+   await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
+   await expect(page.getByRole("heading",{name:"More from CactusByte Studios",exact:true})).toBeVisible();
+   await expect(page.getByRole("heading",{name:"All Apps",exact:true})).toBeVisible();
+   await expect(page.getByRole("button",{name:/Open App/})).toBeVisible();
    await expect(page.getByRole("button",{name:/Android App/})).toHaveCount(0);
 
    await page.waitForTimeout(900);
@@ -61,6 +62,16 @@ test("storefront hero uses authentic Acelynn demo media",async({page})=>{
  await expect(page.locator('video[src*="pocketstomp"]')).toHaveCount(0);
 });
 
+test("approved storefront uses verified app logos",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await expect(page.getByAltText("Acelynn Pro official logo").first()).toBeVisible();
+ await expect(page.getByAltText("First Bearing official logo").first()).toBeVisible();
+ await expect(page.getByAltText("Fantasy Matrix official logo").first()).toBeVisible();
+ await expect(page.getByAltText("Hustle First official logo").first()).toBeVisible();
+ await expect(page.getByAltText("RIVETEX official logo").first()).toBeVisible();
+ await expect(page.getByAltText("ScoutTrace official logo").first()).toBeVisible();
+});
+
 test("PocketStomp never falls back to the rejected icon",async({page})=>{
  await page.goto("/",{waitUntil:"domcontentloaded"});
  await expect(page.locator('img[src*="pocketstomp-icon.png"]')).toHaveCount(0);
@@ -70,29 +81,34 @@ test("PocketStomp never falls back to the rejected icon",async({page})=>{
  await expect(page.getByText("Official logo pending recovery. No substitute artwork is being used.")).toBeVisible();
 });
 
-test("Fold layout uses a side navigation rail instead of covering cards",async({page})=>{
+test("Fold landscape keeps the CactusByte side rail without covering content",async({page})=>{
  await page.setViewportSize({width:1104,height:884});
  await page.goto("/",{waitUntil:"domcontentloaded"});
  const nav=page.getByRole("navigation",{name:"CactusByte sections"});
- const rect=await nav.boundingBox();
- expect(rect).not.toBeNull();
- expect(rect!.x).toBeLessThan(30);
- expect(rect!.y).toBeGreaterThan(70);
- expect(rect!.width).toBeGreaterThan(100);
- expect(rect!.width).toBeLessThan(180);
+ const navRect=await nav.boundingBox();
+ const heroRect=await page.locator("#home").boundingBox();
+ expect(navRect).not.toBeNull();
+ expect(heroRect).not.toBeNull();
+ expect(navRect!.x).toBeLessThan(40);
+ expect(navRect!.width).toBeGreaterThan(90);
+ expect(heroRect!.x).toBeGreaterThan(navRect!.x+navRect!.width);
 });
 
-test("verified app cards expose official-logo labels",async({page})=>{
+test("phone storefront becomes a full-width horizontal-shelf experience",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
  await page.goto("/",{waitUntil:"domcontentloaded"});
- await expect(page.getByAltText("Acelynn Pro official logo").first()).toBeVisible();
- await expect(page.getByAltText("SchismMatrix official logo").first()).toBeVisible();
- await expect(page.getByAltText("Fantasy Matrix official logo").first()).toBeVisible();
- await expect(page.getByAltText("First Bearing official logo").first()).toBeVisible();
- await expect(page.getByAltText("RIVETEX official logo").first()).toBeVisible();
+ const nav=page.getByRole("navigation",{name:"CactusByte sections"});
+ await expect(nav).toBeHidden();
+ const featured=page.locator("section").filter({has:page.getByRole("heading",{name:"Featured Apps",exact:true})}).locator("article");
+ expect(await featured.count()).toBeGreaterThan(1);
+ const first=await featured.first().boundingBox();
+ const second=await featured.nth(1).boundingBox();
+ expect(first).not.toBeNull();
+ expect(second).not.toBeNull();
+ expect(second!.x).toBeGreaterThan(first!.x);
 });
 
-
-test("SLB8 portfolio stays focused until the user asks for all apps",async({page})=>{
+test("portfolio stays focused until the user asks for all apps",async({page})=>{
  await page.goto("/",{waitUntil:"domcontentloaded"});
  const portfolio=page.locator("#all-apps");
  const viewAll=portfolio.getByRole("button",{name:/View All Apps/});
