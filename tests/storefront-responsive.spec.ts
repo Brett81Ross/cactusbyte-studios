@@ -37,17 +37,27 @@ for(const viewport of viewports){
       .filter(visible)
       .map(el=>{const r=el.getBoundingClientRect();return{label:(el.textContent||(el as HTMLInputElement).placeholder||"").trim().slice(0,70),width:r.width,height:r.height}})
       .filter(x=>x.height<38||x.width<38);
-    const escapedImages=Array.from(document.images).filter(visible).filter(img=>{
+    const escapedImages=Array.from(document.images).filter(visible).flatMap(img=>{
       const r=img.getBoundingClientRect();
-      const host=img.closest("article,button,a,[class*=logo],[class*=wordmark]")?.getBoundingClientRect();
-      return !host||r.left<host.left-2||r.right>host.right+2||r.top<host.top-2||r.bottom>host.bottom+2;
-    }).length;
+      const hostElement=img.closest("article,button,a,[class*=logo],[class*=wordmark]");
+      const host=hostElement?.getBoundingClientRect();
+      const escapes=!host||r.left<host.left-2||r.right>host.right+2||r.top<host.top-2||r.bottom>host.bottom+2;
+      if(!escapes)return [];
+      return [{
+        src:img.getAttribute("src"),alt:img.alt,
+        image:{x:Math.round(r.x),y:Math.round(r.y),width:Math.round(r.width),height:Math.round(r.height)},
+        host:hostElement?.tagName+"."+(hostElement?.className||""),
+        bounds:host?{x:Math.round(host.x),y:Math.round(host.y),width:Math.round(host.width),height:Math.round(host.height)}:null
+      }];
+    });
     return{overflow,smallControls,escapedImages};
    });
 
+   await page.screenshot({path:`/tmp/cactusbyte-storefront-${viewport.name.replace(/\\s+/g,"-").toLowerCase()}.png`,fullPage:true});
+
    expect(audit.overflow,`horizontal overflow: ${audit.overflow}px`).toBeLessThanOrEqual(2);
    expect(audit.smallControls,`small controls: ${JSON.stringify(audit.smallControls)}`).toEqual([]);
-   expect(audit.escapedImages).toBe(0);
+   expect(audit.escapedImages,"images escaping their assigned visual hosts").toEqual([]);
    expect(errors).toEqual([]);
 
    await page.screenshot({path:`/tmp/cactusbyte-storefront-${viewport.name.replace(/\s+/g,"-").toLowerCase()}.png`,fullPage:true});
