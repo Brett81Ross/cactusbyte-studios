@@ -6,7 +6,7 @@ import {brandAssets,cactusByteBrand,verifiedBrandAsset} from "../../data/brand-a
 import styles from "./storefront.module.css";
 
 const RECENT_KEY="cb-storefront-recent-v4";
-const STOREFRONT_VERSION="1.8.0";
+const STOREFRONT_VERSION="1.7.0";
 
 const featuredIds=["acelynn-pro","first-bearing","fantasy-matrix","hustle-first","rivetex"];
 const moreIds=["shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","pocketstomp"];
@@ -184,7 +184,7 @@ export default function StorefrontPage(){
       </section>
 
       <footer className={styles.footer}>
-        <div><b>CACTUSBYTE STUDIOS</b><small>APPS FOR A BRIGHTER TOMORROW</small></div>
+        <div><a className={styles.footerBrand} href="/" aria-label="CactusByte Studios app home">Cactus🌵Byte Studios™</a><small>All Rights Reserved</small></div>
         <span>v{STOREFRONT_VERSION}</span>
       </footer>
     </div>

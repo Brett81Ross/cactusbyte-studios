@@ -129,3 +129,19 @@ test("portfolio stays focused until the user asks for all apps",async({page})=>{
  expect(expandedCount).toBeGreaterThan(8);
  await expect(portfolio.getByRole("button",{name:/Show Less/})).toBeVisible();
 });
+
+test("storefront footer links to CactusByte and accurately shows release version and rights",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const footer=page.locator("footer");
+ await expect(footer).toContainText("Cactus🌵Byte Studios™");
+ await expect(footer).toContainText("v1.7.0");
+ await expect(footer).toContainText("All Rights Reserved");
+ await expect(footer.getByRole("link",{name:"CactusByte Studios app home"})).toHaveAttribute("href","/");
+});
+
+test("studio footer uses the same release version and tappable brand",async({page})=>{
+ await page.goto("/studio",{waitUntil:"domcontentloaded"});
+ const footer=page.locator("footer");
+ await expect(footer).toContainText("Cactus🌵Byte Studios™ · v1.7.0 · All Rights Reserved");
+ await expect(footer.getByRole("link",{name:"Cactus🌵Byte Studios™"})).toHaveAttribute("href","/");
+});

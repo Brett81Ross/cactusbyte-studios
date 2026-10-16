@@ -93,7 +93,7 @@
 .wordmark,.wordmarkLarge{padding:7px;text-align:center}.wordmark span,.wordmarkLarge span{font-weight:800;font-size:.62rem;line-height:1}.wordmark small,.wordmarkLarge small{font-size:.45rem;color:#8e9ba7;margin-top:4px}.wordmarkLarge span{font-size:.8rem}
 
 .showAllButton{display:flex;align-items:center;justify-content:center;gap:9px;margin:18px auto 0;min-height:44px;padding:0 20px;border:1px solid rgba(33,242,182,.25);border-radius:14px;background:rgba(33,242,182,.07);color:#caffef;font-weight:700}
-.footer{margin-top:38px;padding:26px 4px 6px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;color:#7d8a96}.footer div{display:grid}.footer b{font-size:.75rem;letter-spacing:.28em;color:#cad7db}.footer small{margin-top:6px;font-size:.55rem;letter-spacing:.28em}
+.footer{margin-top:38px;padding:26px 4px 6px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;color:#7d8a96}.footer div{display:grid}.footer .footerBrand{display:inline-flex;align-items:center;min-height:44px;font-size:.75rem;letter-spacing:.28em;color:#cad7db;text-decoration:none}.footer .footerBrand:hover{color:var(--neon2)}.footer .footerBrand:focus-visible{outline:2px solid var(--neon);outline-offset:3px}.footer small{margin-top:6px;font-size:.55rem;letter-spacing:.28em}
 
 .bottomNav{position:fixed;z-index:40;left:250px;right:22px;bottom:16px;min-height:62px;padding:8px 12px;border:1px solid rgba(255,255,255,.08);border-radius:22px;background:rgba(7,10,15,.88);backdrop-filter:blur(24px);display:grid;grid-template-columns:repeat(6,1fr);box-shadow:0 20px 60px rgba(0,0,0,.45)}.bottomNav a{min-height:44px;border-radius:14px;color:#778491;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:.67rem}.bottomNav a span{font-size:1rem}.bottomNav .navOn{color:#dffff6;background:rgba(33,242,182,.1);border:1px solid rgba(33,242,182,.32);box-shadow:0 0 22px rgba(33,242,182,.14)}
 
@@ -120,5 +120,5 @@
   .footer{padding-bottom:12px}.footer small{letter-spacing:.15em}.footer>span{font-size:.65rem}
 }
 @media(max-width:390px){
-  .hero{min-height:398px}.heroCopy{min-height:398px}.heroActions{gap:8px}.heroActions button{font-size:.72rem}.allGrid{gap:7px}.posterCardCompact{height:166px}.sectionHead a{font-size:.62rem}.footer b{font-size:.66rem}
+  .hero{min-height:398px}.heroCopy{min-height:398px}.heroActions{gap:8px}.heroActions button{font-size:.72rem}.allGrid{gap:7px}.posterCardCompact{height:166px}.sectionHead a{font-size:.62rem}.footer .footerBrand{font-size:.66rem}
 }

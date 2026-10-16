@@ -3,6 +3,8 @@ import fs from "node:fs";
 const page=fs.readFileSync("src/app/storefront/page.tsx","utf8");
 const css=fs.readFileSync("src/app/storefront/storefront.module.css","utf8");
 const vercel=JSON.parse(fs.readFileSync("vercel.json","utf8"));
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+const studio=fs.readFileSync("src/app/studio/page.tsx","utf8");
 
 const checks=[
  ["Premium storefront remains the root experience",fs.readFileSync("src/app/page.tsx","utf8").includes('export {default} from "./storefront/page"')],
@@ -18,7 +20,10 @@ const checks=[
  ["Phone storefront switches to compact full-width shell",css.includes("@media(max-width:759px)")&&css.includes(".brandRail{display:none}")&&css.includes(".featuredGrid,.moreGrid,.recentGrid{display:flex;overflow-x:auto")],
  ["Bottom nav is persistent and mockup-aligned",page.includes('aria-label="CactusByte navigation"')&&css.includes(".bottomNav")],
  ["Initial portfolio density remains capped",page.includes("apps.slice(0,8)")],
- ["Storefront display version remains aligned with current live line",page.includes('STOREFRONT_VERSION="1.8.0"')],
+ ["Storefront display version matches the verified package release",page.includes(`STOREFRONT_VERSION="${pkg.version}"`)], 
+ ["Studio UI version remains package-aligned",studio.includes(`const V="${pkg.version}"`)], 
+ ["Storefront footer includes a tappable CactusByte home link and rights notice",page.includes('className={styles.footerBrand} href="/"')&&page.includes("Cactus🌵Byte Studios™")&&page.includes("All Rights Reserved")],
+ ["Studio footer links back to CactusByte without duplicate brand names",studio.includes('<footer><a className="footerBrand" href="/">Cactus🌵Byte Studios™</a> · v{V} · All Rights Reserved</footer>')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
