@@ -152,7 +152,7 @@
 .hero:before{display:none}
 .heroMedia{opacity:.1;filter:blur(10px) saturate(1.4)}
 .heroPortrait{position:absolute;inset:0;z-index:1;
- background-image:radial-gradient(circle at 70% 28%,rgba(223,34,225,.35),transparent 38%),linear-gradient(90deg,rgba(4,5,15,.8) 1%,transparent 55%),url("https://images.unsplash.com/photo-1776000505704-264075621e97?auto=format&fit=crop&w=1200&q=80"),url("/posters/north-star-scenes.svg");
+ background-image:radial-gradient(circle at 70% 28%,rgba(223,34,225,.35),transparent 38%),linear-gradient(90deg,rgba(4,5,15,.8) 1%,transparent 55%),url("https://images.unsplash.com/photo-1776000505704-264075621e97?auto=format&fit=crop&w=1200&q=80"),url("/posters/acelynn-pro.svg");
  background-size:cover,cover,cover,cover;background-position:center,center,70% 47%,center;background-repeat:no-repeat;
  filter:saturate(1.55) contrast(1.18)}
 .heroOverlay{z-index:2;background:linear-gradient(90deg,rgba(3,5,14,.97) 0%,rgba(3,5,14,.91) 28%,rgba(4,6,22,.6) 54%,rgba(9,3,29,.07) 83%),linear-gradient(0deg,rgba(3,4,10,.8),transparent 35%)}
@@ -185,7 +185,7 @@
 .posterCard[data-app="terraflow-matrix"],.posterCardCompact[data-app="terraflow-matrix"]{--cardImage:url("https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=750&q=80")}
 .posterCard[data-app="orbitgather"],.posterCardCompact[data-app="orbitgather"]{--cardImage:url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=750&q=80")}
 .posterCard[data-app="hustle-first"],.posterCardCompact[data-app="hustle-first"]{--cardImage:url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=750&q=80")}
-.posterArt{background-image:linear-gradient(140deg,color-mix(in srgb,var(--accent) 20%,transparent),transparent 58%),url("/posters/north-star-scenes.svg"),var(--cardImage);background-size:cover,100% 1400%,cover;background-position:center,center var(--sceneY,0%),center;filter:saturate(1.55) contrast(1.1)}
+.posterArt{background-image:linear-gradient(140deg,color-mix(in srgb,var(--accent) 20%,transparent),transparent 58%),var(--localCardImage),var(--cardImage);background-size:cover,cover,cover;background-position:center;filter:saturate(1.55) contrast(1.1)}
 .posterArt:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 40% 15%,transparent,rgba(4,7,15,.22) 70%)}
 .posterShade{background:linear-gradient(0deg,rgba(2,4,10,.98) 0%,rgba(2,4,10,.77) 32%,rgba(2,4,10,.02) 85%)}
 .posterTop{left:9px;right:9px;top:9px}.posterTop>span{font-size:.5rem}
@@ -263,3 +263,19 @@
 .posterCard[data-app="orbitgather"],.posterCardCompact[data-app="orbitgather"]{--sceneY:84.615385%}
 .posterCard[data-app="ghostlane"],.posterCardCompact[data-app="ghostlane"]{--sceneY:92.307692%}
 .posterCard[data-app="hustle-first"],.posterCardCompact[data-app="hustle-first"]{--sceneY:100.000000%}
+
+/* Individual illustrated SVGs decode rapidly and are available offline after app installation. */
+.posterCard[data-app="acelynn-pro"],.posterCardCompact[data-app="acelynn-pro"]{--localCardImage:url("/posters/acelynn-pro.svg")}
+.posterCard[data-app="noproblem"],.posterCardCompact[data-app="noproblem"]{--localCardImage:url("/posters/noproblem.svg")}
+.posterCard[data-app="fantasy-matrix"],.posterCardCompact[data-app="fantasy-matrix"]{--localCardImage:url("/posters/fantasy-matrix.svg")}
+.posterCard[data-app="first-bearing"],.posterCardCompact[data-app="first-bearing"]{--localCardImage:url("/posters/first-bearing.svg")}
+.posterCard[data-app="rivetex"],.posterCardCompact[data-app="rivetex"]{--localCardImage:url("/posters/rivetex.svg")}
+.posterCard[data-app="pocketstomp"],.posterCardCompact[data-app="pocketstomp"]{--localCardImage:url("/posters/pocketstomp.svg")}
+.posterCard[data-app="shadownex-prime"],.posterCardCompact[data-app="shadownex-prime"]{--localCardImage:url("/posters/shadownex-prime.svg")}
+.posterCard[data-app="scouttrace"],.posterCardCompact[data-app="scouttrace"]{--localCardImage:url("/posters/scouttrace.svg")}
+.posterCard[data-app="rapid-takeoff"],.posterCardCompact[data-app="rapid-takeoff"]{--localCardImage:url("/posters/rapid-takeoff.svg")}
+.posterCard[data-app="terraflow-matrix"],.posterCardCompact[data-app="terraflow-matrix"]{--localCardImage:url("/posters/terraflow-matrix.svg")}
+.posterCard[data-app="machzero"],.posterCardCompact[data-app="machzero"]{--localCardImage:url("/posters/machzero.svg")}
+.posterCard[data-app="orbitgather"],.posterCardCompact[data-app="orbitgather"]{--localCardImage:url("/posters/orbitgather.svg")}
+.posterCard[data-app="ghostlane"],.posterCardCompact[data-app="ghostlane"]{--localCardImage:url("/posters/ghostlane.svg")}
+.posterCard[data-app="hustle-first"],.posterCardCompact[data-app="hustle-first"]{--localCardImage:url("/posters/hustle-first.svg")}

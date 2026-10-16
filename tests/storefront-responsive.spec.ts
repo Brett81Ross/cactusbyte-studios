@@ -239,13 +239,18 @@ test("North Star phone navigation has five distinct working destinations",async(
  expect(y).toBe(844);
 });
 
-test("North Star artwork is bundled locally, with no external image dependency for cards",async({page})=>{
- const art=await page.request.get("/posters/north-star-scenes.svg");
- expect(art.status()).toBe(200);
- expect(await art.text()).toContain('viewBox="0 0 600 10920"');
+test("North Star artwork is individually bundled and decodes as images",async({page})=>{
+ const ids=["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","orbitgather","ghostlane","hustle-first"];
+ for(const id of ids){
+  const asset=await page.request.get(`/posters/${id}.svg`);
+  expect(asset.status(),id).toBe(200);
+  expect(await asset.text()).toContain('viewBox="0 0 600 780"');
+ }
  await page.goto("/",{waitUntil:"domcontentloaded"});
- const scene=await page.locator("#featured article").first().locator("[class*=posterArt]").evaluate(el=>getComputedStyle(el).backgroundImage);
- expect(scene).toContain("/posters/north-star-scenes.svg");
- const theme=await page.locator('#featured article[data-app="pocketstomp"]').evaluate(el=>getComputedStyle(el).getPropertyValue("--sceneY").trim());
- expect(theme).not.toBe("0%");
+ const scene=await page.locator('#featured article[data-app="acelynn-pro"]').locator("[class*=posterArt]").evaluate(el=>getComputedStyle(el).backgroundImage);
+ expect(scene).toContain("/posters/acelynn-pro.svg");
+ const decoded=await page.evaluate(async()=>{
+  const img=new Image();img.src="/posters/acelynn-pro.svg";await img.decode();return{w:img.naturalWidth,h:img.naturalHeight};
+ });
+ expect(decoded).toEqual({w:600,h:780});
 });

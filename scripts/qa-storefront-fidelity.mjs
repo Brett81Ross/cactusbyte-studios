@@ -30,7 +30,7 @@ const checks=[
  ["North Star featured row includes real SchismMatrix and no fictional apps",page.includes('"noproblem","fantasy-matrix"')&&!page.includes("firstep-kitchen")],
  ["Functional category tile shelf and recommendation shelf exist",page.includes("Explore Categories")&&page.includes("Recommended Apps")&&page.includes('data-category={t.id}')],
  ["Mobile bottom navigation exposes five usable links",css.includes(".bottomNav a:nth-child(3),.bottomNav a:nth-child(5){display:flex}")&&page.includes("Profile</a>")],
- ["All 14 app scenes are bundled locally as original vector artwork",fs.existsSync("public/posters/north-star-scenes.svg")&&fs.readFileSync("public/posters/north-star-scenes.svg","utf8").includes('viewBox="0 0 600 10920"')&&css.includes('url("/posters/north-star-scenes.svg")')],
+ ["All 14 app scenes are bundled as separate local vector assets",["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","orbitgather","ghostlane","hustle-first"].every(id=>fs.existsSync(`public/posters/${id}.svg`)&&fs.readFileSync(`public/posters/${id}.svg`,"utf8").includes('viewBox="0 0 600 780"')&&css.includes(`url("/posters/${id}.svg")`))],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
