@@ -238,3 +238,14 @@ test("North Star phone navigation has five distinct working destinations",async(
  const y=await nav.evaluate(el=>Math.round(el.getBoundingClientRect().bottom));
  expect(y).toBe(844);
 });
+
+test("North Star artwork is bundled locally, with no external image dependency for cards",async({page})=>{
+ const art=await page.request.get("/posters/north-star-scenes.svg");
+ expect(art.status()).toBe(200);
+ expect(await art.text()).toContain('viewBox="0 0 600 10920"');
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const scene=await page.locator("#featured article").first().locator("[class*=posterArt]").evaluate(el=>getComputedStyle(el).backgroundImage);
+ expect(scene).toContain("/posters/north-star-scenes.svg");
+ const theme=await page.locator('#featured article[data-app="pocketstomp"]').evaluate(el=>getComputedStyle(el).getPropertyValue("--sceneY").trim());
+ expect(theme).not.toBe("0%");
+});
