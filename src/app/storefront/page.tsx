@@ -8,8 +8,8 @@ import styles from "./storefront.module.css";
 const RECENT_KEY="cb-storefront-recent-v4";
 const STOREFRONT_VERSION="1.7.0";
 
-const featuredIds=["acelynn-pro","first-bearing","fantasy-matrix","hustle-first","rivetex"];
-const moreIds=["shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","pocketstomp"];
+const featuredIds=["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"];
+const moreIds=["shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","orbitgather"];
 const categories=[
   {name:"All Apps",label:"All Apps"},
   {name:"Business",label:"Productivity"},
@@ -90,10 +90,11 @@ export default function StorefrontPage(){
   const featured=findApps(featuredIds);
   const more=findApps(moreIds);
   const recent=findApps(recentIds);
+  const recommended=findApps(["noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"]);
   const apps=useMemo(()=>studioApps.filter(app=>{
     const copy=copyFor(app);
     const haystack=`${app.name} ${app.shortName} ${copy.tagline} ${copy.category}`.toLowerCase();
-    return (!q||haystack.includes(q.toLowerCase()))&&(category==="All Apps"||copy.category===category||app.category===category);
+    return (!q||haystack.includes(q.toLowerCase()))&&(category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
   }),[q,category]);
   const visibleApps=showAll||q||category!=="All Apps"?apps:apps.slice(0,8);
 
@@ -113,12 +114,15 @@ export default function StorefrontPage(){
       <div className={styles.railStatement}>
         <span>BOLDER APPS</span><span>BRIGHTER</span><span>REAL WORLDS</span>
       </div>
+      <div className={styles.railArt} aria-hidden="true"><strong>Create<br/>Brighter<br/>Days.</strong><b>🌵</b></div>
       <nav className={styles.railNav} aria-label="CactusByte sections">
         <a className={styles.railOn} href="#home">⌂ <span>Home</span></a>
         <a href="#featured">◇ <span>Discover</span></a>
         <a href="#all-apps">▦ <span>Apps</span></a>
         <a href="#categories">◫ <span>Categories</span></a>
         <a href="/studio">✦ <span>Studio</span></a>
+        <a href="/studio#releases">◌ <span>Updates</span></a>
+        <a href="/studio#settings">♙ <span>Profile</span></a>
       </nav>
       <div className={styles.railPlaque}><span>APPS</span><span>PEOPLE</span><span>BUILD</span><span>REAL</span><span>THINGS</span><b>🌵</b></div>
     </aside>
@@ -141,6 +145,7 @@ export default function StorefrontPage(){
 
       <section className={styles.hero} id="home" style={accentStyle(heroApp)}>
         <video className={styles.heroMedia} src={demoPaths[heroApp.id]} poster="/acelynn-beta-icon.png" autoPlay muted loop playsInline preload="metadata"/>
+        <div className={styles.heroPortrait} aria-hidden="true"/>
         <div className={styles.heroOverlay}/>
         <div className={styles.heroNoise}/>
         <div className={styles.heroCopy}>
@@ -163,8 +168,20 @@ export default function StorefrontPage(){
       </div>
 
       <section className={styles.section} id="featured">
-        <SectionHead title="Featured Apps" subtitle="Powerful tools for real-world builders, creators, and doers." action="#all-apps"/>
+        <SectionHead title="Featured Apps" subtitle="Powerful tools. Real possibilities. Built by CactusByte Studios." action="#all-apps"/>
         <div className={styles.featuredGrid}>{featured.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
+      </section>
+
+      {recent.length>0&&<section className={styles.section}>
+        <SectionHead title="Continue Using" subtitle="Pick up where you left off." action="#all-apps"/>
+        <div className={styles.recentGrid}>{recent.slice(0,4).map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
+      </section>}
+
+      <section className={styles.section} aria-label="Explore categories">
+        <SectionHead title="Explore Categories" subtitle="Find apps by what moves you." action="#all-apps"/>
+        <div className={styles.categoryTiles}>
+          {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
+        </div>
       </section>
 
       <section className={styles.section}>
@@ -172,9 +189,9 @@ export default function StorefrontPage(){
         <div className={styles.moreGrid}>{more.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>
 
-      {recent.length>0&&<section className={styles.section}>
-        <SectionHead title="Recently Opened" subtitle="Jump back into what you were using."/>
-        <div className={styles.recentGrid}>{recent.slice(0,4).map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
+      <section className={styles.section}>
+        <SectionHead title="Recommended Apps" subtitle="More tools from our verified app lineup." action="#all-apps"/>
+        <div className={styles.recommendGrid}>{recommended.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>}
 
       <section className={styles.section} id="all-apps">
@@ -192,11 +209,10 @@ export default function StorefrontPage(){
 
     <nav className={styles.bottomNav} aria-label="CactusByte navigation">
       <a className={styles.navOn} href="#home"><span>⌂</span>Home</a>
-      <a href="#all-apps"><span>▦</span>My Apps</a>
+      <a href="#all-apps"><span>▦</span>Apps</a>
+      <a href="/studio"><span>🌵</span>Studio</a>
       <a href="/studio#releases"><span>◌</span>Updates</a>
-      <a href="#featured"><span>◇</span>Explore</a>
-      <a href="#categories"><span>◫</span>Categories</a>
-      <a href="/studio#settings"><span>⚙</span>Settings</a>
+      <a href="/studio#settings"><span>♙</span>Profile</a>
     </nav>
 
     {selected&&<div className={styles.backdrop} onClick={()=>setSelected(null)}>
@@ -226,14 +242,14 @@ function SectionHead({title,subtitle,action}:{title:string;subtitle:string;actio
 }
 
 function PosterCard({app,open,details,compact=false}:{app:StudioApp;open:(app:StudioApp)=>void;details:(app:StudioApp)=>void;compact?:boolean}){
-  const copy=copyFor(app),video=demoPaths[app.id];
+  const copy=copyFor(app);
   return <article className={compact?styles.posterCardCompact:styles.posterCard} data-app={app.id} style={accentStyle(app)}>
     <button className={styles.posterHit} aria-label={`Open ${app.name}`} onClick={()=>open(app)}/>
-    {video&&<video className={styles.posterMedia} src={video} muted loop autoPlay playsInline preload="metadata"/>}
+    {/* Avoid autoplaying a grid of demos; each real video remains available from app details. */}
     <div className={styles.posterArt}/>
     <div className={styles.posterShade}/>
     <div className={styles.posterTop}><BrandMark app={app}/><span>{copy.category}</span></div>
-    <div className={styles.posterBody}><h3>{app.shortName}</h3><p>{copy.short}</p></div>
+    <div className={styles.posterBody}><h3>{app.shortName}</h3><p>{copy.short}</p><span className={styles.posterCta} aria-hidden="true">{app.url?"Open":"Details"} ↗</span></div>
     <button className={styles.posterDetails} aria-label={`Details for ${app.name}`} onClick={()=>details(app)}>›</button>
   </article>
 }

@@ -203,3 +203,38 @@ test("updates and settings links open the intended Studio screens",async({page})
  await page.goto("/studio#settings",{waitUntil:"domcontentloaded"});
  await expect(page.getByRole("heading",{name:"My CactusByte™"})).toBeVisible();
 });
+
+test("North Star featured shelf uses six actual apps with poster artwork",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const featured=page.locator("#featured article");
+ await expect(featured).toHaveCount(6);
+ await expect(featured.nth(0)).toHaveAttribute("data-app","acelynn-pro");
+ await expect(featured.nth(1)).toHaveAttribute("data-app","noproblem");
+ await expect(featured.nth(5)).toHaveAttribute("data-app","pocketstomp");
+ const image=await featured.first().locator("[class*=posterArt]").evaluate(el=>getComputedStyle(el).backgroundImage);
+ expect(image).toContain("images.unsplash.com");
+ await expect(page.getByText("Firstep Kitchen")).toHaveCount(0);
+});
+
+test("North Star category tiles filter the verified app catalog",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const category=page.locator('[data-category="Beta Labs"]');
+ await category.click();
+ const apps=page.locator("#all-apps article");
+ expect(await apps.count()).toBeGreaterThan(0);
+ expect(await apps.count()).toBeLessThan(14);
+ await page.locator('[data-category="All Apps"]').click();
+ await expect(apps).toHaveCount(8);
+});
+
+test("North Star phone navigation has five distinct working destinations",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const nav=page.getByRole("navigation",{name:"CactusByte navigation"});
+ await expect(nav.getByRole("link")).toHaveCount(5);
+ await expect(nav.getByRole("link",{name:/Studio/})).toHaveAttribute("href","/studio");
+ await expect(nav.getByRole("link",{name:/Updates/})).toHaveAttribute("href","/studio#releases");
+ await expect(nav.getByRole("link",{name:/Profile/})).toHaveAttribute("href","/studio#settings");
+ const y=await nav.evaluate(el=>Math.round(el.getBoundingClientRect().bottom));
+ expect(y).toBe(844);
+});

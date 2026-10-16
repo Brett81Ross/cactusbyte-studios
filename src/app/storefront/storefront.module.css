@@ -131,3 +131,119 @@
 }
 
 .emptyState{margin:12px 0 0;padding:18px;border:1px solid var(--line2);border-radius:16px;background:rgba(33,242,182,.045);color:#bdd2d0;font-size:.85rem;line-height:1.5}
+
+
+/* SLB10 NORTH STAR: real storefront components, not a rendered device mockup.
+ * Image backgrounds are illustrative; official marks come only from BrandMark.
+ * Background layers always have an on-device gradient fallback. */
+.brandRail{background:linear-gradient(180deg,rgba(2,11,21,.97),rgba(2,7,13,.98) 52%,rgba(9,15,36,.94)),radial-gradient(circle at 50% 86%,rgba(43,76,207,.34),transparent 70%)}
+.railArt{position:absolute;z-index:1;left:12px;right:12px;bottom:14px;height:36%;border-radius:18px;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  background:radial-gradient(circle at 45% 64%,rgba(77,44,183,.55),transparent 49%),linear-gradient(0deg,#090821,#030c1a 60%,transparent);box-shadow:inset 0 0 28px #090e2b}
+.railArt:before{content:"";position:absolute;inset:0;opacity:.25;background:radial-gradient(circle,white 1px,transparent 1.5px) 0 0/26px 30px}
+.railArt strong{position:relative;color:#aaefff;font-weight:500;font-style:italic;font-family:Georgia,serif;font-size:1.32rem;line-height:1.2;text-align:center;text-shadow:0 0 16px #39c8ff;transform:rotate(-7deg)}
+.railArt b{position:relative;font-size:4rem;filter:drop-shadow(0 0 18px #00ffce)}
+.railPlaque{display:none}
+.railNav{z-index:2}
+.railNav a{font-size:.84rem}.railNav .railOn{background:linear-gradient(90deg,rgba(0,231,242,.23),rgba(0,169,186,.08));border-color:rgba(21,231,245,.38);box-shadow:inset 4px 0 #1efcf0}
+.shell{padding-bottom:100px}
+.topbar{position:relative;z-index:20}
+.hero{min-height:330px;border-radius:23px;box-shadow:0 16px 62px rgba(0,0,0,.45),0 0 30px rgba(125,61,246,.22)}
+.hero:before{display:none}
+.heroMedia{opacity:.1;filter:blur(10px) saturate(1.4)}
+.heroPortrait{position:absolute;inset:0;z-index:1;
+ background-image:radial-gradient(circle at 70% 28%,rgba(223,34,225,.35),transparent 38%),linear-gradient(90deg,rgba(4,5,15,.8) 1%,transparent 55%),url("https://images.unsplash.com/photo-1776000505704-264075621e97?auto=format&fit=crop&w=1200&q=80");
+ background-size:cover,cover,cover;background-position:center,center,70% 47%;background-repeat:no-repeat;
+ filter:saturate(1.55) contrast(1.18)}
+.heroOverlay{z-index:2;background:linear-gradient(90deg,rgba(3,5,14,.97) 0%,rgba(3,5,14,.91) 28%,rgba(4,6,22,.6) 54%,rgba(9,3,29,.07) 83%),linear-gradient(0deg,rgba(3,4,10,.8),transparent 35%)}
+.heroNoise{z-index:2;pointer-events:none}.heroCopy{z-index:3;max-width:56%;padding:25px 30px 22px}
+.heroIdentity{margin-top:12px;gap:13px}.heroIdentity h1{font-size:clamp(2rem,3.6vw,3.7rem)}
+.heroIdentity h1::first-letter{color:var(--neon2)}
+.heroDescription{font-size:.87rem;line-height:1.48;color:#d4dce6;margin-top:14px}
+.heroActions{margin-top:15px}.heroFeatures{margin-top:17px;padding-top:11px;gap:10px;font-size:.65rem}
+.heroSlogan{right:16px;bottom:16px}.heroSlogan b{color:#cff9ff}
+.section{margin-top:18px}.sectionHead{margin-bottom:9px}.sectionHead h2{font-size:1.35rem}
+.featuredGrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.moreGrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.recentGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.recommendGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.posterCard,.posterCardCompact{--cardH:210px;border-radius:14px;box-shadow:0 8px 22px #0008}
+.posterCardCompact{--cardH:182px}
+.posterCard{--cardImage:none}
+.posterCardCompact{--cardImage:none}
+.posterCard[data-app="acelynn-pro"],.posterCardCompact[data-app="acelynn-pro"]{--cardImage:url("https://images.unsplash.com/photo-1776000505704-264075621e97?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="noproblem"],.posterCardCompact[data-app="noproblem"]{--cardImage:url("https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="fantasy-matrix"],.posterCardCompact[data-app="fantasy-matrix"]{--cardImage:url("https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="first-bearing"],.posterCardCompact[data-app="first-bearing"]{--cardImage:url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="rivetex"],.posterCardCompact[data-app="rivetex"]{--cardImage:url("https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="pocketstomp"],.posterCardCompact[data-app="pocketstomp"]{--cardImage:url("https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="machzero"],.posterCardCompact[data-app="machzero"]{--cardImage:url("https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="rapid-takeoff"],.posterCardCompact[data-app="rapid-takeoff"]{--cardImage:url("https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="ghostlane"],.posterCardCompact[data-app="ghostlane"]{--cardImage:url("https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="scouttrace"],.posterCardCompact[data-app="scouttrace"]{--cardImage:url("https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="shadownex-prime"],.posterCardCompact[data-app="shadownex-prime"]{--cardImage:url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="terraflow-matrix"],.posterCardCompact[data-app="terraflow-matrix"]{--cardImage:url("https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="orbitgather"],.posterCardCompact[data-app="orbitgather"]{--cardImage:url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=750&q=80")}
+.posterCard[data-app="hustle-first"],.posterCardCompact[data-app="hustle-first"]{--cardImage:url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=750&q=80")}
+.posterArt{background-image:linear-gradient(140deg,color-mix(in srgb,var(--accent) 28%,transparent),transparent 58%),var(--cardImage);background-size:cover;background-position:center;filter:saturate(1.45) contrast(1.08)}
+.posterArt:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 40% 15%,transparent,rgba(4,7,15,.22) 70%)}
+.posterShade{background:linear-gradient(0deg,rgba(2,4,10,.98) 0%,rgba(2,4,10,.77) 32%,rgba(2,4,10,.02) 85%)}
+.posterTop{left:9px;right:9px;top:9px}.posterTop>span{font-size:.5rem}
+.logo,.wordmark{width:38px;height:38px;border-radius:12px}.logo img{padding:3px}
+.posterBody{left:10px;right:10px;bottom:9px}.posterBody h3{font-size:.85rem;line-height:1.13}.posterBody p{font-size:.62rem;color:#d0dbe3}
+.posterCta{display:block;margin-top:9px;border:1px solid rgba(39,243,238,.75);border-radius:10px;line-height:27px;text-align:center;background:rgba(4,14,24,.58);color:#d9fffc;font-size:.7rem;font-weight:750;pointer-events:none}
+.posterCard:first-child .posterCta{background:linear-gradient(90deg,#26e9f3,#49ffcd);color:#03131c}
+.posterDetails{width:38px;height:38px;opacity:0;bottom:auto;top:7px;right:7px;transition:opacity .15s}
+.posterCard:hover .posterDetails,.posterCardCompact:hover .posterDetails,.posterDetails:focus-visible{opacity:1}
+.posterCard:focus-within,.posterCardCompact:focus-within{outline:2px solid #17fbe4;outline-offset:2px}
+.categoryTiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.categoryTile{position:relative;isolation:isolate;min-width:0;min-height:124px;padding:12px 8px;border:1px solid rgba(67,245,223,.2);border-radius:15px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:4px;color:#f8ffff;background:radial-gradient(circle at 50% 25%,rgba(209,38,233,.56),transparent 70%),linear-gradient(140deg,#231048,#070b17);box-shadow:inset 0 1px #ffffff16}
+.categoryTile:nth-child(2){background:radial-gradient(circle at 50% 25%,#1689f168,transparent 75%),linear-gradient(#102e52,#070e1b)}
+.categoryTile:nth-child(3){background:radial-gradient(circle at 50% 25%,#0ddb7568,transparent 75%),linear-gradient(#09332a,#080e14)}
+.categoryTile:nth-child(4){background:radial-gradient(circle at 50% 25%,#ff982768,transparent 75%),linear-gradient(#44230a,#0e0b11)}
+.categoryTile:nth-child(5){background:radial-gradient(circle at 50% 25%,#a55eff68,transparent 75%),linear-gradient(#311259,#070e1b)}
+.categoryTile:nth-child(6){background:radial-gradient(circle at 50% 25%,#17d5c168,transparent 75%),linear-gradient(#123f48,#090b15)}
+.categoryTile>span{font-size:2.5rem;line-height:1;filter:drop-shadow(0 0 14px currentColor)}
+.categoryTile>b{font-size:.9rem}.categoryTile>small{font-size:.65rem;color:#bdc7d1}
+.categoryTile:hover,.categoryTile:focus-visible{border-color:#2fffe8;box-shadow:0 0 24px #02e5cd30}
+.bottomNav{position:fixed;left:250px;right:0;bottom:0;min-height:58px;border-radius:16px 16px 0 0;border-bottom:0;background:#030a12f5;grid-template-columns:repeat(5,minmax(0,1fr));box-shadow:0 -10px 30px #000b;z-index:40;padding:5px 10px}
+.bottomNav a{flex-direction:column;gap:1px;min-width:0;font-size:.7rem}
+.bottomNav a span{font-size:1.15rem}
+@media(min-width:1221px){.featuredGrid .posterCard{--cardH:230px}}
+@media(max-width:1220px) and (min-width:981px){.featuredGrid{grid-template-columns:repeat(6,minmax(0,1fr))}.moreGrid{grid-template-columns:repeat(6,minmax(0,1fr))}.recommendGrid{grid-template-columns:repeat(5,minmax(0,1fr))}.bottomNav{left:194px}.posterBody h3{font-size:.75rem}.posterBody p{font-size:.56rem}}
+@media(max-width:980px) and (min-width:760px){
+ .featuredGrid,.moreGrid,.recentGrid,.recommendGrid{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}
+ .featuredGrid .posterCard,.moreGrid .posterCardCompact,.recentGrid .posterCardCompact,.recommendGrid .posterCardCompact{flex:0 0 143px}
+ .categoryTiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .bottomNav{left:166px;right:0}
+ .heroCopy{max-width:63%}
+}
+@media(max-width:759px){
+ .shell{padding:8px 9px 86px}
+ .topbar{min-height:68px;grid-template-columns:minmax(0,1fr) auto;padding:6px 4px 10px}
+ .mobileBrand{justify-content:center}.mobileBrand img{width:32px;height:32px}
+ .mobileBrand b{font-size:1rem}.mobileBrand small{font-size:.63rem}
+ .hero{min-height:324px}.heroCopy{min-height:324px;max-width:80%;justify-content:end;padding:14px 15px 15px}
+ .heroPortrait{background-position:center,center,70% 35%}
+ .heroOverlay{background:linear-gradient(90deg,rgba(2,4,12,.94) 0%,rgba(2,4,12,.76) 37%,rgba(2,4,12,.08) 88%),linear-gradient(0deg,rgba(2,4,12,.83),transparent 65%)}
+ .heroIdentity{align-items:center;margin-top:9px;gap:8px}
+ .heroIdentity h1{font-size:clamp(1.5rem,7vw,2.2rem)}
+ .heroIdentity p{font-size:.79rem}
+ .logoLarge,.wordmarkLarge{width:52px;height:52px;border-radius:14px}
+ .heroDescription{font-size:.7rem;margin-top:9px}.heroActions{margin-top:12px;gap:7px}
+ .heroActions button{min-width:90px;min-height:42px;font-size:.75rem;flex:1}
+ .featuredGrid,.moreGrid,.recentGrid,.recommendGrid{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}
+ .featuredGrid .posterCard,.moreGrid .posterCardCompact,.recentGrid .posterCardCompact,.recommendGrid .posterCardCompact{flex:0 0 128px;min-width:128px}
+ .featuredGrid .posterCard{height:202px}.posterCardCompact{height:178px}
+ .posterBody h3{font-size:.78rem}.posterBody p{font-size:.58rem}
+ .posterCta{font-size:.65rem;line-height:25px;margin-top:7px}
+ .categoryTiles{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 8px}
+ .categoryTile{flex:0 0 109px;min-height:116px}
+ .categoryTile>span{font-size:2rem}.categoryTile>b{font-size:.79rem}.categoryTile>small{font-size:.59rem}
+ .bottomNav{left:0;right:0;bottom:0;border-radius:16px 16px 0 0;padding:4px 8px;grid-template-columns:repeat(5,minmax(0,1fr))}
+ .bottomNav a:nth-child(3),.bottomNav a:nth-child(5){display:flex}
+ .bottomNav a{font-size:.59rem;min-height:48px}
+ .bottomNav a span{font-size:1.16rem}
+ .section{margin-top:15px}.sectionHead h2{font-size:1.12rem}
+}
+@media(max-width:390px){.hero{min-height:310px}.heroCopy{min-height:310px}.heroIdentity h1{font-size:1.47rem}.heroActions button{font-size:.7rem;min-width:85px}}
