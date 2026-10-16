@@ -3,23 +3,43 @@ import fs from "node:fs";
 const page=fs.readFileSync("src/app/storefront/page.tsx","utf8");
 const css=fs.readFileSync("src/app/storefront/storefront.module.css","utf8");
 const vercel=JSON.parse(fs.readFileSync("vercel.json","utf8"));
+const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
+const studio=fs.readFileSync("src/app/studio/page.tsx","utf8");
+
 const checks=[
  ["Premium storefront remains the root experience",fs.readFileSync("src/app/page.tsx","utf8").includes('export {default} from "./storefront/page"')],
  ["Studio command center remains separate",page.includes('href="/studio"')],
- ["Approved hero hierarchy remains present",page.includes("FEATURED APP")&&page.includes("heroIdentity")&&page.includes("heroButtons")],
- ["Real app shelves remain present",page.includes("Our Apps")&&page.includes("Continue Using")&&page.includes("Categories")&&page.includes("New from Cactus🌵Byte")],
- ["SLB7 desktop hierarchy is explicit",css.includes("SLB7 — storefront mockup fidelity")&&css.includes(".heroCard{min-height:430px")],
- ["Featured desktop cards use denser mockup composition",css.includes(".appShelf .storeCard{min-height:224px;display:grid")],
- ["Phone storefront keeps horizontal featured shelf",css.includes("@media(max-width:759px)")&&css.includes(".appShelf{margin-inline:-2px")],
- ["Fold landscape receives explicit composition",css.includes("@media(min-width:700px) and (max-width:980px) and (orientation:landscape)")],
- ["SLB8 storefront polish is locked",page.includes('STOREFRONT_VERSION="1.8.0"')&&page.includes("View All Apps")&&page.includes("Explore Apps ↓")&&css.includes("SLB8 — premium storefront density")],
- ["Initial portfolio density is intentionally capped",page.includes("apps.slice(0,8)")],
- ["SLB9 visual collision cleanup is locked",css.includes("SLB9 — mockup-fidelity cleanup")&&css.includes(".heroVideo{opacity:.58")&&css.includes(".wideCard .wideDetails{display:none}")],
- ["Fold-open landscape keeps full-width New-card actions",css.includes("@media(min-width:1081px) and (max-width:1240px)")&&css.includes(".wideCard>button:not(.wideDetails){grid-column:1/-1;grid-row:2;width:100%")],
- ["Unresolved brands stay text-only without duplicate long card labels",page.includes('large?app.shortName:"LOGO"')&&page.includes('large?"Official logo pending recovery":"Pending"')],
+ ["Approved cinematic hero is present",page.includes("FEATURED APP")&&page.includes("heroIdentity")&&page.includes("heroActions")&&page.includes("heroFeatures")],
+ ["Approved storefront shelves are present",page.includes("Featured Apps")&&page.includes("More from CactusByte Studios")&&page.includes("All Apps")],
+ ["Actual verified brand assets remain wired",page.includes("verifiedBrandAsset(app.id)")&&page.includes("official logo")],
+ ["PocketStomp unresolved-brand safeguard remains intact",page.includes('large?app.shortName:"LOGO"')&&page.includes("Official logo pending recovery")],
+ ["Cinematic neon shell is explicit",css.includes("--neon:#21f2b6")&&css.includes(".hero{")&&css.includes(".posterCard")&&css.includes(".brandRail")],
+ ["Hero uses layered atmospheric media with approved artwork and text protection",css.includes(".heroMedia")&&css.includes("filter:blur(6px)")&&css.includes("filter:blur(7px)")&&css.includes('url("/acelynn-beta-icon.png")')&&css.includes("background-size:cover,auto 65%")&&css.includes("background-size:cover,auto 38%")&&css.includes(".featureBadge{align-self:flex-start}")&&css.includes(".heroOverlay")&&css.includes("box-shadow:0 30px 90px")],
+ ["Category strip uses non-shrinking scrollable pills",css.includes(".categoryStrip")&&css.includes(".categoryOn")&&css.includes(".categoryStrip button{flex:0 0 auto")],
+ ["Desktop/Fold storefront keeps persistent brand rail",css.includes("@media(max-width:980px)")&&css.includes(".brandRail{left:12px")],
+ ["Phone storefront switches to compact full-width shell",css.includes("@media(max-width:759px)")&&css.includes(".brandRail{display:none}")&&css.includes(".featuredGrid,.moreGrid,.recentGrid{display:flex;overflow-x:auto")],
+ ["Bottom nav is persistent and mockup-aligned",page.includes('aria-label="CactusByte navigation"')&&css.includes(".bottomNav")],
+ ["Updates and Settings destinations activate the intended Studio screens",page.includes('href="/studio#releases"')&&page.includes('href="/studio#settings"')&&studio.includes('hash==="releases"')&&studio.includes('hash==="settings"')],
+ ["Unmatched search results receive a readable empty state",page.includes('role="status">No apps match your search or category.')&&css.includes(".emptyState")],
+ ["Initial portfolio density remains capped",page.includes("apps.slice(0,8)")],
+ ["Storefront display version matches the verified package release",page.includes(`STOREFRONT_VERSION="${pkg.version}"`)], 
+ ["Studio UI version remains package-aligned",studio.includes(`const V="${pkg.version}"`)], 
+ ["Storefront footer includes a tappable CactusByte home link and rights notice",page.includes('className={styles.footerBrand} href="/"')&&page.includes("Cactus🌵Byte Studios™")&&page.includes("All Rights Reserved")],
+ ["Studio footer links back to CactusByte without duplicate brand names",studio.includes('<footer><a className="footerBrand" href="/">Cactus🌵Byte Studios™</a> · v{V} · All Rights Reserved</footer>')],
+ ["North Star art-backed poster cards are bound to real registry IDs",css.includes('[data-app="noproblem"]')&&css.includes('[data-app="pocketstomp"]')&&css.includes(".posterArt{background-image")],
+ ["North Star featured row includes real SchismMatrix and no fictional apps",page.includes('"noproblem","fantasy-matrix"')&&!page.includes("firstep-kitchen")],
+ ["Functional category tile shelf and recommendation shelf exist",page.includes("Explore Categories")&&page.includes("Recommended Apps")&&page.includes('data-category={t.id}')],
+ ["Mobile bottom navigation exposes five usable links",css.includes(".bottomNav a:nth-child(3),.bottomNav a:nth-child(5){display:flex}")&&page.includes("Profile</a>")],
+ ["All 14 app scenes are bundled as separate local vector assets",["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","orbitgather","ghostlane","hustle-first"].every(id=>fs.existsSync(`public/posters/${id}.svg`)&&fs.readFileSync(`public/posters/${id}.svg`,"utf8").includes('viewBox="0 0 600 780"')&&css.includes(`url("/posters/${id}.svg")`))],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
-let failed=0;for(const [name,ok] of checks){console.log(`${ok?"✓":"✗"} ${name}`);if(!ok)failed++}
-console.log(`\n${checks.length-failed} passed · ${failed} failed`);if(failed)process.exit(1);
 
-// SLB9 final QA trigger — Fold landscape action-clipping fix.
+let failed=0;
+for(const [name,ok] of checks){
+ console.log(`${ok?"✓":"✗"} ${name}`);
+ if(!ok)failed++;
+}
+console.log(`\n${checks.length-failed} passed · ${failed} failed`);
+if(failed)process.exit(1);
+
+// SLB10 approved-mockup fidelity contract.

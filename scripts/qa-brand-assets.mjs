@@ -12,6 +12,10 @@ const ids=[...apps.matchAll(/\{id:"([^"]+)"/g)].map(m=>m[1]);
 for(const id of ids)check(brands.includes(`appId: "${id}"`),`${id}: brand map entry exists`);
 check(brands.includes('appId: "cactusbyte-studios"')&&brands.includes('src: "/logo2.png"'),"CactusByte uses the current canonical logo2.png asset");
 check(brands.includes('appId: "pocketstomp"')&&brands.includes('status: "unresolved"'),"PocketStomp is explicitly unresolved");
+check(brands.includes('appId: "ghostlane"')&&brands.includes('source: "Brand recovery required"'),"GhostLane broken remote logo is guarded as unresolved");
+for(const local of ["/brand/hustle-first.svg","/brand/scouttrace.svg","/brand/rapid-takeoff.svg","/brand/machzero.jpg","/brand/first-bearing.png","/brand/rivetex.webp","/brand/schismmatrix.svg","/brand/terraflow.svg"]){
+ check(brands.includes(`src: "${local}"`),`${local}: storefront brand asset is local and deterministic`);
+}
 check(!brands.includes('pocketstomp-v2-brett81ross.vercel.app/pocketstomp-icon.png'),"Rejected PocketStomp production icon cannot enter the verified brand map");
 check(doc.includes("No AI-generated substitute logos."),"Brand inventory documents the no-fake-logo rule");
 check(storefront.includes("verifiedBrandAsset"),"Storefront renders app branding through the verified brand map");
