@@ -170,6 +170,12 @@ test("category buttons filter actual registry cards and can restore all apps",as
 
 test("search filters actual apps and gives usable empty-state feedback",async({page})=>{
  await page.goto("/",{waitUntil:"domcontentloaded"});
+ // Exercise a state transition first: WebKit can dispatch input before React has hydrated after DOMContentLoaded.
+ const portfolio=page.locator("#all-apps");
+ await portfolio.getByRole("button",{name:/View All Apps/}).click();
+ await expect(portfolio.locator("article")).toHaveCount(14);
+ await portfolio.getByRole("button",{name:/Show Less/}).click();
+ await expect(portfolio.locator("article")).toHaveCount(8);
  const search=page.getByPlaceholder("Search apps, tools, creators...");
  await search.fill("MachZero");
  await expect(page.locator("#all-apps article")).toHaveCount(1);
