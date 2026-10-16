@@ -145,3 +145,55 @@ test("studio footer uses the same release version and tappable brand",async({pag
  await expect(footer).toContainText("Cactus🌵Byte Studios™ · v1.7.0 · All Rights Reserved");
  await expect(footer.getByRole("link",{name:"Cactus🌵Byte Studios™"})).toHaveAttribute("href","/");
 });
+
+test("mobile category pills retain their width and scroll without overlap",async({page})=>{
+ await page.setViewportSize({width:360,height:748});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const strip=page.locator("#categories");
+ const buttons=strip.locator("button");
+ const first=await buttons.nth(0).boundingBox();
+ const second=await buttons.nth(1).boundingBox();
+ expect(first).not.toBeNull();expect(second).not.toBeNull();
+ expect(first!.width).toBeGreaterThan(65);
+ expect(second!.x).toBeGreaterThanOrEqual(first!.x+first!.width);
+ expect(await strip.evaluate(el=>el.scrollWidth>el.clientWidth)).toBe(true);
+});
+
+test("category buttons filter actual registry cards and can restore all apps",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator("#categories").getByRole("button",{name:"Security"}).click();
+ await expect(page.locator("#all-apps article")).toHaveCount(1);
+ await expect(page.locator("#all-apps article[data-app='scouttrace']")).toHaveCount(1);
+ await page.locator("#categories").getByRole("button",{name:"All Apps"}).click();
+ await expect(page.locator("#all-apps article")).toHaveCount(8);
+});
+
+test("search filters actual apps and gives usable empty-state feedback",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const search=page.getByPlaceholder("Search apps, tools, creators...");
+ await search.fill("MachZero");
+ await expect(page.locator("#all-apps article")).toHaveCount(1);
+ await expect(page.locator("#all-apps article[data-app='machzero']")).toHaveCount(1);
+ await search.fill("nonexistent-cactusbyte-app-zzzz");
+ await expect(page.locator("#all-apps article")).toHaveCount(0);
+ await expect(page.getByRole("status")).toContainText("No apps match");
+ await search.clear();
+ await expect(page.locator("#all-apps article")).toHaveCount(8);
+});
+
+test("app details open the correct registry record and close without leaving storefront",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator("#all-apps").getByRole("button",{name:"Details for SchismMatrix™"}).click();
+ const detail=page.locator('section[data-app="noproblem"]');
+ await expect(detail.getByRole("heading",{name:"SchismMatrix™"})).toBeVisible();
+ await expect(detail).toContainText("v1.1.0");
+ await detail.getByRole("button",{name:"Close details"}).click();
+ await expect(detail).toHaveCount(0);
+});
+
+test("updates and settings links open the intended Studio screens",async({page})=>{
+ await page.goto("/studio#releases",{waitUntil:"domcontentloaded"});
+ await expect(page.getByRole("heading",{name:"Current release records"})).toBeVisible();
+ await page.goto("/studio#settings",{waitUntil:"domcontentloaded"});
+ await expect(page.getByRole("heading",{name:"My CactusByte™"})).toBeVisible();
+});

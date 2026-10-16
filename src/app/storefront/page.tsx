@@ -180,6 +180,7 @@ export default function StorefrontPage(){
       <section className={styles.section} id="all-apps">
         <SectionHead title={category==="All Apps"?"All Apps":category} subtitle={category==="All Apps"?"The complete CactusByte ecosystem.":`${apps.length} matching apps`}/>
         <div className={styles.allGrid}>{visibleApps.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
+        {visibleApps.length===0&&<p className={styles.emptyState} role="status">No apps match your search or category. Try another search or select All Apps.</p>}
         {!q&&category==="All Apps"&&apps.length>8&&<button className={styles.showAllButton} onClick={()=>setShowAll(v=>!v)}>{showAll?"Show Less":"View All Apps"} <span>{showAll?"↑":"↓"}</span></button>}
       </section>
 
@@ -195,7 +196,7 @@ export default function StorefrontPage(){
       <a href="/studio#releases"><span>◌</span>Updates</a>
       <a href="#featured"><span>◇</span>Explore</a>
       <a href="#categories"><span>◫</span>Categories</a>
-      <a href="/studio"><span>⚙</span>Settings</a>
+      <a href="/studio#settings"><span>⚙</span>Settings</a>
     </nav>
 
     {selected&&<div className={styles.backdrop} onClick={()=>setSelected(null)}>
