@@ -246,7 +246,7 @@ function PosterCard({app,open,details,compact=false}:{app:StudioApp;open:(app:St
   return <article className={compact?styles.posterCardCompact:styles.posterCard} data-app={app.id} style={accentStyle(app)}>
     <button className={styles.posterHit} aria-label={`Open ${app.name}`} onClick={()=>open(app)}/>
     {/* Avoid autoplaying a grid of demos; each real video remains available from app details. */}
-    <div className={styles.posterArt}/>
+    <div className={styles.posterArt} aria-hidden="true"><img src={`/posters/${app.id}.svg`} alt="" loading={compact?"lazy":"eager"} decoding="async"/></div>
     <div className={styles.posterShade}/>
     <div className={styles.posterTop}><BrandMark app={app}/><span>{copy.category}</span></div>
     <div className={styles.posterBody}><h3>{app.shortName}</h3><p>{copy.short}</p><span className={styles.posterCta} aria-hidden="true">{app.url?"Open":"Details"} ↗</span></div>
