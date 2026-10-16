@@ -212,7 +212,7 @@ test("North Star featured shelf uses six actual apps with poster artwork",async(
  await expect(featured.nth(1)).toHaveAttribute("data-app","noproblem");
  await expect(featured.nth(5)).toHaveAttribute("data-app","pocketstomp");
  const image=await featured.first().locator("[class*=posterArt]").evaluate(el=>getComputedStyle(el).backgroundImage);
- expect(image).toContain("images.unsplash.com");
+ expect(image).toContain("/posters/acelynn-pro.svg");
  await expect(page.getByText("Firstep Kitchen")).toHaveCount(0);
 });
 
@@ -253,4 +253,77 @@ test("North Star artwork is individually bundled and decodes as images",async({p
   const img=new Image();img.src="/posters/acelynn-pro.svg";await img.decode();return{w:img.naturalWidth,h:img.naturalHeight};
  });
  expect(decoded).toEqual({w:600,h:780});
+});
+
+
+test("SLB10 poster artwork paints from the shipped SVG files, independent of branded logos",async({page})=>{
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ for(const id of ["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"]){
+  const card=page.locator('#featured article[data-app="'+id+'"]');
+  const poster=card.locator('[class*=posterArt] img');
+  await expect(poster).toHaveAttribute("src",'/posters/'+id+'.svg');
+  const pixels=await poster.evaluate(async(el)=>{
+   const img=el as HTMLImageElement;
+   await img.decode();
+   const styles=getComputedStyle(img);
+   return{width:img.naturalWidth,height:img.naturalHeight,fit:styles.objectFit,opacity:styles.opacity};
+  });
+  expect(pixels.width,id+" image width").toBe(600);
+  expect(pixels.height,id+" image height").toBe(780);
+  expect(pixels.fit).toBe("cover");
+  expect(pixels.opacity).not.toBe("0");
+ }
+ await expect(page.getByAltText("Acelynn Pro official logo").first()).toBeVisible();
+ await expect(page.locator('img[src*="pocketstomp-icon.png"]')).toHaveCount(0);
+});
+
+test("SLB10 Fold cover displays three featured cards without shrinking the tap targets",async({page})=>{
+ await page.setViewportSize({width:360,height:748});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const shelf=page.locator("#featured").locator('[class*=featuredGrid]');
+ const cards=shelf.locator("article");
+ await expect(cards).toHaveCount(6);
+ const geometry=await shelf.evaluate(el=>{
+  const r=el.getBoundingClientRect();
+  const cardRects=Array.from(el.querySelectorAll("article")).slice(0,4).map(card=>card.getBoundingClientRect());
+  return{shelfRight:r.right,thirdRight:cardRects[2].right,fourthLeft:cardRects[3].left,widths:cardRects.map(card=>card.width)};
+ });
+ expect(geometry.thirdRight).toBeLessThanOrEqual(geometry.shelfRight+2);
+ expect(geometry.fourthLeft).toBeGreaterThanOrEqual(geometry.shelfRight-2);
+ expect(Math.min(...geometry.widths)).toBeGreaterThan(95);
+});
+
+test("SLB10 Fold landscape shows five featured cards and uses its unobstructed side rail",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeHidden();
+ await expect(page.getByRole("navigation",{name:"CactusByte sections"})).toBeVisible();
+ const geometry=await page.locator("#featured").locator('[class*=featuredGrid]').evaluate(el=>{
+  const r=el.getBoundingClientRect();
+  const cards=Array.from(el.querySelectorAll("article")).map(card=>card.getBoundingClientRect());
+  return {right:r.right,fifthRight:cards[4].right,sixthLeft:cards[5].left};
+ });
+ expect(geometry.fifthRight).toBeLessThanOrEqual(geometry.right+2);
+ expect(geometry.sixthLeft).toBeGreaterThanOrEqual(geometry.right-2);
+});
+
+test("SLB10 phone bottom navigation has its own row, with a scrollable content region",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const geometry=await page.evaluate(()=>{
+  const shell=document.querySelector('[class*=shell]')!.getBoundingClientRect();
+  const nav=document.querySelector('nav[aria-label="CactusByte navigation"]')!.getBoundingClientRect();
+  const scroll=document.querySelector('[class*=shell]')! as HTMLElement;
+  return{shellBottom:shell.bottom,navTop:nav.top,navBottom:nav.bottom,overflowY:getComputedStyle(scroll).overflowY,scrollHeight:scroll.scrollHeight,clientHeight:scroll.clientHeight};
+ });
+ expect(geometry.navTop).toBeGreaterThanOrEqual(geometry.shellBottom-1);
+ expect(Math.abs(geometry.navBottom-844)).toBeLessThanOrEqual(1);
+ expect(geometry.overflowY).toBe("auto");
+ expect(geometry.scrollHeight).toBeGreaterThan(geometry.clientHeight);
+ const allApps=page.locator("#all-apps");
+ await allApps.getByRole("button",{name:/View All Apps/}).click();
+ await expect(allApps.locator("article")).toHaveCount(14);
+ await page.locator("footer").scrollIntoViewIfNeeded();
+ await expect(page.locator("footer")).toBeInViewport();
+ await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeVisible();
 });
