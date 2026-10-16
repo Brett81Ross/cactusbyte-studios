@@ -192,7 +192,7 @@ export default function StorefrontPage(){
       <section className={styles.section}>
         <SectionHead title="Recommended Apps" subtitle="More tools from our verified app lineup." action="#all-apps"/>
         <div className={styles.recommendGrid}>{recommended.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
-      </section>}
+      </section>
 
       <section className={styles.section} id="all-apps">
         <SectionHead title={category==="All Apps"?"All Apps":category} subtitle={category==="All Apps"?"The complete CactusByte ecosystem.":`${apps.length} matching apps`}/>
