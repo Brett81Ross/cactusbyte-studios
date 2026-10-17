@@ -405,3 +405,12 @@
  .heroTools b{font-size:.62rem}
  .heroTools small{font-size:.55rem}
 }
+
+/* SLB11 Android/iOS target-size overrides; no change to destinations or behavior. */
+.close{width:44px;height:44px;min-width:44px;min-height:44px}
+.sectionHead a{min-height:44px}
+@media(max-width:759px){
+ .topActions a,.mobileSearchToggle{width:44px;height:44px;min-width:44px;min-height:44px}
+ .heroActions button{min-height:44px}
+ .heroAbout button{min-height:44px}
+}
