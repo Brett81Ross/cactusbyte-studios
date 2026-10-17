@@ -37,6 +37,11 @@ const checks=[
  ["Fold CactusByte wordmark does not disappear",css.includes('.brandLockup span{display:grid}')&&page.includes('<b>Cactus🌵Byte</b>')],
  ["Touch actions meet 44px tap target contract",css.includes('.posterDetails{width:44px;height:44px')&&css.includes('.close{width:44px;height:44px')&&css.includes('.heroActions button{min-height:44px}')],
  ["Phone catalog uses compact swipe cards",css.includes('.allGrid{display:flex;gap:8px;overflow-x:auto')&&css.includes('.allGrid .posterCardCompact{flex:0 0 calc((100% - 16px)/3)')],
+ ["Saved app-history data is validated before rendering",page.includes("const saved:unknown=")&&page.includes("Array.isArray(saved)")&&page.includes("setRecentIds([...new Set(valid)]")],
+ ["Closing mobile search cannot leave a hidden active filter",page.includes('if(mobileSearch)setQ("")')&&page.includes('aria-expanded={mobileSearch}')],
+ ["Categories expose keyboard and screen-reader pressed state",page.includes("aria-pressed={category===t.id}")&&page.includes("aria-pressed={category===item.name}")&&css.includes('.categoryTile[aria-pressed="true"]')],
+ ["Sticky header does not hide jumped-to catalog sections",css.includes('.section[id],.hero[id]{scroll-margin-top:88px}')&&css.includes('scroll-margin-top:80px')],
+ ["Three-column phone cards reserve width for longer names and CTAs",css.includes('.posterBody{left:9px;right:9px;bottom:8px}')&&css.includes('overflow-wrap:anywhere')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
