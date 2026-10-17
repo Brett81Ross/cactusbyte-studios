@@ -83,6 +83,7 @@ export default function StorefrontPage(){
   const[demo,setDemo]=useState<StudioApp|null>(null);
   const[mobileSearch,setMobileSearch]=useState(false);
   const[showAll,setShowAll]=useState(false);
+  const[showCategoryFilters,setShowCategoryFilters]=useState(false);
 
   useEffect(()=>{try{const raw=localStorage.getItem(RECENT_KEY);setRecentIds(raw?JSON.parse(raw):[])}catch{}},[]);
 
@@ -170,10 +171,6 @@ export default function StorefrontPage(){
       </section>
       <section className={styles.heroAbout} aria-label="About Acelynn Pro"><div><h2>About Acelynn Pro</h2><p>Audio diagnostics and mix guidance for better balance, clearer frequencies, and confident A/B comparisons.</p></div><button onClick={()=>setDemo(heroApp)} aria-label="Watch Acelynn Pro demo">Watch Demo →</button></section>
 
-      <div className={styles.categoryStrip}>
-        {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
-      </div>
-
       <section className={styles.section} id="featured">
         <SectionHead title="Featured Apps" subtitle="Powerful tools. Real possibilities. Built by CactusByte Studios." action="#all-apps"/>
         <div className={styles.featuredGrid}>{featured.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
@@ -188,6 +185,10 @@ export default function StorefrontPage(){
         <SectionHead title="Explore Categories" subtitle="Find apps by what moves you." action="#all-apps"/>
         <div className={styles.categoryTiles}>
           {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
+        </div>
+        <button className={styles.categoryMoreToggle} aria-controls="category-filter-options" aria-expanded={showCategoryFilters} onClick={()=>setShowCategoryFilters(v=>!v)}>{showCategoryFilters?"Hide categories":"More categories"} <span aria-hidden="true">{showCategoryFilters?"↑":"↓"}</span></button>
+        <div className={styles.categoryStrip} id="category-filter-options" hidden={!showCategoryFilters}>
+          {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
         </div>
       </section>
 
