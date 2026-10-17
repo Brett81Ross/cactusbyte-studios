@@ -135,6 +135,9 @@ export default function StorefrontPage(){
     setCategory(name);setQ("");setMobileSearch(false);setMobileMenu(false);
     requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}));
   }
+  function seeAllApps(){
+    setCategory("All Apps");setQ("");setMobileSearch(false);setMobileMenu(false);setShowAll(true);
+  }
   function browseFromSearch(event:MouseEvent<HTMLAnchorElement>,target:string){
     if(!searchMode)return;
     event.preventDefault();setQ("");setMobileSearch(false);setMobileMenu(false);
@@ -218,17 +221,17 @@ export default function StorefrontPage(){
       <section className={styles.heroAbout} aria-label="About Acelynn Pro"><div><h2>About Acelynn Pro</h2><p>Audio diagnostics and mix guidance for better balance, clearer frequencies, and confident A/B comparisons.</p></div><button onClick={()=>setDemo(heroApp)} aria-label="Watch Acelynn Pro demo">Watch Demo →</button></section>
 
       <section className={styles.section} id="featured">
-        <SectionHead title="Featured Apps" subtitle="Powerful tools. Real possibilities. Built by CactusByte Studios." action="#all-apps"/>
+        <SectionHead title="Featured Apps" subtitle="Powerful tools. Real possibilities. Built by CactusByte Studios." action="#all-apps" onAction={seeAllApps}/>
         <div className={styles.featuredGrid}>{featured.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
       </section>
 
       {recent.length>0&&<section className={styles.section}>
-        <SectionHead title="Continue Using" subtitle="Pick up where you left off." action="#all-apps"/>
+        <SectionHead title="Continue Using" subtitle="Pick up where you left off." action="#all-apps" onAction={seeAllApps}/>
         <div className={styles.recentGrid}>{recent.slice(0,4).map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>}
 
       <section className={styles.section} id="categories" aria-label="Explore categories">
-        <SectionHead title="Explore Categories" subtitle="Find apps by what moves you." action="#all-apps"/>
+        <SectionHead title="Explore Categories" subtitle="Find apps by what moves you." action="#all-apps" onAction={seeAllApps}/>
         <div className={styles.categoryTiles}>
           {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} aria-pressed={category===t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
         </div>
@@ -239,12 +242,12 @@ export default function StorefrontPage(){
       </section>
 
       <section className={styles.section}>
-        <SectionHead title="More from CactusByte Studios" subtitle="Different worlds. Same mission — premium tools for a bolder tomorrow." action="#all-apps"/>
+        <SectionHead title="More from CactusByte Studios" subtitle="Different worlds. Same mission — premium tools for a bolder tomorrow." action="#all-apps" onAction={seeAllApps}/>
         <div className={styles.moreGrid}>{more.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>
 
       <section className={styles.section}>
-        <SectionHead title="Recommended Apps" subtitle="More tools from our verified app lineup." action="#all-apps"/>
+        <SectionHead title="Recommended Apps" subtitle="More tools from our verified app lineup." action="#all-apps" onAction={seeAllApps}/>
         <div className={styles.recommendGrid}>{recommended.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>
       </>}
@@ -292,8 +295,8 @@ export default function StorefrontPage(){
   </main>
 }
 
-function SectionHead({title,subtitle,action}:{title:string;subtitle:string;action?:string}){
-  return <div className={styles.sectionHead}><div><h2>{title}</h2><p>{subtitle}</p></div>{action&&<a href={action}>View All →</a>}</div>
+function SectionHead({title,subtitle,action,onAction}:{title:string;subtitle:string;action?:string;onAction?:()=>void}){
+  return <div className={styles.sectionHead}><div><h2>{title}</h2><p>{subtitle}</p></div>{action&&<a href={action} onClick={onAction}>View All →</a>}</div>
 }
 
 function PosterCard({app,open,details,compact=false}:{app:StudioApp;open:(app:StudioApp)=>void;details:(app:StudioApp)=>void;compact?:boolean}){
