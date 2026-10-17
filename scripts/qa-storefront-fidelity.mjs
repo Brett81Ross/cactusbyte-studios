@@ -14,8 +14,8 @@ const checks=[
  ["Actual verified brand assets remain wired",page.includes("verifiedBrandAsset(app.id)")&&page.includes("official logo")],
  ["PocketStomp unresolved-brand safeguard remains intact",page.includes('large?app.shortName:"LOGO"')&&page.includes("Official logo pending recovery")],
  ["Cinematic neon shell is explicit",css.includes("--neon:#21f2b6")&&css.includes(".hero{")&&css.includes(".posterCard")&&css.includes(".brandRail")],
- ["Hero uses layered atmospheric media with approved artwork and text protection",css.includes(".heroMedia")&&css.includes("filter:blur(6px)")&&css.includes("filter:blur(7px)")&&css.includes('url("/acelynn-beta-icon.png")')&&css.includes("background-size:cover,auto 65%")&&css.includes("background-size:cover,auto 38%")&&css.includes(".featureBadge{align-self:flex-start}")&&css.includes(".heroOverlay")&&css.includes("box-shadow:0 30px 90px")],
- ["Category strip uses non-shrinking scrollable pills",css.includes(".categoryStrip")&&css.includes(".categoryOn")&&css.includes(".categoryStrip button{flex:0 0 auto")],
+ ["Hero shows local neon-audio illustration rather than unrelated portraits",page.includes("heroWaveform")&&page.includes("heroVinyl")&&css.includes('url("/posters/acelynn-pro.svg")')&&css.includes(".heroOverlay")&&!css.includes("images.unsplash.com")&&!page.includes("poster=\"/acelynn-beta-icon.png\"")],
+ ["Category filters stay operational through original buttons and category tiles",page.includes("chooseCategory(item.name)")&&page.includes("data-category={t.id}")&&css.includes(".categoryTiles")],
  ["Desktop/Fold storefront keeps persistent brand rail",css.includes("@media(max-width:980px)")&&css.includes(".brandRail{left:12px")],
  ["Phone storefront switches to compact full-width shell",css.includes("@media(max-width:759px)")&&css.includes(".brandRail{display:none}")&&css.includes(".featuredGrid,.moreGrid,.recentGrid{display:flex;overflow-x:auto")],
  ["Bottom nav is persistent and mockup-aligned",page.includes('aria-label="CactusByte navigation"')&&css.includes(".bottomNav")],
@@ -30,6 +30,7 @@ const checks=[
  ["North Star featured row includes real SchismMatrix and no fictional apps",page.includes('"noproblem","fantasy-matrix"')&&!page.includes("firstep-kitchen")],
  ["Functional category tile shelf and recommendation shelf exist",page.includes("Explore Categories")&&page.includes("Recommended Apps")&&page.includes('data-category={t.id}')],
  ["Mobile bottom navigation exposes five usable links",css.includes(".bottomNav a:nth-child(3),.bottomNav a:nth-child(5){display:flex}")&&page.includes("Profile</a>")],
+ ["Photo-free and app-logo-authentic SLB11 layout is explicit",!css.includes("images.unsplash.com")&&page.includes("Cactus🌵Byte")&&page.includes("heroTools")&&page.includes("heroAbout")&&page.includes("verifiedBrandAsset(app.id)")],
  ["All 14 app scenes are bundled as separate local vector assets",["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","orbitgather","ghostlane","hustle-first"].every(id=>fs.existsSync(`public/posters/${id}.svg`)&&fs.readFileSync(`public/posters/${id}.svg`,"utf8").includes('viewBox="0 0 600 780"')&&css.includes(`url("/posters/${id}.svg")`))],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
