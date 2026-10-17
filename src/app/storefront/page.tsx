@@ -82,8 +82,16 @@ export default function StorefrontPage(){
   const[selected,setSelected]=useState<StudioApp|null>(null);
   const[demo,setDemo]=useState<StudioApp|null>(null);
   const[mobileSearch,setMobileSearch]=useState(false);
+  const[mobileMenu,setMobileMenu]=useState(false);
   const[showAll,setShowAll]=useState(false);
   const[showCategoryFilters,setShowCategoryFilters]=useState(false);
+
+  useEffect(()=>{
+    if(!mobileMenu)return;
+    const dismiss=(event:KeyboardEvent)=>{if(event.key==="Escape")setMobileMenu(false)};
+    document.addEventListener("keydown",dismiss);
+    return ()=>document.removeEventListener("keydown",dismiss);
+  },[mobileMenu]);
 
   useEffect(()=>{
     if(!selected&&!demo)return;
@@ -124,19 +132,19 @@ export default function StorefrontPage(){
   }
   function open(app:StudioApp){remember(app);if(app.url)window.open(app.url,"_blank","noopener,noreferrer")}
   function chooseCategory(name:string){
-    setCategory(name);setQ("");setMobileSearch(false);
+    setCategory(name);setQ("");setMobileSearch(false);setMobileMenu(false);
     requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}));
   }
   function browseFromSearch(event:MouseEvent<HTMLAnchorElement>,target:string){
     if(!searchMode)return;
-    event.preventDefault();setQ("");setMobileSearch(false);
+    event.preventDefault();setQ("");setMobileSearch(false);setMobileMenu(false);
     requestAnimationFrame(()=>requestAnimationFrame(()=>document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})));
   }
 
   return <main className={styles.page}>
     <aside className={styles.brandRail}>
       <a className={styles.brandLockup} href="/" aria-label="CactusByte home">
-        {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}
+        {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" onError={e=>{e.currentTarget.hidden=true}}/>}
         <span><b>Cactus🌵Byte</b><small>STUDIOS</small></span>
       </a>
       <div className={styles.railStatement}>
@@ -157,16 +165,26 @@ export default function StorefrontPage(){
 
     <div className={styles.shell}>
       <header className={styles.topbar}>
+        <button className={styles.mobileMenuToggle} aria-label={mobileMenu?"Close menu":"Open menu"} aria-controls="cactusbyte-mobile-menu" aria-expanded={mobileMenu} onClick={()=>{setMobileMenu(v=>!v);setMobileSearch(false);setQ("")}}><span aria-hidden="true">☰</span></button>
         <a className={styles.mobileBrand} href="/" aria-label="CactusByte home">
-          {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}
+          {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" onError={e=>{e.currentTarget.hidden=true}}/>}
           <span><b>Cactus🌵Byte</b><small>STUDIOS · YOUR APPS. ONE LAUNCHPAD.</small></span>
         </a>
         <label className={styles.search}><span>⌕</span><input aria-label="Search apps" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps, tools, creators..." /></label>
         <div className={styles.topActions}>
           <a href="/studio#releases" aria-label="Updates">♢</a>
-          <a href="/studio#settings" aria-label="Profile">{cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}</a>
-          <button className={styles.mobileSearchToggle} aria-label={mobileSearch?"Close search":"Search apps"} aria-expanded={mobileSearch} onClick={()=>{if(mobileSearch)setQ("");setMobileSearch(v=>!v)}}>⌕</button>
+          <a href="/studio#settings" aria-label="Profile"><span className={styles.profileGlyph} aria-hidden="true">♙</span></a>
+          <button className={styles.mobileSearchToggle} aria-label={mobileSearch?"Close search":"Search apps"} aria-expanded={mobileSearch} onClick={()=>{setMobileMenu(false);if(mobileSearch)setQ("");setMobileSearch(v=>!v)}}>⌕</button>
         </div>
+        {mobileMenu&&<nav id="cactusbyte-mobile-menu" className={styles.mobileMenuPanel} aria-label="CactusByte mobile menu">
+          <a href="#home" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"home")}}>⌂ Home</a>
+          <a href="#featured" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"featured")}}>◇ Discover</a>
+          <a href="#all-apps" onClick={()=>setMobileMenu(false)}>▦ All Apps</a>
+          <a href="#categories" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"categories")}}>◫ Categories</a>
+          <a href="/studio" onClick={()=>setMobileMenu(false)}>✦ Studio</a>
+          <a href="/studio#releases" onClick={()=>setMobileMenu(false)}>◌ Updates</a>
+          <a href="/studio#settings" onClick={()=>setMobileMenu(false)}>♙ Profile</a>
+        </nav>}
       </header>
 
       {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input aria-label="Search apps" autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
