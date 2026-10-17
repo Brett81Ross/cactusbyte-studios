@@ -425,3 +425,27 @@ test("SLB11 dedicated Fold sidebar preserves a readable CactusByte wordmark",asy
   expect(metrics.titleRight).toBeLessThanOrEqual(metrics.right+1);
  }
 });
+
+
+test("SLB11 desktop Details remains visible and clickable without mouse hover",async({page})=>{
+ await page.setViewportSize({width:1440,height:900});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const card=page.locator('#featured article[data-app="acelynn-pro"]');
+ const button=card.getByRole("button",{name:"Details for Acelynn Pro™"});
+ const state=await button.evaluate(el=>({opacity:getComputedStyle(el).opacity,events:getComputedStyle(el).pointerEvents,width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height}));
+ expect(state.opacity).toBe("1");
+ expect(state.events).toBe("auto");
+ expect(state.width).toBeGreaterThanOrEqual(44);
+ expect(state.height).toBeGreaterThanOrEqual(44);
+ await button.click();
+ await expect(page.locator('section[data-app="acelynn-pro"]')).toBeVisible();
+ await page.getByRole("button",{name:"Close details"}).click();
+});
+test("SLB11 card design uses official logo artwork without repeated category pill overlays",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const card=page.locator('#featured article[data-app="fantasy-matrix"]');
+ await expect(card.locator('[class*=posterTop] img')).toHaveCount(1);
+ const pill=card.locator('[class*=posterTop]>span');
+ await expect(pill).toBeHidden();
+});
