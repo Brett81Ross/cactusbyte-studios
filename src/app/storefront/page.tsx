@@ -100,19 +100,21 @@ export default function StorefrontPage(){
   const more=findApps(moreIds);
   const recent=findApps(recentIds);
   const recommended=findApps(["noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"]);
+  const searchQuery=q.trim().toLowerCase();
+  const searchMode=searchQuery.length>0;
   const apps=useMemo(()=>studioApps.filter(app=>{
     const copy=copyFor(app);
     const haystack=`${app.name} ${app.shortName} ${copy.tagline} ${copy.category}`.toLowerCase();
-    return (!q||haystack.includes(q.toLowerCase()))&&(category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
-  }),[q,category]);
-  const visibleApps=showAll||q||category!=="All Apps"?apps:apps.slice(0,8);
+    return (!searchQuery||haystack.includes(searchQuery))&&(category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
+  }),[searchQuery,category]);
+  const visibleApps=showAll||searchMode||category!=="All Apps"?apps:apps.slice(0,8);
 
   function remember(app:StudioApp){
     const next=[app.id,...recentIds.filter(id=>id!==app.id)].slice(0,5);
     setRecentIds(next);try{localStorage.setItem(RECENT_KEY,JSON.stringify(next))}catch{}
   }
   function open(app:StudioApp){remember(app);if(app.url)window.open(app.url,"_blank","noopener,noreferrer")}
-  function chooseCategory(name:string){setCategory(name);requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}))}
+  function chooseCategory(name:string){setCategory(name);setQ("");setMobileSearch(false);requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}))}
 
   return <main className={styles.page}>
     <aside className={styles.brandRail}>
@@ -125,10 +127,10 @@ export default function StorefrontPage(){
       </div>
       <div className={styles.railArt} aria-hidden="true"><strong>Create<br/>Brighter<br/>Days.</strong><b>🌵</b></div>
       <nav className={styles.railNav} aria-label="CactusByte sections">
-        <a className={styles.railOn} href="#home">⌂ <span>Home</span></a>
-        <a href="#featured">◇ <span>Discover</span></a>
+        <a className={styles.railOn} href="#home" onClick={()=>setQ("")}>⌂ <span>Home</span></a>
+        <a href="#featured" onClick={()=>setQ("")}>◇ <span>Discover</span></a>
         <a href="#all-apps">▦ <span>Apps</span></a>
-        <a href="#categories">◫ <span>Categories</span></a>
+        <a href="#categories" onClick={()=>setQ("")}>◫ <span>Categories</span></a>
         <a href="/studio">✦ <span>Studio</span></a>
         <a href="/studio#releases">◌ <span>Updates</span></a>
         <a href="/studio#settings">♙ <span>Profile</span></a>
@@ -152,6 +154,7 @@ export default function StorefrontPage(){
 
       {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input aria-label="Search apps" autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
 
+      {!searchMode&&<>
       <section className={styles.hero} id="home" style={accentStyle(heroApp)}>
         <div className={styles.heroPortrait} aria-hidden="true"><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
         <div className={styles.heroOverlay}/>
@@ -209,12 +212,13 @@ export default function StorefrontPage(){
         <SectionHead title="Recommended Apps" subtitle="More tools from our verified app lineup." action="#all-apps"/>
         <div className={styles.recommendGrid}>{recommended.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>
+      </>}
 
-      <section className={styles.section} id="all-apps">
-        <SectionHead title={category==="All Apps"?"All Apps":category} subtitle={category==="All Apps"?"The complete CactusByte ecosystem.":`${apps.length} matching apps`}/>
+      <section className={styles.section} id="all-apps" aria-label={searchMode?"App search results":undefined}>
+        <SectionHead title={searchMode?"Search results":category==="All Apps"?"All Apps":category} subtitle={searchMode?`${apps.length} ${apps.length===1?"app":"apps"} matching “${q.trim()}”`:category==="All Apps"?"The complete CactusByte ecosystem.":`${apps.length} matching apps`}/>
         <div className={styles.allGrid}>{visibleApps.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
         {visibleApps.length===0&&<p className={styles.emptyState} role="status">No apps match your search or category. Try another search or select All Apps.</p>}
-        {!q&&category==="All Apps"&&apps.length>8&&<button className={styles.showAllButton} onClick={()=>setShowAll(v=>!v)}>{showAll?"Show Less":"View All Apps"} <span>{showAll?"↑":"↓"}</span></button>}
+        {!searchMode&&category==="All Apps"&&apps.length>8&&<button className={styles.showAllButton} onClick={()=>setShowAll(v=>!v)}>{showAll?"Show Less":"View All Apps"} <span>{showAll?"↑":"↓"}</span></button>}
       </section>
 
       <footer className={styles.footer}>
@@ -224,7 +228,7 @@ export default function StorefrontPage(){
     </div>
 
     <nav className={styles.bottomNav} aria-label="CactusByte navigation">
-      <a className={styles.navOn} href="#home"><span>⌂</span>Home</a>
+      <a className={styles.navOn} href="#home" onClick={()=>setQ("")}><span>⌂</span>Home</a>
       <a href="#all-apps"><span>▦</span>Apps</a>
       <a href="/studio"><span>🌵</span>Studio</a>
       <a href="/studio#releases"><span>◌</span>Updates</a>
