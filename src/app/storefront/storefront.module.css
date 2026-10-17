@@ -510,3 +510,12 @@
    text-decoration:none;color:#e7fffc;font-size:.82rem;font-weight:700}
  .mobileMenuPanel a:hover,.mobileMenuPanel a:active{background:#085a5b;color:white}
 }
+
+
+/* SLB11 verified text-first brand while logo2 PNG is corrupt.
+   Do NOT replace the owner-approved artwork with a different cactus icon.
+   Hide only the broken image; retain the approved Cactus🌵Byte name. */
+.brandLockup img,.mobileBrand img{display:none!important}
+.brandLockup b,.mobileBrand b{background:linear-gradient(90deg,#f9ffff 0%,#ecffff 42%,#58fdf0 71%,#06cfea 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.mobileMenuToggle span{font-size:1.5rem;line-height:1}
