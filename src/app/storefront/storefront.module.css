@@ -409,6 +409,12 @@
 /* Visibility is viewport based too; browser QA with phone dimensions does not necessarily emulate touch media. */
 @media(max-width:759px){.posterDetails{opacity:1;pointer-events:auto;background:#030c19cf}}
 
+/* The approved showcase uses official logo badges, not redundant category chips.
+   Always expose a visible details action in every input mode, including keyboard,
+   mouse, phone touch, and the non-touch viewport emulators used for QA. */
+.posterTop>span{display:none}
+.posterDetails{opacity:1;pointer-events:auto;top:6px;right:6px;bottom:auto;background:#040e1cd9;border-color:#58fff47d}
+.posterDetails:focus-visible{outline:2px solid #5afbf3;outline-offset:2px}
 /* SLB11 Android/iOS target-size overrides; no change to destinations or behavior. */
 .close{width:44px;height:44px;min-width:44px;min-height:44px}
 .sectionHead a{min-height:44px}
