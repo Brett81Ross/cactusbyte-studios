@@ -479,6 +479,7 @@ test("SLB11 mobile search is accessible and still filters the app registry",asyn
  await expect(page.locator('#all-apps article[data-app="machzero"]')).toHaveCount(1);
  await close.click();
  await expect(search).toHaveCount(0);
+ await expect(page.locator("#all-apps article")).toHaveCount(8);
 });
 test("SLB11 mobile category navigation leaves results below the sticky header",async({page})=>{
  await page.setViewportSize({width:390,height:844});
