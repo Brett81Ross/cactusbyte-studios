@@ -670,7 +670,7 @@ test("SLB11 verified CactusByte wordmark survives the corrupt legacy PNG",async(
   await expect(brand).toBeVisible();
   await expect(brand).toContainText("Cactus🌵Byte");
   const img=brand.locator('img[src="/logo2.png"]');
-  if(await img.count())await expect(img).toBeHidden();
+  await expect(img).toHaveCount(0);
   const label=brand.locator("b");
   const bounds=await label.evaluate(el=>{const r=el.getBoundingClientRect();return{width:r.width,right:r.right,viewport:innerWidth}});
   expect(bounds.width).toBeGreaterThan(40);
