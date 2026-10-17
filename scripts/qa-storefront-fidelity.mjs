@@ -63,6 +63,9 @@ const checks=[
  ["Acelynn neon hero remains photo-free and does not autoplay unrelated media",!page.includes('<video className={styles.heroMedia}')&&!css.includes("images.unsplash.com")&&css.includes('.heroPortrait:before{z-index:0;inset:0;transform:none')],
  ["Phone hero retains a compact showcase-height composition",css.includes('.hero{min-height:293px')&&css.includes('.heroScene{height:101%;top:-3%')&&css.includes('.heroTools{margin-top:8px}')],
  ["PocketStomp storefront copy reflects its real skate-tracking function",page.includes('short:"Skate. Track. Improve."')&&page.includes('tagline:"Skate-session tracking, trick feedback, speed, and coaching."')&&!page.includes("Create. Play. Take it anywhere.")],
+ ["Every storefront See All shelf activates the full application registry",page.includes("function seeAllApps()")&&page.includes('setShowAll(true)')&&page.includes('onClick={onAction}')&&page.includes('action="#all-apps" onAction={seeAllApps}')],
+ ["Full catalog and filtered phone results are displayed in a real grid",page.includes('styles.allGridExpanded')&&css.includes('.allGridExpanded{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))')],
+ ["Show Less restores the original eight-app preview",page.includes('showAll?"Show Less":"View All Apps"')&&page.includes('apps.slice(0,8)')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
