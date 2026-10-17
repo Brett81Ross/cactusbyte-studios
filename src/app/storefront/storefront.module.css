@@ -584,3 +584,15 @@
 @media(min-width:760px) and (max-width:980px){
  .heroScene{height:118%;top:-6%;right:-8%}
 }
+
+
+/* SLB11 full-catalog accessibility: promotional shelves remain 3-up swipe rails, but
+   View All, category filters and search results expand into a legible real catalog. */
+@media(max-width:759px){
+ .allGridExpanded{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+   overflow:visible!important;scroll-snap-type:none;padding-bottom:10px}
+ .allGridExpanded .posterCardCompact{width:auto;min-width:0;flex:none;--cardH:185px;height:185px;scroll-snap-align:none}
+ .allGridExpanded .posterBody h3{font-size:.88rem}
+ .allGridExpanded .posterBody p{font-size:.67rem}
+ .allGridExpanded .posterCta{min-height:31px;font-size:.73rem}
+}
