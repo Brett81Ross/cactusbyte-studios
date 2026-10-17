@@ -170,7 +170,7 @@ export default function StorefrontPage(){
       </section>
       <section className={styles.heroAbout} aria-label="About Acelynn Pro"><div><h2>About Acelynn Pro</h2><p>Audio diagnostics and mix guidance for better balance, clearer frequencies, and confident A/B comparisons.</p></div><button onClick={()=>setDemo(heroApp)} aria-label="Watch Acelynn Pro demo">Watch Demo →</button></section>
 
-      <div className={styles.categoryStrip} id="categories">
+      <div className={styles.categoryStrip}>
         {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
       </div>
 
@@ -184,7 +184,7 @@ export default function StorefrontPage(){
         <div className={styles.recentGrid}>{recent.slice(0,4).map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>}
 
-      <section className={styles.section} aria-label="Explore categories">
+      <section className={styles.section} id="categories" aria-label="Explore categories">
         <SectionHead title="Explore Categories" subtitle="Find apps by what moves you." action="#all-apps"/>
         <div className={styles.categoryTiles}>
           {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
