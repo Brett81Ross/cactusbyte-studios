@@ -515,3 +515,22 @@ test("SLB11 compact phone card copy stays inside its poster",async({page})=>{
   expect(bounds.ctaRight).toBeLessThanOrEqual(0);
  }
 });
+
+
+test("SLB11 selected category tiles and expanded filter chips reflect the active result set",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const sports=page.locator('[data-category="Sports"]');
+ const all=page.locator('[data-category="All Apps"]');
+ await expect(all).toHaveAttribute("aria-pressed","true");
+ await expect(sports).toHaveAttribute("aria-pressed","false");
+ await sports.click();
+ await expect(sports).toHaveAttribute("aria-pressed","true");
+ await expect(all).toHaveAttribute("aria-pressed","false");
+ await expect(page.locator("#all-apps article")).toHaveCount(2);
+ await page.getByRole("button",{name:/More categories/}).click();
+ await expect(page.locator("#category-filter-options").getByRole("button",{name:"Sports"})).toHaveAttribute("aria-pressed","true");
+ await all.click();
+ await expect(all).toHaveAttribute("aria-pressed","true");
+ await expect(page.locator("#all-apps article")).toHaveCount(8);
+});
