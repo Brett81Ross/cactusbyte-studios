@@ -47,6 +47,7 @@ const checks=[
  ["Returning to browsing from a search preserves anchor navigation",page.includes("function browseFromSearch(")&&page.includes('browseFromSearch(e,"featured")')&&page.includes('browseFromSearch(e,"home")')],
  ["Detail and demo dialogs have keyboard Escape dismissal",page.includes('event.key==="Escape"')&&page.includes('role="dialog" aria-modal="true"')],
  ["Switching from app details to demo never stacks two modal overlays",page.includes('setSelected(null);setDemo(selected)')],
+ ["Header Profile takes users to the same Studio settings destination as the dock",page.includes('href="/studio#settings" aria-label="Profile"')&&page.includes('href="/studio#settings"')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
