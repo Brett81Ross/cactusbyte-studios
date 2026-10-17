@@ -191,7 +191,7 @@ export default function StorefrontPage(){
 
       {!searchMode&&<>
       <section className={styles.hero} id="home" style={accentStyle(heroApp)}>
-        <div className={styles.heroPortrait} aria-hidden="true"><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
+        <div className={styles.heroPortrait} aria-hidden="true"><img className={styles.heroScene} src="/posters/acelynn-pro.svg" alt="" decoding="async"/><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
         <div className={styles.heroOverlay}/>
         <div className={styles.heroNoise}/>
         <div className={styles.heroCopy}>
