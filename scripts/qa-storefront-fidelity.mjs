@@ -42,6 +42,11 @@ const checks=[
  ["Categories expose keyboard and screen-reader pressed state",page.includes("aria-pressed={category===t.id}")&&page.includes("aria-pressed={category===item.name}")&&css.includes('.categoryTile[aria-pressed="true"]')],
  ["Sticky header does not hide jumped-to catalog sections",css.includes('.section[id],.hero[id]{scroll-margin-top:88px}')&&css.includes('scroll-margin-top:80px')],
  ["Three-column phone cards reserve width for longer names and CTAs",css.includes('.posterBody{left:9px;right:9px;bottom:8px}')&&css.includes('overflow-wrap:anywhere')],
+ ["Search results immediately precede the catalog instead of hiding under promo shelves",page.includes("!searchMode&&<>")&&page.includes('title={searchMode?"Search results"')&&page.includes('aria-label={searchMode?"App search results":undefined}')],
+ ["App searching is independent of a prior category filter",page.includes("searchQuery.length>0||category")&&page.includes("q.trim().toLowerCase()")],
+ ["Returning to browsing from a search preserves anchor navigation",page.includes("function browseFromSearch(")&&page.includes('browseFromSearch(e,"featured")')&&page.includes('browseFromSearch(e,"home")')],
+ ["Detail and demo dialogs have keyboard Escape dismissal",page.includes('event.key==="Escape"')&&page.includes('role="dialog" aria-modal="true"')],
+ ["Switching from app details to demo never stacks two modal overlays",page.includes('setSelected(null);setDemo(selected)')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
