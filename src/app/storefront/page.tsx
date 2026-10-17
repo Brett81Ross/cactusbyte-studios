@@ -142,7 +142,7 @@ export default function StorefrontPage(){
           {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}
           <span><b>Cactus🌵Byte</b><small>STUDIOS · YOUR APPS. ONE LAUNCHPAD.</small></span>
         </a>
-        <label className={styles.search}><span>⌕</span><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps, tools, creators..." /></label>
+        <label className={styles.search}><span>⌕</span><input aria-label="Search apps" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps, tools, creators..." /></label>
         <div className={styles.topActions}>
           <a href="/studio#releases" aria-label="Updates">♢</a>
           <a href="/studio" aria-label="Profile">{cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}</a>
@@ -150,7 +150,7 @@ export default function StorefrontPage(){
         </div>
       </header>
 
-      {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
+      {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input aria-label="Search apps" autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
 
       <section className={styles.hero} id="home" style={accentStyle(heroApp)}>
         <div className={styles.heroPortrait} aria-hidden="true"><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
@@ -192,11 +192,11 @@ export default function StorefrontPage(){
       <section className={styles.section} id="categories" aria-label="Explore categories">
         <SectionHead title="Explore Categories" subtitle="Find apps by what moves you." action="#all-apps"/>
         <div className={styles.categoryTiles}>
-          {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
+          {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} aria-pressed={category===t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
         </div>
         <button className={styles.categoryMoreToggle} aria-controls="category-filter-options" aria-expanded={showCategoryFilters} onClick={()=>setShowCategoryFilters(v=>!v)}>{showCategoryFilters?"Hide categories":"More categories"} <span aria-hidden="true">{showCategoryFilters?"↑":"↓"}</span></button>
         <div className={styles.categoryStrip} id="category-filter-options" hidden={!showCategoryFilters}>
-          {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
+          {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} aria-pressed={category===item.name} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
         </div>
       </section>
 
