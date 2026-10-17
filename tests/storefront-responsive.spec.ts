@@ -749,3 +749,41 @@ test("SLB11 six-up Fold landscape keeps genuine poster art and readable bottom a
   expect(m.loaded).toBe(true);
  }
 });
+
+
+test("SLB11 Acelynn hero displays the real headphone vector instead of a photograph at every target width",async({page})=>{
+ for(const viewport of [{width:360,height:748},{width:390,height:844},{width:412,height:915},{width:884,height:1104},{width:1104,height:884},{width:1440,height:900}]){
+  await page.setViewportSize(viewport);
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const hero=page.locator("#home");
+  const scene=hero.locator('img[src="/posters/acelynn-pro.svg"]');
+  await expect(scene).toHaveCount(1);
+  const geometry=await scene.evaluate(async el=>{
+   const img=el as HTMLImageElement;
+   await img.decode();
+   const a=img.getBoundingClientRect(),h=img.closest("section")!.getBoundingClientRect();
+   const style=getComputedStyle(img);
+   return {naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,
+     visualWidth:Math.max(0,Math.min(a.right,h.right)-Math.max(a.left,h.left)),
+     visualHeight:Math.max(0,Math.min(a.bottom,h.bottom)-Math.max(a.top,h.top)),
+     heroWidth:h.width,heroHeight:h.height,pointerEvents:style.pointerEvents,opacity:Number(style.opacity)};
+  });
+  expect(geometry.naturalWidth).toBe(600);
+  expect(geometry.naturalHeight).toBe(780);
+  expect(geometry.visualWidth).toBeGreaterThan(70);
+  expect(geometry.visualHeight).toBeGreaterThan(100);
+  expect(geometry.heroHeight).toBeGreaterThan(250);
+  expect(geometry.pointerEvents).toBe("none");
+  expect(geometry.opacity).toBeGreaterThan(0.9);
+  expect(await hero.locator("video").count()).toBe(0);
+ }
+});
+test("SLB11 feature-stage buttons remain clickable above the decorative headphone scene",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator("#home").getByRole("button",{name:/Watch Demo/}).click();
+ await expect(page.getByRole("dialog",{name:/Acelynn Pro/})).toBeVisible();
+ await expect(page.getByRole("dialog").locator('video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
+ await page.getByRole("button",{name:"Close demo"}).click();
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+});
