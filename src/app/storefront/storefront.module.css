@@ -386,3 +386,22 @@
 .categoryStrip:not([hidden]) button{flex:0 0 auto;min-height:44px}
 .categoryMoreToggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:7px;padding:0 12px;min-height:44px;border:1px solid #39dfed5e;border-radius:11px;background:#071c2a;color:#82f8ff;font-size:.72rem}
 .categoryMoreToggle:focus-visible,.categoryStrip button:focus-visible{outline:2px solid #53ffeb;outline-offset:3px}
+
+
+/* SLB11 minimum usable tap targets, including keyboard and touch-screen access. */
+.posterDetails{width:44px;height:44px;min-width:44px;min-height:44px;opacity:0;pointer-events:none;touch-action:manipulation}
+.posterCard:hover .posterDetails,.posterCardCompact:hover .posterDetails,.posterDetails:focus-visible{opacity:1;pointer-events:auto}
+@media(hover:none),(pointer:coarse){
+ .posterDetails{opacity:1;pointer-events:auto;background:#030c19c9}
+}
+.heroAbout button{min-height:44px;min-width:94px;font-size:.68rem;font-weight:700;cursor:pointer}
+@media(max-width:759px){
+ .heroTools b{font-size:.68rem}
+ .heroTools small{font-size:.58rem}
+ .posterBody h3{font-size:.78rem}
+ .posterBody p{font-size:.59rem}
+}
+@media(max-width:390px){
+ .heroTools b{font-size:.62rem}
+ .heroTools small{font-size:.55rem}
+}
