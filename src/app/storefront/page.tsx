@@ -86,6 +86,15 @@ export default function StorefrontPage(){
   const[showCategoryFilters,setShowCategoryFilters]=useState(false);
 
   useEffect(()=>{
+    if(!selected&&!demo)return;
+    const dismiss=(event:KeyboardEvent)=>{
+      if(event.key==="Escape"){setSelected(null);setDemo(null)}
+    };
+    document.addEventListener("keydown",dismiss);
+    return ()=>document.removeEventListener("keydown",dismiss);
+  },[selected,demo]);
+
+  useEffect(()=>{
     try{
       const raw=localStorage.getItem(RECENT_KEY);
       const saved:unknown=raw?JSON.parse(raw):[];
@@ -244,21 +253,21 @@ export default function StorefrontPage(){
     </nav>
 
     {selected&&<div className={styles.backdrop} onClick={()=>setSelected(null)}>
-      <section className={styles.detail} data-app={selected.id} style={accentStyle(selected)} onClick={e=>e.stopPropagation()}>
+      <section className={styles.detail} data-app={selected.id} style={accentStyle(selected)} role="dialog" aria-modal="true" aria-labelledby={`detail-${selected.id}`} onClick={e=>e.stopPropagation()}>
         <button className={styles.close} aria-label="Close details" onClick={()=>setSelected(null)}>×</button>
         <div className={styles.detailGlow}/>
-        <div className={styles.detailHero}><BrandMark app={selected} large/><div><span>{copyFor(selected).category}</span><h2>{selected.name}</h2><p>{copyFor(selected).short}</p></div></div>
+        <div className={styles.detailHero}><BrandMark app={selected} large/><div><span>{copyFor(selected).category}</span><h2 id={`detail-${selected.id}`}>{selected.name}</h2><p>{copyFor(selected).short}</p></div></div>
         <p className={styles.detailDescription}>{copyFor(selected).tagline}</p>
         <div className={styles.detailMeta}><span>{selected.version}</span><span>{selected.platform}</span><span>{selected.status}</span></div>
-        <div className={styles.detailActions}><button onClick={()=>open(selected)}>Open App</button>{demoPaths[selected.id]&&<button className={styles.secondaryButton} onClick={()=>setDemo(selected)}>▶ Watch Demo</button>}</div>
+        <div className={styles.detailActions}><button onClick={()=>open(selected)}>Open App</button>{demoPaths[selected.id]&&<button className={styles.secondaryButton} onClick={()=>{setSelected(null);setDemo(selected)}}>▶ Watch Demo</button>}</div>
         {brandAssets[selected.id]?.status==="unresolved"&&<p className={styles.brandWarning}>Official logo pending recovery. No substitute artwork is being used.</p>}
       </section>
     </div>}
 
     {demo&&demoPaths[demo.id]&&<div className={styles.backdrop} onClick={()=>setDemo(null)}>
-      <section className={styles.demoModal} onClick={e=>e.stopPropagation()}>
+      <section className={styles.demoModal} role="dialog" aria-modal="true" aria-labelledby={`demo-${demo.id}`} onClick={e=>e.stopPropagation()}>
         <button className={styles.close} aria-label="Close demo" onClick={()=>setDemo(null)}>×</button>
-        <div className={styles.demoTitle}><BrandMark app={demo}/><div><small>60-SECOND DEMO</small><h2>{demo.name}</h2></div></div>
+        <div className={styles.demoTitle}><BrandMark app={demo}/><div><small>60-SECOND DEMO</small><h2 id={`demo-${demo.id}`}>{demo.name}</h2></div></div>
         <video src={demoPaths[demo.id]} controls autoPlay playsInline/>
       </section>
     </div>}
