@@ -164,7 +164,7 @@ export default function StorefrontPage(){
         <label className={styles.search}><span>⌕</span><input aria-label="Search apps" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps, tools, creators..." /></label>
         <div className={styles.topActions}>
           <a href="/studio#releases" aria-label="Updates">♢</a>
-          <a href="/studio" aria-label="Profile">{cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}</a>
+          <a href="/studio#settings" aria-label="Profile">{cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}</a>
           <button className={styles.mobileSearchToggle} aria-label={mobileSearch?"Close search":"Search apps"} aria-expanded={mobileSearch} onClick={()=>{if(mobileSearch)setQ("");setMobileSearch(v=>!v)}}>⌕</button>
         </div>
       </header>
