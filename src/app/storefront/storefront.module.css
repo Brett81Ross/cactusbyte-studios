@@ -406,6 +406,9 @@
  .heroTools small{font-size:.55rem}
 }
 
+/* Visibility is viewport based too; browser QA with phone dimensions does not necessarily emulate touch media. */
+@media(max-width:759px){.posterDetails{opacity:1;pointer-events:auto;background:#030c19cf}}
+
 /* SLB11 Android/iOS target-size overrides; no change to destinations or behavior. */
 .close{width:44px;height:44px;min-width:44px;min-height:44px}
 .sectionHead a{min-height:44px}
