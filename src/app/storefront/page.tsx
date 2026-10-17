@@ -146,7 +146,7 @@ export default function StorefrontPage(){
         <div className={styles.topActions}>
           <a href="/studio#releases" aria-label="Updates">♢</a>
           <a href="/studio" aria-label="Profile">{cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}</a>
-          <button className={styles.mobileSearchToggle} aria-label={mobileSearch?"Close search":"Search apps"} aria-expanded={mobileSearch} onClick={()=>setMobileSearch(v=>!v)}>⌕</button>
+          <button className={styles.mobileSearchToggle} aria-label={mobileSearch?"Close search":"Search apps"} aria-expanded={mobileSearch} onClick={()=>{if(mobileSearch)setQ("");setMobileSearch(v=>!v)}}>⌕</button>
         </div>
       </header>
 
