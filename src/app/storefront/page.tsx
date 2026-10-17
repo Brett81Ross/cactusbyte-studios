@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect,useMemo,useState,type CSSProperties} from "react";
+import {useEffect,useMemo,useState,type CSSProperties,type MouseEvent} from "react";
 import {studioApps,type StudioApp} from "../../data/apps";
 import {brandAssets,cactusByteBrand,verifiedBrandAsset} from "../../data/brand-assets";
 import styles from "./storefront.module.css";
@@ -105,7 +105,7 @@ export default function StorefrontPage(){
   const apps=useMemo(()=>studioApps.filter(app=>{
     const copy=copyFor(app);
     const haystack=`${app.name} ${app.shortName} ${copy.tagline} ${copy.category}`.toLowerCase();
-    return (!searchQuery||haystack.includes(searchQuery))&&(category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
+    return (!searchQuery||haystack.includes(searchQuery))&&(searchQuery.length>0||category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
   }),[searchQuery,category]);
   const visibleApps=showAll||searchMode||category!=="All Apps"?apps:apps.slice(0,8);
 
@@ -114,7 +114,15 @@ export default function StorefrontPage(){
     setRecentIds(next);try{localStorage.setItem(RECENT_KEY,JSON.stringify(next))}catch{}
   }
   function open(app:StudioApp){remember(app);if(app.url)window.open(app.url,"_blank","noopener,noreferrer")}
-  function chooseCategory(name:string){setCategory(name);setQ("");setMobileSearch(false);requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}))}
+  function chooseCategory(name:string){
+    setCategory(name);setQ("");setMobileSearch(false);
+    requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}));
+  }
+  function browseFromSearch(event:MouseEvent<HTMLAnchorElement>,target:string){
+    if(!searchMode)return;
+    event.preventDefault();setQ("");setMobileSearch(false);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})));
+  }
 
   return <main className={styles.page}>
     <aside className={styles.brandRail}>
@@ -127,10 +135,10 @@ export default function StorefrontPage(){
       </div>
       <div className={styles.railArt} aria-hidden="true"><strong>Create<br/>Brighter<br/>Days.</strong><b>🌵</b></div>
       <nav className={styles.railNav} aria-label="CactusByte sections">
-        <a className={styles.railOn} href="#home" onClick={()=>setQ("")}>⌂ <span>Home</span></a>
-        <a href="#featured" onClick={()=>setQ("")}>◇ <span>Discover</span></a>
+        <a className={styles.railOn} href="#home" onClick={e=>browseFromSearch(e,"home")}>⌂ <span>Home</span></a>
+        <a href="#featured" onClick={e=>browseFromSearch(e,"featured")}>◇ <span>Discover</span></a>
         <a href="#all-apps">▦ <span>Apps</span></a>
-        <a href="#categories" onClick={()=>setQ("")}>◫ <span>Categories</span></a>
+        <a href="#categories" onClick={e=>browseFromSearch(e,"categories")}>◫ <span>Categories</span></a>
         <a href="/studio">✦ <span>Studio</span></a>
         <a href="/studio#releases">◌ <span>Updates</span></a>
         <a href="/studio#settings">♙ <span>Profile</span></a>
@@ -228,7 +236,7 @@ export default function StorefrontPage(){
     </div>
 
     <nav className={styles.bottomNav} aria-label="CactusByte navigation">
-      <a className={styles.navOn} href="#home" onClick={()=>setQ("")}><span>⌂</span>Home</a>
+      <a className={styles.navOn} href="#home" onClick={e=>browseFromSearch(e,"home")}><span>⌂</span>Home</a>
       <a href="#all-apps"><span>▦</span>Apps</a>
       <a href="/studio"><span>🌵</span>Studio</a>
       <a href="/studio#releases"><span>◌</span>Updates</a>
