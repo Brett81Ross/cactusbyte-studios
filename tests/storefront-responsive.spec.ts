@@ -631,3 +631,63 @@ test("SLB11 visible Details affordance is compact without sacrificing accessible
   await page.getByRole("button",{name:"Close details"}).click();
  }
 });
+
+
+test("SLB11 mobile showcase menu opens, provides real routes, and closes without overlay leakage",async({page})=>{
+ for(const width of [360,390,412]){
+  await page.setViewportSize({width,height:844});
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const trigger=page.getByRole("button",{name:"Open menu"});
+  await expect(trigger).toBeVisible();
+  await expect(trigger).toHaveAttribute("aria-expanded","false");
+  await trigger.click();
+  const menu=page.getByRole("navigation",{name:"CactusByte mobile menu"});
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole("button",{name:"Close menu"})).toHaveAttribute("aria-expanded","true");
+  await expect(menu.getByRole("link",{name:/Home/})).toHaveAttribute("href","#home");
+  await expect(menu.getByRole("link",{name:/Categories/})).toHaveAttribute("href","#categories");
+  await expect(menu.getByRole("link",{name:/All Apps/})).toHaveAttribute("href","#all-apps");
+  await expect(menu.getByRole("link",{name:/Studio/})).toHaveAttribute("href","/studio");
+  await expect(menu.getByRole("link",{name:/Updates/})).toHaveAttribute("href","/studio#releases");
+  await expect(menu.getByRole("link",{name:/Profile/})).toHaveAttribute("href","/studio#settings");
+  const bounds=await menu.evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,viewport:innerWidth}});
+  expect(bounds.left).toBeGreaterThanOrEqual(0);
+  expect(bounds.right).toBeLessThanOrEqual(bounds.viewport+1);
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+  await trigger.click();
+  await page.getByRole("navigation",{name:"CactusByte mobile menu"}).getByRole("link",{name:/Categories/}).click();
+  await expect(page.getByRole("navigation",{name:"CactusByte mobile menu"})).toHaveCount(0);
+  await expect(page.getByRole("heading",{name:"Explore Categories"})).toBeVisible();
+ }
+});
+test("SLB11 verified CactusByte wordmark survives the corrupt legacy PNG",async({page})=>{
+ await page.route("**/logo2.png",route=>route.abort());
+ for(const width of [360,884,1104]){
+  await page.setViewportSize({width,height:844});
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const brand=width<760?page.locator('[class*=mobileBrand]').first():page.locator('[class*=brandLockup]').first();
+  await expect(brand).toBeVisible();
+  await expect(brand).toContainText("Cactus🌵Byte");
+  const img=brand.locator('img[src="/logo2.png"]');
+  if(await img.count())await expect(img).toBeHidden();
+  const label=brand.locator("b");
+  const bounds=await label.evaluate(el=>{const r=el.getBoundingClientRect();return{width:r.width,right:r.right,viewport:innerWidth}});
+  expect(bounds.width).toBeGreaterThan(40);
+  expect(bounds.right).toBeLessThanOrEqual(bounds.viewport+1);
+ }
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await expect(page.locator('header a[aria-label="Profile"]')).toContainText("♙");
+});
+test("SLB11 phone menu and search never remain open together",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.getByRole("button",{name:"Open menu"}).click();
+ await page.getByRole("button",{name:"Search apps"}).click();
+ await expect(page.getByRole("navigation",{name:"CactusByte mobile menu"})).toHaveCount(0);
+ await expect(page.getByPlaceholder("Search apps...",{exact:true})).toBeVisible();
+ await page.getByRole("button",{name:"Open menu"}).click();
+ await expect(page.getByPlaceholder("Search apps...",{exact:true})).toHaveCount(0);
+ await expect(page.getByRole("navigation",{name:"CactusByte mobile menu"})).toBeVisible();
+});
