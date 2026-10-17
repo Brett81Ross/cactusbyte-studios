@@ -37,7 +37,17 @@ for(const viewport of viewports){
       .filter(visible)
       .map(el=>{const r=el.getBoundingClientRect();return{label:(el.textContent||(el as HTMLInputElement).placeholder||"").trim().slice(0,70),width:r.width,height:r.height}})
       .filter(x=>x.height<38||x.width<38);
-    const escapedImages=Array.from(document.images).filter(visible).flatMap(img=>{
+    // The headphone illustration intentionally overflows its own box, but is clipped by the hero.
+    // Check its visible intersection separately, without classifying it as a broken card logo.
+    const heroScenes=Array.from(document.images).filter(img=>img.matches('[class*=heroScene]')&&visible(img));
+    const heroSceneProblems=heroScenes.flatMap(img=>{
+      const stage=img.closest('[class*=heroPortrait]')?.getBoundingClientRect();
+      const r=img.getBoundingClientRect();
+      const width=stage?Math.max(0,Math.min(r.right,stage.right)-Math.max(r.left,stage.left)):0;
+      const height=stage?Math.max(0,Math.min(r.bottom,stage.bottom)-Math.max(r.top,stage.top)):0;
+      return img.getAttribute("src")==="/posters/acelynn-pro.svg"&&width>=60&&height>=100?[]:[{src:img.getAttribute("src"),width,height}];
+    });
+    const escapedImages=Array.from(document.images).filter(img=>visible(img)&&!img.matches('[class*=heroScene]')).flatMap(img=>{
       const r=img.getBoundingClientRect();
       const hostElement=img.closest("article,button,a,[class*=logo],[class*=wordmark]");
       const host=hostElement?.getBoundingClientRect();
@@ -50,14 +60,14 @@ for(const viewport of viewports){
         bounds:host?{x:Math.round(host.x),y:Math.round(host.y),width:Math.round(host.width),height:Math.round(host.height)}:null
       }];
     });
-    return{overflow,smallControls,escapedImages};
+    return{overflow,smallControls,escapedImages,heroSceneProblems,heroSceneCount:heroScenes.length};
    });
-
-   await page.screenshot({path:`/tmp/cactusbyte-storefront-${viewport.name.replace(/\\s+/g,"-").toLowerCase()}.png`,fullPage:true});
 
    expect(audit.overflow,`horizontal overflow: ${audit.overflow}px`).toBeLessThanOrEqual(2);
    expect(audit.smallControls,`small controls: ${JSON.stringify(audit.smallControls)}`).toEqual([]);
    expect(audit.escapedImages,"images escaping their assigned visual hosts").toEqual([]);
+   expect(audit.heroSceneCount,"the headphone illustration should be present").toBe(1);
+   expect(audit.heroSceneProblems,"the Acelynn illustration should visibly intersect its hero").toEqual([]);
    expect(errors).toEqual([]);
 
    await page.screenshot({path:`/tmp/cactusbyte-storefront-${viewport.name.replace(/\s+/g,"-").toLowerCase()}.png`,fullPage:true});
@@ -180,7 +190,9 @@ test("all original app categories remain accessible through the visible More cat
  await expect(page.locator("#all-apps article[data-app='scouttrace']")).toHaveCount(1);
  await filters.getByRole("button",{name:"All Apps"}).click();
  await expect(page.locator("#all-apps article")).toHaveCount(8);
- await expect(page.locator("#categories").getByRole("button",{name:"All Apps"})).toBeVisible();
+ // Expanded filter chip and visible category tile both include "All Apps" in their name.
+  await expect(page.locator('#categories button[data-category="All Apps"]')).toBeVisible();
+  await expect(filters.getByRole("button",{name:"All Apps"})).toHaveAttribute("aria-pressed","true");
 });
 
 test("search filters actual apps and gives usable empty-state feedback",async({page})=>{
