@@ -59,6 +59,9 @@ const checks=[
  ["Acelynn showcase uses its actual audio analysis capabilities",page.includes("Live Microphone")&&page.includes("Audio File Analysis")&&page.includes("A/B Mix Comparison")&&page.includes("Frequency Insights")&&page.includes("Mic Analysis")&&page.includes("Audio Files")&&!page.includes("AI-Powered Tools")],
  ["Phone's illustrated app cards reserve readable two-line titles and consistent CTA height",css.includes(".featuredGrid .posterCard{--cardH:217px;height:217px}")&&css.includes("min-height:2.25em;max-height:2.25em")&&css.includes("height:30px;min-height:30px")],
  ["Fold landscape uses six illustrated cards with protected captions",css.includes("calc((100% - 40px)/6)")&&css.includes(".featuredGrid .posterCard{--cardH:193px;height:193px}")],
+ ["The hero renders the bundled Acelynn headphone poster as a real image element",page.includes('className={styles.heroScene} src="/posters/acelynn-pro.svg"')&&css.includes('.heroScene{position:absolute;display:block;z-index:2')],
+ ["Acelynn neon hero remains photo-free and does not autoplay unrelated media",!page.includes('<video className={styles.heroMedia}')&&!css.includes("images.unsplash.com")&&css.includes('.heroPortrait:before{z-index:0;inset:0;transform:none')],
+ ["Phone hero retains a compact showcase-height composition",css.includes('.hero{min-height:293px')&&css.includes('.heroScene{height:101%;top:-3%')&&css.includes('.heroTools{margin-top:8px}')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
