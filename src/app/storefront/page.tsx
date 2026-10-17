@@ -85,7 +85,15 @@ export default function StorefrontPage(){
   const[showAll,setShowAll]=useState(false);
   const[showCategoryFilters,setShowCategoryFilters]=useState(false);
 
-  useEffect(()=>{try{const raw=localStorage.getItem(RECENT_KEY);setRecentIds(raw?JSON.parse(raw):[])}catch{}},[]);
+  useEffect(()=>{
+    try{
+      const raw=localStorage.getItem(RECENT_KEY);
+      const saved:unknown=raw?JSON.parse(raw):[];
+      if(!Array.isArray(saved))return;
+      const valid=saved.filter((id):id is string=>typeof id==="string"&&studioApps.some(app=>app.id===id));
+      setRecentIds([...new Set(valid)].slice(0,5));
+    }catch{/* Invalid or unavailable browser storage must not block the storefront. */}
+  },[]);
 
   const heroApp=studioApps.find(app=>app.id==="acelynn-pro")??studioApps[0];
   const featured=findApps(featuredIds);
@@ -138,7 +146,7 @@ export default function StorefrontPage(){
         <div className={styles.topActions}>
           <a href="/studio#releases" aria-label="Updates">♢</a>
           <a href="/studio" aria-label="Profile">{cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}</a>
-          <button className={styles.mobileSearchToggle} aria-label="Search apps" onClick={()=>setMobileSearch(v=>!v)}>⌕</button>
+          <button className={styles.mobileSearchToggle} aria-label={mobileSearch?"Close search":"Search apps"} aria-expanded={mobileSearch} onClick={()=>setMobileSearch(v=>!v)}>⌕</button>
         </div>
       </header>
 
