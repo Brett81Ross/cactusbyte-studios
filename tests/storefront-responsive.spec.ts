@@ -787,3 +787,39 @@ test("SLB11 feature-stage buttons remain clickable above the decorative headphon
  await page.getByRole("button",{name:"Close demo"}).click();
  await expect(page.getByRole("dialog")).toHaveCount(0);
 });
+
+
+test("SLB11 promotional View All actually reveals every registered application in a readable phone grid",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const catalog=page.locator("#all-apps");
+ await expect(catalog.locator("article")).toHaveCount(8);
+ await page.locator("#featured").getByRole("link",{name:/View All/}).click();
+ await expect(catalog.locator("article")).toHaveCount(14);
+ await expect(page.locator("#all-apps [class*=allGridExpanded]")).toHaveCount(1);
+ const layout=await catalog.locator('[class*=allGridExpanded]').evaluate(el=>{
+  const cards=[...el.querySelectorAll("article")].map(card=>card.getBoundingClientRect());
+  const style=getComputedStyle(el);
+  return{display:style.display,cols:style.gridTemplateColumns.split(" ").length,
+    firstRow:[cards[0].top,cards[1].top],secondRow:cards[2].top,firstBottom:cards[0].bottom,
+    overflowX:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+ });
+ expect(layout.display).toBe("grid");
+ expect(layout.cols).toBe(2);
+ expect(layout.firstRow[0]).toBeCloseTo(layout.firstRow[1],0);
+ expect(layout.secondRow).toBeGreaterThanOrEqual(layout.firstBottom);
+ expect(layout.overflowX).toBeLessThanOrEqual(2);
+ await page.getByRole("button",{name:/Show Less/}).click();
+ await expect(catalog.locator("article")).toHaveCount(8);
+ await expect(page.locator("#all-apps [class*=allGridExpanded]")).toHaveCount(0);
+});
+test("SLB11 category filters show complete matching apps instead of sideways-hidden results",async({page})=>{
+ await page.setViewportSize({width:360,height:748});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator('[data-category="Sports"]').click();
+ const grid=page.locator("#all-apps [class*=allGridExpanded]");
+ await expect(grid).toBeVisible();
+ await expect(grid.locator("article")).toHaveCount(2);
+ await expect(grid).toHaveCSS("display","grid");
+ await expect(page.locator('[data-category="Sports"]')).toHaveAttribute("aria-pressed","true");
+});
