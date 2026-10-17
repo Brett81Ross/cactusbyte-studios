@@ -150,10 +150,16 @@ test("studio footer uses the same release version and tappable brand",async({pag
  await expect(footer.getByRole("link",{name:"Cactus🌵Byte Studios™"})).toHaveAttribute("href","/");
 });
 
-test("mobile category pills retain their width and scroll without overlap",async({page})=>{
+test("SLB11 secondary category chips are initially hidden but fully accessible on the Fold cover",async({page})=>{
  await page.setViewportSize({width:360,height:748});
  await page.goto("/",{waitUntil:"domcontentloaded"});
- const strip=page.locator("#categories");
+ const strip=page.locator("#category-filter-options");
+ await expect(strip).toBeHidden();
+ const toggle=page.getByRole("button",{name:/More categories/});
+ await expect(toggle).toHaveAttribute("aria-expanded","false");
+ await toggle.click();
+ await expect(strip).toBeVisible();
+ await expect(page.getByRole("button",{name:/Hide categories/})).toHaveAttribute("aria-expanded","true");
  const buttons=strip.locator("button");
  const first=await buttons.nth(0).boundingBox();
  const second=await buttons.nth(1).boundingBox();
@@ -161,15 +167,20 @@ test("mobile category pills retain their width and scroll without overlap",async
  expect(first!.width).toBeGreaterThan(65);
  expect(second!.x).toBeGreaterThanOrEqual(first!.x+first!.width);
  expect(await strip.evaluate(el=>el.scrollWidth>el.clientWidth)).toBe(true);
+ await page.getByRole("button",{name:/Hide categories/}).click();
+ await expect(strip).toBeHidden();
 });
 
-test("category buttons filter actual registry cards and can restore all apps",async({page})=>{
+test("all original app categories remain accessible through the visible More categories control",async({page})=>{
  await page.goto("/",{waitUntil:"domcontentloaded"});
- await page.locator("#categories").getByRole("button",{name:"Security"}).click();
+ await page.getByRole("button",{name:/More categories/}).click();
+ const filters=page.locator("#category-filter-options");
+ await filters.getByRole("button",{name:"Security"}).click();
  await expect(page.locator("#all-apps article")).toHaveCount(1);
  await expect(page.locator("#all-apps article[data-app='scouttrace']")).toHaveCount(1);
- await page.locator("#categories").getByRole("button",{name:"All Apps"}).click();
+ await filters.getByRole("button",{name:"All Apps"}).click();
  await expect(page.locator("#all-apps article")).toHaveCount(8);
+ await expect(page.locator("#categories").getByRole("button",{name:"All Apps"})).toBeVisible();
 });
 
 test("search filters actual apps and gives usable empty-state feedback",async({page})=>{
