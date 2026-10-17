@@ -56,6 +56,9 @@ const checks=[
  ["Functional phone hamburger has accessible expanded state",page.includes('className={styles.mobileMenuToggle}')&&page.includes('aria-controls="cactusbyte-mobile-menu"')&&page.includes('aria-expanded={mobileMenu}')&&page.includes('setMobileMenu(v=>!v)')],
  ["Phone menu routes are real and remain isolated from search",page.includes('aria-label="CactusByte mobile menu"')&&page.includes('href="#featured"')&&page.includes('href="#categories"')&&page.includes('href="/studio#settings"')&&page.includes('setMobileMenu(false);if(mobileSearch)setQ("")')],
  ["Fold and desktop hide the phone menu while narrow screens get 44px targets",css.includes('.mobileMenuToggle,.mobileMenuPanel{display:none}')&&css.includes('.mobileMenuToggle{display:grid')&&css.includes('.mobileMenuPanel a{display:flex;align-items:center;min-height:44px')],
+ ["Acelynn showcase uses its actual audio analysis capabilities",page.includes("Live Microphone")&&page.includes("Audio File Analysis")&&page.includes("A/B Mix Comparison")&&page.includes("Frequency Insights")&&page.includes("Mic Analysis")&&page.includes("Audio Files")&&!page.includes("AI-Powered Tools")],
+ ["Phone's illustrated app cards reserve readable two-line titles and consistent CTA height",css.includes(".featuredGrid .posterCard{--cardH:217px;height:217px}")&&css.includes("min-height:2.25em;max-height:2.25em")&&css.includes("height:30px;min-height:30px")],
+ ["Fold landscape uses six illustrated cards with protected captions",css.includes("calc((100% - 40px)/6)")&&css.includes(".featuredGrid .posterCard{--cardH:193px;height:193px}")],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
