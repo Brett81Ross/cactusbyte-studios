@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState,type CSSProperties,type MouseEvent} from "react";
 import {studioApps,type StudioApp} from "../../data/apps";
-import {brandAssets,cactusByteBrand,verifiedBrandAsset} from "../../data/brand-assets";
+import {brandAssets,verifiedBrandAsset} from "../../data/brand-assets";
 import styles from "./storefront.module.css";
 
 const RECENT_KEY="cb-storefront-recent-v4";
@@ -144,7 +144,7 @@ export default function StorefrontPage(){
   return <main className={styles.page}>
     <aside className={styles.brandRail}>
       <a className={styles.brandLockup} href="/" aria-label="CactusByte home">
-        {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" onError={e=>{e.currentTarget.hidden=true}}/>}
+        
         <span><b>Cactus🌵Byte</b><small>STUDIOS</small></span>
       </a>
       <div className={styles.railStatement}>
@@ -167,7 +167,7 @@ export default function StorefrontPage(){
       <header className={styles.topbar}>
         <button className={styles.mobileMenuToggle} aria-label={mobileMenu?"Close menu":"Open menu"} aria-controls="cactusbyte-mobile-menu" aria-expanded={mobileMenu} onClick={()=>{setMobileMenu(v=>!v);setMobileSearch(false);setQ("")}}><span aria-hidden="true">☰</span></button>
         <a className={styles.mobileBrand} href="/" aria-label="CactusByte home">
-          {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" onError={e=>{e.currentTarget.hidden=true}}/>}
+          
           <span><b>Cactus🌵Byte</b><small>STUDIOS · YOUR APPS. ONE LAUNCHPAD.</small></span>
         </a>
         <label className={styles.search}><span>⌕</span><input aria-label="Search apps" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps, tools, creators..." /></label>
