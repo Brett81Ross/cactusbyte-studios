@@ -65,11 +65,15 @@ for(const viewport of viewports){
  });
 }
 
-test("storefront hero uses authentic Acelynn demo media",async({page})=>{
+test("storefront hero has no unrelated photo or autoplay video, and the verified Acelynn demo remains accessible",async({page})=>{
  await page.goto("/",{waitUntil:"domcontentloaded"});
- await expect(page.locator('#home video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
- await expect(page.locator('video[src*="no-problem-pressure-washing"]')).toHaveCount(0);
- await expect(page.locator('video[src*="pocketstomp"]')).toHaveCount(0);
+ await expect(page.locator('#home video')).toHaveCount(0);
+ await expect(page.locator('#home [class*=heroWaveform]')).toHaveCount(1);
+ await expect(page.locator('#home [class*=heroVinyl]')).toHaveCount(1);
+ const bg=await page.locator('#home [class*=heroPortrait]').evaluate(el=>getComputedStyle(el).backgroundImage);
+ expect(bg).not.toContain("unsplash");
+ await page.locator('#home').getByRole("button",{name:/Watch Demo/}).click();
+ await expect(page.locator('video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
 });
 
 test("approved storefront uses verified app logos",async({page})=>{
@@ -293,7 +297,7 @@ test("SLB10 Fold cover displays three featured cards without shrinking the tap t
  expect(Math.min(...geometry.widths)).toBeGreaterThan(95);
 });
 
-test("SLB10 Fold landscape shows five featured cards and uses its unobstructed side rail",async({page})=>{
+test("SLB11 Fold landscape displays all six mockup feature cards and uses its side rail",async({page})=>{
  await page.setViewportSize({width:1104,height:884});
  await page.goto("/",{waitUntil:"domcontentloaded"});
  await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeHidden();
@@ -301,10 +305,10 @@ test("SLB10 Fold landscape shows five featured cards and uses its unobstructed s
  const geometry=await page.locator("#featured").locator('[class*=featuredGrid]').evaluate(el=>{
   const r=el.getBoundingClientRect();
   const cards=Array.from(el.querySelectorAll("article")).map(card=>card.getBoundingClientRect());
-  return {right:r.right,fifthRight:cards[4].right,sixthLeft:cards[5].left};
+  return {right:r.right,sixthRight:cards[5].right,count:cards.length};
  });
- expect(geometry.fifthRight).toBeLessThanOrEqual(geometry.right+2);
- expect(geometry.sixthLeft).toBeGreaterThanOrEqual(geometry.right-2);
+ expect(geometry.count).toBe(6);
+ expect(geometry.sixthRight).toBeLessThanOrEqual(geometry.right+2);
 });
 
 test("SLB10 phone bottom navigation has its own row, with a scrollable content region",async({page})=>{
@@ -326,4 +330,15 @@ test("SLB10 phone bottom navigation has its own row, with a scrollable content r
  await page.locator("footer").scrollIntoViewIfNeeded();
  await expect(page.locator("footer")).toBeInViewport();
  await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeVisible();
+});
+
+test("SLB11 phone shows actual Acelynn audio capabilities and About rather than a stock portrait",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await expect(page.getByRole("region",{name:"Acelynn Pro capabilities"})).toBeVisible();
+ await expect(page.getByRole("region",{name:"About Acelynn Pro"})).toBeVisible();
+ await expect(page.getByText("A/B Compare",{exact:true})).toBeVisible();
+ await expect(page.getByText("Save",{exact:true})).toBeVisible();
+ await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeVisible();
+ await expect(page.locator("#home img[alt*='official logo']")).toBeVisible();
 });
