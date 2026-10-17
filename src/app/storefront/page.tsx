@@ -109,7 +109,7 @@ export default function StorefrontPage(){
     <aside className={styles.brandRail}>
       <a className={styles.brandLockup} href="/" aria-label="CactusByte home">
         {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}
-        <span><b>CACTUSBYTE</b><small>STUDIOS</small></span>
+        <span><b>Cactus🌵Byte</b><small>STUDIOS</small></span>
       </a>
       <div className={styles.railStatement}>
         <span>BOLDER APPS</span><span>BRIGHTER</span><span>REAL WORLDS</span>
@@ -131,7 +131,7 @@ export default function StorefrontPage(){
       <header className={styles.topbar}>
         <a className={styles.mobileBrand} href="/" aria-label="CactusByte home">
           {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}
-          <span><b>CactusByte Studios</b><small>Your apps. One launchpad.</small></span>
+          <span><b>Cactus🌵Byte</b><small>STUDIOS · YOUR APPS. ONE LAUNCHPAD.</small></span>
         </a>
         <label className={styles.search}><span>⌕</span><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps, tools, creators..." /></label>
         <div className={styles.topActions}>
@@ -144,8 +144,7 @@ export default function StorefrontPage(){
       {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
 
       <section className={styles.hero} id="home" style={accentStyle(heroApp)}>
-        <video className={styles.heroMedia} src={demoPaths[heroApp.id]} poster="/acelynn-beta-icon.png" autoPlay muted loop playsInline preload="metadata"/>
-        <div className={styles.heroPortrait} aria-hidden="true"/>
+        <div className={styles.heroPortrait} aria-hidden="true"><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
         <div className={styles.heroOverlay}/>
         <div className={styles.heroNoise}/>
         <div className={styles.heroCopy}>
@@ -160,8 +159,16 @@ export default function StorefrontPage(){
             <span>✦ Real-Time Analysis</span><span>✦ AI-Powered Tools</span><span>✦ Stunning Clarity</span><span>✦ Pro Audio Engine</span>
           </div>
         </div>
-        <div className={styles.heroSlogan}><small>A CLEARER</small><b>WORLD</b><small>SOUNDS</small><b>BETTER</b></div>
+        <div className={styles.heroSlogan}><small>MUSIC</small><b>FEELS</b><small>BETTER WHEN</small><b>IT’S CLEAR</b></div>
       </section>
+
+      <section className={styles.heroTools} aria-label="Acelynn Pro capabilities">
+        <div><span aria-hidden="true">≋</span><b>Analyze</b><small>Check your mix</small></div>
+        <div><span aria-hidden="true">◫</span><b>A/B Compare</b><small>Compare versions</small></div>
+        <div><span aria-hidden="true">▤</span><b>Save</b><small>Keep snapshots</small></div>
+        <div><span aria-hidden="true">◈</span><b>Insights</b><small>Hear the difference</small></div>
+      </section>
+      <section className={styles.heroAbout} aria-label="About Acelynn Pro"><div><h2>About Acelynn Pro</h2><p>Audio diagnostics and mix guidance for better balance, clearer frequencies, and confident A/B comparisons.</p></div><button onClick={()=>setDemo(heroApp)} aria-label="Watch Acelynn Pro demo">Watch Demo →</button></section>
 
       <div className={styles.categoryStrip} id="categories">
         {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
