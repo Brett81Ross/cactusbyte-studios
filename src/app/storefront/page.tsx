@@ -203,17 +203,17 @@ export default function StorefrontPage(){
             <button className={styles.secondaryButton} onClick={()=>setDemo(heroApp)}>▶ Watch Demo</button>
           </div>
           <div className={styles.heroFeatures}>
-            <span>✦ Real-Time Analysis</span><span>✦ AI-Powered Tools</span><span>✦ Stunning Clarity</span><span>✦ Pro Audio Engine</span>
+            <span>✦ Live Microphone</span><span>✦ Audio File Analysis</span><span>✦ A/B Mix Comparison</span><span>✦ Frequency Insights</span>
           </div>
         </div>
         <div className={styles.heroSlogan}><small>MUSIC</small><b>FEELS</b><small>BETTER WHEN</small><b>IT’S CLEAR</b></div>
       </section>
 
       <section className={styles.heroTools} aria-label="Acelynn Pro capabilities">
-        <div><span aria-hidden="true">≋</span><b>Analyze</b><small>Check your mix</small></div>
-        <div><span aria-hidden="true">◫</span><b>A/B Compare</b><small>Compare versions</small></div>
-        <div><span aria-hidden="true">▤</span><b>Save</b><small>Keep snapshots</small></div>
-        <div><span aria-hidden="true">◈</span><b>Insights</b><small>Hear the difference</small></div>
+        <div><span aria-hidden="true">≋</span><b>Mic Analysis</b><small>Live input</small></div>
+        <div><span aria-hidden="true">▤</span><b>Audio Files</b><small>Upload &amp; check</small></div>
+        <div><span aria-hidden="true">◫</span><b>A/B Compare</b><small>Compare mixes</small></div>
+        <div><span aria-hidden="true">◈</span><b>Frequency</b><small>See balance</small></div>
       </section>
       <section className={styles.heroAbout} aria-label="About Acelynn Pro"><div><h2>About Acelynn Pro</h2><p>Audio diagnostics and mix guidance for better balance, clearer frequencies, and confident A/B comparisons.</p></div><button onClick={()=>setDemo(heroApp)} aria-label="Watch Acelynn Pro demo">Watch Demo →</button></section>
 
