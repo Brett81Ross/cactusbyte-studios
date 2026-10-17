@@ -595,3 +595,14 @@ test("SLB11 sidebar browse links restore shelves from search mode",async({page})
  await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
  await expect(page.getByPlaceholder("Search apps, tools, creators...")).toHaveValue("");
 });
+
+
+test("SLB11 header Profile and mobile Profile resolve to the same settings screen",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await expect(page.locator('header a[aria-label="Profile"]')).toHaveAttribute("href","/studio#settings");
+ await expect(page.getByRole("navigation",{name:"CactusByte navigation"}).getByRole("link",{name:/Profile/})).toHaveAttribute("href","/studio#settings");
+ await page.locator('header a[aria-label="Profile"]').click();
+ await expect(page).toHaveURL(/\/studio#settings$/);
+ await expect(page.getByRole("heading",{name:"My CactusByte™"})).toBeVisible();
+});
