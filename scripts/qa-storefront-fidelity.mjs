@@ -48,6 +48,10 @@ const checks=[
  ["Detail and demo dialogs have keyboard Escape dismissal",page.includes('event.key==="Escape"')&&page.includes('role="dialog" aria-modal="true"')],
  ["Switching from app details to demo never stacks two modal overlays",page.includes('setSelected(null);setDemo(selected)')],
  ["Header Profile takes users to the same Studio settings destination as the dock",page.includes('href="/studio#settings" aria-label="Profile"')&&page.includes('href="/studio#settings"')],
+ ["Failed canonical CactusByte PNG never exposes a broken brand mark",page.includes('onError={e=>{e.currentTarget.hidden=true}}')&&css.includes('.brandLockup img,.mobileBrand img{display:none!important}')&&page.includes('<b>Cactus🌵Byte</b>')],
+ ["Mobile storefront menu has seven working real route targets",page.includes('id="cactusbyte-mobile-menu"')&&page.includes('aria-label="CactusByte mobile menu"')&&page.includes('href="#featured"')&&page.includes('href="#categories"')&&page.includes('href="/studio#settings"')],
+ ["Mobile menu and search are mutually exclusive and Escape-dismissible",page.includes('setMobileMenu(v=>!v);setMobileSearch(false);setQ("")')&&page.includes('setMobileMenu(false);if(mobileSearch)setQ("")')&&page.includes('if(event.key==="Escape")setMobileMenu(false)')],
+ ["Mobile menu is hidden on desktop with 44px targets on phones",css.includes('.mobileMenuToggle,.mobileMenuPanel{display:none}')&&css.includes('.mobileMenuToggle{display:grid')&&css.includes('.mobileMenuPanel a{display:flex;align-items:center;min-height:44px')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
