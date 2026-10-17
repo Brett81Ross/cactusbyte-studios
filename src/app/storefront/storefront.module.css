@@ -481,3 +481,32 @@
 .posterBody h3{text-shadow:0 2px 5px #000,0 0 12px #000c}
 .posterBody p{text-shadow:0 1px 4px #000,0 0 8px #000e}
 .posterShade{background:linear-gradient(0deg,rgba(1,4,10,.98) 0%,rgba(1,4,10,.9) 16%,rgba(1,4,10,.33) 40%,transparent 67%)}
+
+
+/* SLB11: original CactusByte logo2.png fails PNG CRC. Show the verified wordmark,
+   never a browser-broken image or a fabricated replacement brand mark. */
+.brandLockup img[hidden],.mobileBrand img[hidden]{display:none!important}
+.profileGlyph{display:grid;place-items:center;width:24px;height:24px;font-size:1.7rem;line-height:1;color:#8dfff0}
+.mobileMenuToggle,.mobileMenuPanel{display:none}
+@media(max-width:759px){
+ .topbar{grid-template-columns:44px minmax(0,1fr) auto;column-gap:7px}
+ .mobileMenuToggle{display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;
+   border:1px solid rgba(72,251,241,.38);border-radius:12px;background:rgba(4,19,34,.9);
+   color:#77fff1;font-size:1.5rem;line-height:1}
+ .mobileMenuToggle[aria-expanded="true"]{background:#05443e;border-color:#59ffe3}
+ .mobileMenuToggle:focus-visible,.mobileMenuPanel a:focus-visible{outline:2px solid #78fff2;outline-offset:2px}
+ .mobileBrand{justify-content:center;min-width:0;text-align:center;gap:4px}
+ .mobileBrand img{width:24px;height:28px;flex:0 0 24px}
+ .mobileBrand span{min-width:0}
+ .mobileBrand b{font-size:clamp(.98rem,4.4vw,1.15rem);white-space:nowrap;letter-spacing:-.06em}
+ .mobileBrand small{font-size:.42rem;letter-spacing:.06em;white-space:nowrap}
+ .topActions{gap:5px}
+ .mobileMenuPanel{display:grid;position:absolute;z-index:50;top:calc(100% - 3px);left:0;right:0;
+   grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:12px;
+   border:1px solid #37e5d18a;border-radius:0 0 16px 16px;
+   background:linear-gradient(160deg,#05182bf7,#090b24fc);box-shadow:0 16px 45px #000e,0 0 20px #17dcc126}
+ .mobileMenuPanel a{display:flex;align-items:center;min-height:44px;padding:0 13px;
+   border:1px solid #38c6d64b;border-radius:10px;background:#061723;
+   text-decoration:none;color:#e7fffc;font-size:.82rem;font-weight:700}
+ .mobileMenuPanel a:hover,.mobileMenuPanel a:active{background:#085a5b;color:white}
+}
