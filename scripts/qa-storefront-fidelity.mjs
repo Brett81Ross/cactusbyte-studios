@@ -26,7 +26,7 @@ const checks=[
  ["Studio UI version remains package-aligned",studio.includes(`const V="${pkg.version}"`)], 
  ["Storefront footer includes a tappable CactusByte home link and rights notice",page.includes('className={styles.footerBrand} href="/"')&&page.includes("Cactus🌵Byte Studios™")&&page.includes("All Rights Reserved")],
  ["Studio footer links back to CactusByte without duplicate brand names",studio.includes('<footer><a className="footerBrand" href="/">Cactus🌵Byte Studios™</a> · v{V} · All Rights Reserved</footer>')],
- ["North Star art-backed poster cards are bound to real registry IDs",css.includes('[data-app="noproblem"]')&&css.includes('[data-app="pocketstomp"]')&&css.includes(".posterArt{background-image")],
+ ["North Star art-backed poster cards use real registry IDs and bundled imagery",css.includes('[data-app="noproblem"]')&&css.includes('[data-app="pocketstomp"]')&&css.includes("background-image:var(--localCardImage)")&&page.includes('src={`/posters/${app.id}.svg`}')],
  ["North Star featured row includes real SchismMatrix and no fictional apps",page.includes('"noproblem","fantasy-matrix"')&&!page.includes("firstep-kitchen")],
  ["Functional category tile shelf and recommendation shelf exist",page.includes("Explore Categories")&&page.includes("Recommended Apps")&&page.includes('data-category={t.id}')],
  ["Mobile bottom navigation exposes five usable links",css.includes(".bottomNav a:nth-child(3),.bottomNav a:nth-child(5){display:flex}")&&page.includes("Profile</a>")],
