@@ -353,3 +353,43 @@ test("SLB11 phone shows actual Acelynn audio capabilities and About rather than 
  await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeVisible();
  await expect(page.locator("#home img[alt*='official logo']")).toBeVisible();
 });
+
+
+test("SLB11 all app cards retain their independent launch and details targets",async({page})=>{
+ await page.setViewportSize({width:360,height:748});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const featured=page.locator("#featured article");
+ await expect(featured).toHaveCount(6);
+ const first=featured.first();
+ await expect(first.getByRole("button",{name:"Open Acelynn Pro™"})).toHaveCount(1);
+ const details=first.getByRole("button",{name:"Details for Acelynn Pro™"});
+ await details.scrollIntoViewIfNeeded();
+ const target=await details.evaluate(el=>{const r=el.getBoundingClientRect();const s=getComputedStyle(el);return{width:r.width,height:r.height,opacity:s.opacity,events:s.pointerEvents}});
+ expect(target.width).toBeGreaterThanOrEqual(44);
+ expect(target.height).toBeGreaterThanOrEqual(44);
+ expect(target.opacity).toBe("1");
+ expect(target.events).toBe("auto");
+ await details.click();
+ await expect(page.getByRole("heading",{name:"Acelynn Pro™"})).toBeVisible();
+ await page.getByRole("button",{name:"Close details"}).click();
+});
+test("SLB11 poster layers remain above their card background with room for legible copy",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const card=page.locator('#featured article[data-app="fantasy-matrix"]');
+ await expect(card).toHaveCount(1);
+ const visual=await card.evaluate(async el=>{
+  const art=el.querySelector('[class*=posterArt]')! as HTMLElement;
+  const shade=el.querySelector('[class*=posterShade]')! as HTMLElement;
+  const img=art.querySelector("img")! as HTMLImageElement;
+  await img.decode();
+  const a=art.getBoundingClientRect(),b=el.getBoundingClientRect(),p=getComputedStyle(art),z=getComputedStyle(shade);
+  return{widthRatio:a.width/b.width,heightRatio:a.height/b.height,artZ:Number(p.zIndex),shadeZ:Number(z.zIndex),naturalWidth:img.naturalWidth,opacity:p.opacity};
+ });
+ expect(visual.naturalWidth).toBe(600);
+ expect(visual.widthRatio).toBeGreaterThan(0.98);
+ expect(visual.heightRatio).toBeGreaterThan(0.98);
+ expect(visual.artZ).toBeGreaterThanOrEqual(1);
+ expect(visual.shadeZ).toBeGreaterThan(visual.artZ);
+ expect(visual.opacity).not.toBe("0");
+});
