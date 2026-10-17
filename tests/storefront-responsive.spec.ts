@@ -606,3 +606,28 @@ test("SLB11 header Profile and mobile Profile resolve to the same settings scree
  await expect(page).toHaveURL(/\/studio#settings$/);
  await expect(page.getByRole("heading",{name:"My CactusByte™"})).toBeVisible();
 });
+
+
+test("SLB11 visible Details affordance is compact without sacrificing accessible tap area",async({page})=>{
+ for(const viewport of [{width:360,height:748},{width:390,height:844},{width:1104,height:884}]){
+  await page.setViewportSize(viewport);
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const article=page.locator('#featured article[data-app="acelynn-pro"]');
+  const detail=article.getByRole("button",{name:/Details for Acelynn Pro/});
+  const geometry=await detail.evaluate(el=>{
+   const target=el.getBoundingClientRect();
+   const icon=getComputedStyle(el,"::before");
+   const button=getComputedStyle(el);
+   return{width:target.width,height:target.height,iconWidth:icon.width,iconHeight:icon.height,display:icon.display,pointerEvents:button.pointerEvents};
+  });
+  expect(geometry.width).toBeGreaterThanOrEqual(44);
+  expect(geometry.height).toBeGreaterThanOrEqual(44);
+  expect(geometry.iconWidth).toBe("28px");
+  expect(geometry.iconHeight).toBe("28px");
+  expect(geometry.display).toBe("grid");
+  expect(geometry.pointerEvents).toBe("auto");
+  await detail.click();
+  await expect(page.getByRole("dialog",{name:/Acelynn Pro/})).toBeVisible();
+  await page.getByRole("button",{name:"Close details"}).click();
+ }
+});
