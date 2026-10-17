@@ -549,3 +549,38 @@
  .featuredGrid .posterBody p{font-size:.62rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
  .featuredGrid .posterCta{margin-top:6px;min-height:26px;line-height:26px;font-size:.68rem}
 }
+
+
+/* SLB11 audio-stage fidelity: prominence for the existing approved vector headphones;
+   absolutely no stock portraits, generated art, or substituted official logos. */
+.hero{isolation:isolate;background:radial-gradient(ellipse at 75% 25%,#541edb65,transparent 40%),linear-gradient(115deg,#05091d,#12052a 75%,#06091a);border-color:#aa4cfa9e}
+.heroPortrait{z-index:1;isolation:isolate;background:radial-gradient(ellipse at 75% 30%,#11dfff4f,transparent 36%),radial-gradient(ellipse at 89% 80%,#ec28d946,transparent 47%),linear-gradient(120deg,#060b24 30%,#1a0951 75%,#090a25)}
+.heroPortrait:before{z-index:0;inset:0;transform:none;opacity:1;background:repeating-radial-gradient(circle at 75% 45%,#00ecff26 0 2px,transparent 3px 35px),radial-gradient(circle at 72% 38%,#ac4ef63e,transparent 48%)}
+.heroPortrait:after{z-index:4;pointer-events:none;background:linear-gradient(110deg,transparent 5%,#e536fa13 45%,transparent 70%),repeating-linear-gradient(90deg,transparent 0 43px,#0de9ff13 44px,transparent 46px 87px);opacity:.65}
+.heroScene{position:absolute;display:block;z-index:2;top:-5%;right:2%;height:114%;width:auto;max-width:none!important;max-height:none!important;opacity:.96;object-fit:contain;mix-blend-mode:screen;filter:brightness(1.95) saturate(1.95) contrast(1.12) drop-shadow(0 0 25px #961aff8a);pointer-events:none}
+.heroWaveform{z-index:3;left:56%;right:2%;top:42%;height:24%;opacity:.56;filter:drop-shadow(0 0 14px #4efaff);transform:skewY(-7deg)}
+.heroVinyl{z-index:1;right:11%;top:8%;width:30%;opacity:.28;box-shadow:0 0 0 13px #4519ff33,0 0 0 22px #fb52e525,0 0 55px #b723ffad,inset 0 0 40px #05ddff5e}
+.heroOverlay{background:linear-gradient(90deg,#03071ff5 0%,#04071fe0 26%,#100a2f81 52%,#050a1e1a 80%),linear-gradient(0deg,#040515bf,transparent 34%)}
+.heroIdentity h1{letter-spacing:-.055em}
+@media(max-width:759px){
+ .hero{min-height:293px;box-shadow:0 9px 28px #000b,0 0 18px #ac20fe3a}
+ .heroCopy{min-height:293px;max-width:100%;padding:13px 12px 12px}
+ .heroScene{height:101%;top:-3%;right:-7%;opacity:1;filter:brightness(1.9) saturate(1.8) contrast(1.1) drop-shadow(0 0 15px #7726ffb5)}
+ .heroWaveform{top:15%;height:20%;left:24%;right:4%;opacity:.3}
+ .heroVinyl{top:-12%;right:4%;width:42%;opacity:.2}
+ .heroOverlay{background:linear-gradient(0deg,#03071bfb 0%,#03071bf2 42%,#020d278a 64%,#020a2030 83%,#040a2360 100%)}
+ .heroIdentity{margin-top:7px;gap:10px}
+ .heroIdentity h1{font-size:1.65rem;line-height:1.04}
+ .heroDescription{font-size:.72rem;line-height:1.3;margin-top:7px}
+ .heroActions{margin-top:10px;gap:8px}
+ .heroActions button{min-height:43px;white-space:nowrap}
+ .heroTools{margin-top:8px}
+}
+@media(max-width:390px){
+ .hero{min-height:299px}
+ .heroCopy{min-height:299px}
+ .heroScene{right:-8%;top:-3%}
+}
+@media(min-width:760px) and (max-width:980px){
+ .heroScene{height:118%;top:-6%;right:-8%}
+}
