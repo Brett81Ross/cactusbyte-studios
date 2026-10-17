@@ -534,3 +534,64 @@ test("SLB11 selected category tiles and expanded filter chips reflect the active
  await expect(all).toHaveAttribute("aria-pressed","true");
  await expect(page.locator("#all-apps article")).toHaveCount(8);
 });
+
+
+test("SLB11 search shows immediate results and restores the complete storefront",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.getByRole("button",{name:"Search apps"}).click();
+ const field=page.getByPlaceholder("Search apps...",{exact:true});
+ await field.fill("  MachZero  ");
+ await expect(page.getByRole("heading",{name:"Search results"})).toBeVisible();
+ await expect(page.locator('#all-apps article[data-app="machzero"]')).toHaveCount(1);
+ await expect(page.locator("#featured")).toHaveCount(0);
+ await expect(page.locator("#home")).toHaveCount(0);
+ const geometry=await page.evaluate(()=>{
+  const header=document.querySelector("header")!.getBoundingClientRect();
+  const results=document.querySelector("#all-apps")!.getBoundingClientRect();
+  return{headerBottom:header.bottom,resultsTop:results.top};
+ });
+ expect(geometry.resultsTop).toBeGreaterThanOrEqual(geometry.headerBottom-2);
+ expect(geometry.resultsTop-geometry.headerBottom).toBeLessThan(90);
+ await field.clear();
+ await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
+ await expect(page.locator("#home")).toHaveCount(1);
+});
+test("SLB11 search is global even after filtering by category",async({page})=>{
+ await page.setViewportSize({width:412,height:915});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator('[data-category="Sports"]').click();
+ await expect(page.locator("#all-apps article")).toHaveCount(2);
+ await page.getByRole("button",{name:"Search apps"}).click();
+ await page.getByPlaceholder("Search apps...",{exact:true}).fill("MachZero");
+ await expect(page.getByRole("heading",{name:"Search results"})).toBeVisible();
+ await expect(page.locator('#all-apps article[data-app="machzero"]')).toHaveCount(1);
+ await page.getByRole("button",{name:"Close search"}).click();
+ await expect(page.getByRole("heading",{name:"Sports",exact:true})).toBeVisible();
+ await expect(page.locator("#all-apps article")).toHaveCount(2);
+});
+test("SLB11 details and demo dialogs are labeled, dismissible and never stacked",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator('#featured article[data-app="acelynn-pro"]').getByRole("button",{name:/Details for Acelynn Pro/}).click();
+ const details=page.getByRole("dialog",{name:"Acelynn Pro™"});
+ await expect(details).toBeVisible();
+ await expect(details).toHaveAttribute("aria-modal","true");
+ await page.keyboard.press("Escape");
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+ await page.locator('#featured article[data-app="acelynn-pro"]').getByRole("button",{name:/Details for Acelynn Pro/}).click();
+ await page.getByRole("dialog").getByRole("button",{name:/Watch Demo/}).click();
+ await expect(page.getByRole("dialog")).toHaveCount(1);
+ await expect(page.getByRole("dialog",{name:"Acelynn Pro™"}).locator('video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
+ await page.keyboard.press("Escape");
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+test("SLB11 sidebar browse links restore shelves from search mode",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.getByPlaceholder("Search apps, tools, creators...").fill("MachZero");
+ await expect(page.locator("#featured")).toHaveCount(0);
+ await page.getByRole("navigation",{name:"CactusByte sections"}).getByRole("link",{name:/Discover/}).click();
+ await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
+ await expect(page.getByPlaceholder("Search apps, tools, creators...")).toHaveValue("");
+});
