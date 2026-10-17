@@ -393,3 +393,35 @@ test("SLB11 poster layers remain above their card background with room for legib
  expect(visual.shadeZ).toBeGreaterThan(visual.artZ);
  expect(visual.opacity).not.toBe("0");
 });
+
+
+test("SLB11 all-apps portfolio uses compact swipeable artwork instead of oversized 2-column panels on phones",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const grid=page.locator("#all-apps").locator('[class*=allGrid]');
+ await expect(grid.locator("article")).toHaveCount(8);
+ const metrics=await grid.evaluate(el=>{
+  const a=Array.from(el.querySelectorAll("article")).map(card=>card.getBoundingClientRect());
+  return{display:getComputedStyle(el).display,viewport:el.clientWidth,scroll:el.scrollWidth,first:a[0].width,secondX:a[1].x,firstX:a[0].x};
+ });
+ expect(metrics.display).toBe("flex");
+ expect(metrics.first).toBeLessThan(metrics.viewport/2);
+ expect(metrics.secondX).toBeGreaterThan(metrics.firstX);
+ expect(metrics.scroll).toBeGreaterThan(metrics.viewport);
+});
+test("SLB11 dedicated Fold sidebar preserves a readable CactusByte wordmark",async({page})=>{
+ for(const width of [884,1104]){
+  await page.setViewportSize({width,height:884});
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const lockup=page.locator('[class*=brandLockup]').first();
+  await expect(lockup).toBeVisible();
+  await expect(lockup).toContainText("Cactus🌵Byte");
+  const metrics=await lockup.evaluate(el=>{
+   const title=el.querySelector("b")!;
+   const r=el.getBoundingClientRect(),t=title.getBoundingClientRect();
+   return {right:r.right,titleRight:t.right,titleWidth:t.width,display:getComputedStyle(title.parentElement!).display};
+  });
+  expect(metrics.display).not.toBe("none");
+  expect(metrics.titleRight).toBeLessThanOrEqual(metrics.right+1);
+ }
+});
