@@ -254,7 +254,7 @@ export default function StorefrontPage(){
 
       <section className={styles.section} id="all-apps" aria-label={searchMode?"App search results":undefined}>
         <SectionHead title={searchMode?"Search results":category==="All Apps"?"All Apps":category} subtitle={searchMode?`${apps.length} ${apps.length===1?"app":"apps"} matching “${q.trim()}”`:category==="All Apps"?"The complete CactusByte ecosystem.":`${apps.length} matching apps`}/>
-        <div className={styles.allGrid}>{visibleApps.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
+        <div className={`${styles.allGrid} ${showAll||searchMode||category!=="All Apps"?styles.allGridExpanded:""}`}>{visibleApps.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
         {visibleApps.length===0&&<p className={styles.emptyState} role="status">No apps match your search or category. Try another search or select All Apps.</p>}
         {!searchMode&&category==="All Apps"&&apps.length>8&&<button className={styles.showAllButton} onClick={()=>setShowAll(v=>!v)}>{showAll?"Show Less":"View All Apps"} <span>{showAll?"↑":"↓"}</span></button>}
       </section>
