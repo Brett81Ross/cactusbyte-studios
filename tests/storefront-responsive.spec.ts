@@ -65,11 +65,15 @@ for(const viewport of viewports){
  });
 }
 
-test("storefront hero uses authentic Acelynn demo media",async({page})=>{
+test("storefront hero has no unrelated photo or autoplay video, and the verified Acelynn demo remains accessible",async({page})=>{
  await page.goto("/",{waitUntil:"domcontentloaded"});
- await expect(page.locator('#home video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
- await expect(page.locator('video[src*="no-problem-pressure-washing"]')).toHaveCount(0);
- await expect(page.locator('video[src*="pocketstomp"]')).toHaveCount(0);
+ await expect(page.locator('#home video')).toHaveCount(0);
+ await expect(page.locator('#home [class*=heroWaveform]')).toHaveCount(1);
+ await expect(page.locator('#home [class*=heroVinyl]')).toHaveCount(1);
+ const bg=await page.locator('#home [class*=heroPortrait]').evaluate(el=>getComputedStyle(el).backgroundImage);
+ expect(bg).not.toContain("unsplash");
+ await page.locator('#home').getByRole("button",{name:/Watch Demo/}).click();
+ await expect(page.locator('video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
 });
 
 test("approved storefront uses verified app logos",async({page})=>{
@@ -146,10 +150,16 @@ test("studio footer uses the same release version and tappable brand",async({pag
  await expect(footer.getByRole("link",{name:"Cactus🌵Byte Studios™"})).toHaveAttribute("href","/");
 });
 
-test("mobile category pills retain their width and scroll without overlap",async({page})=>{
+test("SLB11 secondary category chips are initially hidden but fully accessible on the Fold cover",async({page})=>{
  await page.setViewportSize({width:360,height:748});
  await page.goto("/",{waitUntil:"domcontentloaded"});
- const strip=page.locator("#categories");
+ const strip=page.locator("#category-filter-options");
+ await expect(strip).toBeHidden();
+ const toggle=page.getByRole("button",{name:/More categories/});
+ await expect(toggle).toHaveAttribute("aria-expanded","false");
+ await toggle.click();
+ await expect(strip).toBeVisible();
+ await expect(page.getByRole("button",{name:/Hide categories/})).toHaveAttribute("aria-expanded","true");
  const buttons=strip.locator("button");
  const first=await buttons.nth(0).boundingBox();
  const second=await buttons.nth(1).boundingBox();
@@ -157,15 +167,20 @@ test("mobile category pills retain their width and scroll without overlap",async
  expect(first!.width).toBeGreaterThan(65);
  expect(second!.x).toBeGreaterThanOrEqual(first!.x+first!.width);
  expect(await strip.evaluate(el=>el.scrollWidth>el.clientWidth)).toBe(true);
+ await page.getByRole("button",{name:/Hide categories/}).click();
+ await expect(strip).toBeHidden();
 });
 
-test("category buttons filter actual registry cards and can restore all apps",async({page})=>{
+test("all original app categories remain accessible through the visible More categories control",async({page})=>{
  await page.goto("/",{waitUntil:"domcontentloaded"});
- await page.locator("#categories").getByRole("button",{name:"Security"}).click();
+ await page.getByRole("button",{name:/More categories/}).click();
+ const filters=page.locator("#category-filter-options");
+ await filters.getByRole("button",{name:"Security"}).click();
  await expect(page.locator("#all-apps article")).toHaveCount(1);
  await expect(page.locator("#all-apps article[data-app='scouttrace']")).toHaveCount(1);
- await page.locator("#categories").getByRole("button",{name:"All Apps"}).click();
+ await filters.getByRole("button",{name:"All Apps"}).click();
  await expect(page.locator("#all-apps article")).toHaveCount(8);
+ await expect(page.locator("#categories").getByRole("button",{name:"All Apps"})).toBeVisible();
 });
 
 test("search filters actual apps and gives usable empty-state feedback",async({page})=>{
@@ -293,7 +308,7 @@ test("SLB10 Fold cover displays three featured cards without shrinking the tap t
  expect(Math.min(...geometry.widths)).toBeGreaterThan(95);
 });
 
-test("SLB10 Fold landscape shows five featured cards and uses its unobstructed side rail",async({page})=>{
+test("SLB11 Fold landscape displays all six mockup feature cards and uses its side rail",async({page})=>{
  await page.setViewportSize({width:1104,height:884});
  await page.goto("/",{waitUntil:"domcontentloaded"});
  await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeHidden();
@@ -301,10 +316,10 @@ test("SLB10 Fold landscape shows five featured cards and uses its unobstructed s
  const geometry=await page.locator("#featured").locator('[class*=featuredGrid]').evaluate(el=>{
   const r=el.getBoundingClientRect();
   const cards=Array.from(el.querySelectorAll("article")).map(card=>card.getBoundingClientRect());
-  return {right:r.right,fifthRight:cards[4].right,sixthLeft:cards[5].left};
+  return {right:r.right,sixthRight:cards[5].right,count:cards.length};
  });
- expect(geometry.fifthRight).toBeLessThanOrEqual(geometry.right+2);
- expect(geometry.sixthLeft).toBeGreaterThanOrEqual(geometry.right-2);
+ expect(geometry.count).toBe(6);
+ expect(geometry.sixthRight).toBeLessThanOrEqual(geometry.right+2);
 });
 
 test("SLB10 phone bottom navigation has its own row, with a scrollable content region",async({page})=>{
@@ -326,4 +341,353 @@ test("SLB10 phone bottom navigation has its own row, with a scrollable content r
  await page.locator("footer").scrollIntoViewIfNeeded();
  await expect(page.locator("footer")).toBeInViewport();
  await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeVisible();
+});
+
+test("SLB11 phone shows actual Acelynn audio capabilities and About rather than a stock portrait",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await expect(page.getByRole("region",{name:"Acelynn Pro capabilities"})).toBeVisible();
+ await expect(page.getByRole("region",{name:"About Acelynn Pro"})).toBeVisible();
+ await expect(page.getByText("A/B Compare",{exact:true})).toBeVisible();
+ await expect(page.getByText("Save",{exact:true})).toBeVisible();
+ await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeVisible();
+ await expect(page.locator("#home img[alt*='official logo']")).toBeVisible();
+});
+
+
+test("SLB11 all app cards retain their independent launch and details targets",async({page})=>{
+ await page.setViewportSize({width:360,height:748});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const featured=page.locator("#featured article");
+ await expect(featured).toHaveCount(6);
+ const first=featured.first();
+ await expect(first.getByRole("button",{name:"Open Acelynn Pro™"})).toHaveCount(1);
+ const details=first.getByRole("button",{name:"Details for Acelynn Pro™"});
+ await details.scrollIntoViewIfNeeded();
+ const target=await details.evaluate(el=>{const r=el.getBoundingClientRect();const s=getComputedStyle(el);return{width:r.width,height:r.height,opacity:s.opacity,events:s.pointerEvents}});
+ expect(target.width).toBeGreaterThanOrEqual(44);
+ expect(target.height).toBeGreaterThanOrEqual(44);
+ expect(target.opacity).toBe("1");
+ expect(target.events).toBe("auto");
+ await details.click();
+ await expect(page.getByRole("heading",{name:"Acelynn Pro™"})).toBeVisible();
+ await page.getByRole("button",{name:"Close details"}).click();
+});
+test("SLB11 poster layers remain above their card background with room for legible copy",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const card=page.locator('#featured article[data-app="fantasy-matrix"]');
+ await expect(card).toHaveCount(1);
+ const visual=await card.evaluate(async el=>{
+  const art=el.querySelector('[class*=posterArt]')! as HTMLElement;
+  const shade=el.querySelector('[class*=posterShade]')! as HTMLElement;
+  const img=art.querySelector("img")! as HTMLImageElement;
+  await img.decode();
+  const a=art.getBoundingClientRect(),b=el.getBoundingClientRect(),p=getComputedStyle(art),z=getComputedStyle(shade);
+  return{widthRatio:a.width/b.width,heightRatio:a.height/b.height,artZ:Number(p.zIndex),shadeZ:Number(z.zIndex),naturalWidth:img.naturalWidth,opacity:p.opacity};
+ });
+ expect(visual.naturalWidth).toBe(600);
+ expect(visual.widthRatio).toBeGreaterThan(0.98);
+ expect(visual.heightRatio).toBeGreaterThan(0.98);
+ expect(visual.artZ).toBeGreaterThanOrEqual(1);
+ expect(visual.shadeZ).toBeGreaterThan(visual.artZ);
+ expect(visual.opacity).not.toBe("0");
+});
+
+
+test("SLB11 all-apps portfolio uses compact swipeable artwork instead of oversized 2-column panels on phones",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const grid=page.locator("#all-apps").locator('[class*=allGrid]');
+ await expect(grid.locator("article")).toHaveCount(8);
+ const metrics=await grid.evaluate(el=>{
+  const a=Array.from(el.querySelectorAll("article")).map(card=>card.getBoundingClientRect());
+  return{display:getComputedStyle(el).display,viewport:el.clientWidth,scroll:el.scrollWidth,first:a[0].width,secondX:a[1].x,firstX:a[0].x};
+ });
+ expect(metrics.display).toBe("flex");
+ expect(metrics.first).toBeLessThan(metrics.viewport/2);
+ expect(metrics.secondX).toBeGreaterThan(metrics.firstX);
+ expect(metrics.scroll).toBeGreaterThan(metrics.viewport);
+});
+test("SLB11 dedicated Fold sidebar preserves a readable CactusByte wordmark",async({page})=>{
+ for(const width of [884,1104]){
+  await page.setViewportSize({width,height:884});
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const lockup=page.locator('[class*=brandLockup]').first();
+  await expect(lockup).toBeVisible();
+  await expect(lockup).toContainText("Cactus🌵Byte");
+  const metrics=await lockup.evaluate(el=>{
+   const title=el.querySelector("b")!;
+   const r=el.getBoundingClientRect(),t=title.getBoundingClientRect();
+   return {right:r.right,titleRight:t.right,titleWidth:t.width,display:getComputedStyle(title.parentElement!).display};
+  });
+  expect(metrics.display).not.toBe("none");
+  expect(metrics.titleRight).toBeLessThanOrEqual(metrics.right+1);
+ }
+});
+
+
+test("SLB11 desktop Details remains visible and clickable without mouse hover",async({page})=>{
+ await page.setViewportSize({width:1440,height:900});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const card=page.locator('#featured article[data-app="acelynn-pro"]');
+ const button=card.getByRole("button",{name:"Details for Acelynn Pro™"});
+ const state=await button.evaluate(el=>({opacity:getComputedStyle(el).opacity,events:getComputedStyle(el).pointerEvents,width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height}));
+ expect(state.opacity).toBe("1");
+ expect(state.events).toBe("auto");
+ expect(state.width).toBeGreaterThanOrEqual(44);
+ expect(state.height).toBeGreaterThanOrEqual(44);
+ await button.click();
+ await expect(page.locator('section[data-app="acelynn-pro"]')).toBeVisible();
+ await page.getByRole("button",{name:"Close details"}).click();
+});
+test("SLB11 card design uses official logo artwork without repeated category pill overlays",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const card=page.locator('#featured article[data-app="fantasy-matrix"]');
+ await expect(card.locator('[class*=posterTop] img')).toHaveCount(1);
+ const pill=card.locator('[class*=posterTop]>span');
+ await expect(pill).toBeHidden();
+});
+
+
+test("SLB11 corrupted saved-app history never crashes the storefront",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const values=['{"not":"an array"}','{malformed json','[null,4,"missing-app","noproblem","noproblem"]'];
+ for(const raw of values){
+  await page.evaluate(value=>localStorage.setItem("cb-storefront-recent-v4",value),raw);
+  await page.reload({waitUntil:"domcontentloaded"});
+  await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
+  await expect(page.locator('#featured article[data-app="noproblem"]')).toHaveCount(1);
+ }
+ await expect(page.getByRole("heading",{name:"Continue Using",exact:true})).toBeVisible();
+ await expect(page.locator('section').filter({has:page.getByRole("heading",{name:"Continue Using",exact:true})}).locator('article')).toHaveCount(1);
+});
+test("SLB11 mobile search is accessible and still filters the app registry",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const open=page.getByRole("button",{name:"Search apps"});
+ await expect(open).toHaveAttribute("aria-expanded","false");
+ await open.click();
+ const close=page.getByRole("button",{name:"Close search"});
+ await expect(close).toHaveAttribute("aria-expanded","true");
+ const search=page.getByPlaceholder("Search apps...",{exact:true});
+ await expect(search).toBeVisible();
+ await search.fill("MachZero");
+ await expect(page.locator("#all-apps article")).toHaveCount(1);
+ await expect(page.locator('#all-apps article[data-app="machzero"]')).toHaveCount(1);
+ await close.click();
+ await expect(search).toHaveCount(0);
+ await expect(page.locator("#all-apps article")).toHaveCount(8);
+});
+test("SLB11 mobile category navigation leaves results below the sticky header",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.getByRole("button",{name:/More categories/}).click();
+ await page.locator("#category-filter-options").getByRole("button",{name:"Security"}).click();
+ await expect(page.locator('#all-apps article[data-app="scouttrace"]')).toHaveCount(1);
+ const coords=async()=>page.evaluate(()=>{
+  const target=document.querySelector("#all-apps")!.getBoundingClientRect();
+  const header=document.querySelector("header")!.getBoundingClientRect();
+  return {gap:target.top-header.bottom,top:target.top};
+ });
+ await expect.poll(async()=>(await coords()).gap,{timeout:5000}).toBeGreaterThanOrEqual(-2);
+ await expect.poll(async()=>(await coords()).top,{timeout:5000}).toBeLessThan(400);
+});
+test("SLB11 compact phone card copy stays inside its poster",async({page})=>{
+ await page.setViewportSize({width:360,height:748});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const cards=page.locator("#all-apps article");
+ for(let i=0;i<await cards.count();i++){
+  const bounds=await cards.nth(i).evaluate(el=>{
+   const card=el.getBoundingClientRect();
+   const body=el.querySelector('[class*=posterBody]')!.getBoundingClientRect();
+   const title=el.querySelector("h3")!.getBoundingClientRect();
+   const cta=el.querySelector('[class*=posterCta]')!.getBoundingClientRect();
+   return {left:body.left-card.left,right:card.right-body.right,bottom:card.bottom-body.bottom,
+     titleRight:title.right-card.right,ctaRight:cta.right-card.right};
+  });
+  expect(bounds.left).toBeGreaterThanOrEqual(6);
+  expect(bounds.right).toBeGreaterThanOrEqual(6);
+  expect(bounds.bottom).toBeGreaterThanOrEqual(4);
+  expect(bounds.titleRight).toBeLessThanOrEqual(0);
+  expect(bounds.ctaRight).toBeLessThanOrEqual(0);
+ }
+});
+
+
+test("SLB11 selected category tiles and expanded filter chips reflect the active result set",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const sports=page.locator('[data-category="Sports"]');
+ const all=page.locator('[data-category="All Apps"]');
+ await expect(all).toHaveAttribute("aria-pressed","true");
+ await expect(sports).toHaveAttribute("aria-pressed","false");
+ await sports.click();
+ await expect(sports).toHaveAttribute("aria-pressed","true");
+ await expect(all).toHaveAttribute("aria-pressed","false");
+ await expect(page.locator("#all-apps article")).toHaveCount(2);
+ await page.getByRole("button",{name:/More categories/}).click();
+ await expect(page.locator("#category-filter-options").getByRole("button",{name:"Sports"})).toHaveAttribute("aria-pressed","true");
+ await all.click();
+ await expect(all).toHaveAttribute("aria-pressed","true");
+ await expect(page.locator("#all-apps article")).toHaveCount(8);
+});
+
+
+test("SLB11 search shows immediate results and restores the complete storefront",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.getByRole("button",{name:"Search apps"}).click();
+ const field=page.getByPlaceholder("Search apps...",{exact:true});
+ await field.fill("  MachZero  ");
+ await expect(page.getByRole("heading",{name:"Search results"})).toBeVisible();
+ await expect(page.locator('#all-apps article[data-app="machzero"]')).toHaveCount(1);
+ await expect(page.locator("#featured")).toHaveCount(0);
+ await expect(page.locator("#home")).toHaveCount(0);
+ const geometry=await page.evaluate(()=>{
+  const header=document.querySelector("header")!.getBoundingClientRect();
+  const results=document.querySelector("#all-apps")!.getBoundingClientRect();
+  return{headerBottom:header.bottom,resultsTop:results.top};
+ });
+ expect(geometry.resultsTop).toBeGreaterThanOrEqual(geometry.headerBottom-2);
+ expect(geometry.resultsTop-geometry.headerBottom).toBeLessThan(90);
+ await field.clear();
+ await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
+ await expect(page.locator("#home")).toHaveCount(1);
+});
+test("SLB11 search is global even after filtering by category",async({page})=>{
+ await page.setViewportSize({width:412,height:915});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator('[data-category="Sports"]').click();
+ await expect(page.locator("#all-apps article")).toHaveCount(2);
+ await page.getByRole("button",{name:"Search apps"}).click();
+ await page.getByPlaceholder("Search apps...",{exact:true}).fill("MachZero");
+ await expect(page.getByRole("heading",{name:"Search results"})).toBeVisible();
+ await expect(page.locator('#all-apps article[data-app="machzero"]')).toHaveCount(1);
+ await page.getByRole("button",{name:"Close search"}).click();
+ await expect(page.getByRole("heading",{name:"Sports",exact:true})).toBeVisible();
+ await expect(page.locator("#all-apps article")).toHaveCount(2);
+});
+test("SLB11 details and demo dialogs are labeled, dismissible and never stacked",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator('#featured article[data-app="acelynn-pro"]').getByRole("button",{name:/Details for Acelynn Pro/}).click();
+ const details=page.getByRole("dialog",{name:"Acelynn Pro™"});
+ await expect(details).toBeVisible();
+ await expect(details).toHaveAttribute("aria-modal","true");
+ await page.keyboard.press("Escape");
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+ await page.locator('#featured article[data-app="acelynn-pro"]').getByRole("button",{name:/Details for Acelynn Pro/}).click();
+ await page.getByRole("dialog").getByRole("button",{name:/Watch Demo/}).click();
+ await expect(page.getByRole("dialog")).toHaveCount(1);
+ await expect(page.getByRole("dialog",{name:"Acelynn Pro™"}).locator('video[src="/demos/acelynn-pro-60-second-demo.mp4"]')).toHaveCount(1);
+ await page.keyboard.press("Escape");
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+test("SLB11 sidebar browse links restore shelves from search mode",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.getByPlaceholder("Search apps, tools, creators...").fill("MachZero");
+ await expect(page.locator("#featured")).toHaveCount(0);
+ await page.getByRole("navigation",{name:"CactusByte sections"}).getByRole("link",{name:/Discover/}).click();
+ await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
+ await expect(page.getByPlaceholder("Search apps, tools, creators...")).toHaveValue("");
+});
+
+
+test("SLB11 header Profile and mobile Profile resolve to the same settings screen",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await expect(page.locator('header a[aria-label="Profile"]')).toHaveAttribute("href","/studio#settings");
+ await expect(page.getByRole("navigation",{name:"CactusByte navigation"}).getByRole("link",{name:/Profile/})).toHaveAttribute("href","/studio#settings");
+ await page.locator('header a[aria-label="Profile"]').click();
+ await expect(page).toHaveURL(/\/studio#settings$/);
+ await expect(page.getByRole("heading",{name:"My CactusByte™"})).toBeVisible();
+});
+
+
+test("SLB11 visible Details affordance is compact without sacrificing accessible tap area",async({page})=>{
+ for(const viewport of [{width:360,height:748},{width:390,height:844},{width:1104,height:884}]){
+  await page.setViewportSize(viewport);
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const article=page.locator('#featured article[data-app="acelynn-pro"]');
+  const detail=article.getByRole("button",{name:/Details for Acelynn Pro/});
+  const geometry=await detail.evaluate(el=>{
+   const target=el.getBoundingClientRect();
+   const icon=getComputedStyle(el,"::before");
+   const button=getComputedStyle(el);
+   return{width:target.width,height:target.height,iconWidth:icon.width,iconHeight:icon.height,display:icon.display,pointerEvents:button.pointerEvents};
+  });
+  expect(geometry.width).toBeGreaterThanOrEqual(44);
+  expect(geometry.height).toBeGreaterThanOrEqual(44);
+  expect(geometry.iconWidth).toBe("28px");
+  expect(geometry.iconHeight).toBe("28px");
+  expect(geometry.display).toBe("grid");
+  expect(geometry.pointerEvents).toBe("auto");
+  await detail.click();
+  await expect(page.getByRole("dialog",{name:/Acelynn Pro/})).toBeVisible();
+  await page.getByRole("button",{name:"Close details"}).click();
+ }
+});
+
+
+test("SLB11 mobile showcase menu opens, provides real routes, and closes without overlay leakage",async({page})=>{
+ for(const width of [360,390,412]){
+  await page.setViewportSize({width,height:844});
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const trigger=page.getByRole("button",{name:"Open menu"});
+  await expect(trigger).toBeVisible();
+  await expect(trigger).toHaveAttribute("aria-expanded","false");
+  await trigger.click();
+  const menu=page.getByRole("navigation",{name:"CactusByte mobile menu"});
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole("button",{name:"Close menu"})).toHaveAttribute("aria-expanded","true");
+  await expect(menu.getByRole("link",{name:/Home/})).toHaveAttribute("href","#home");
+  await expect(menu.getByRole("link",{name:/Categories/})).toHaveAttribute("href","#categories");
+  await expect(menu.getByRole("link",{name:/All Apps/})).toHaveAttribute("href","#all-apps");
+  await expect(menu.getByRole("link",{name:/Studio/})).toHaveAttribute("href","/studio");
+  await expect(menu.getByRole("link",{name:/Updates/})).toHaveAttribute("href","/studio#releases");
+  await expect(menu.getByRole("link",{name:/Profile/})).toHaveAttribute("href","/studio#settings");
+  const bounds=await menu.evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,viewport:innerWidth}});
+  expect(bounds.left).toBeGreaterThanOrEqual(0);
+  expect(bounds.right).toBeLessThanOrEqual(bounds.viewport+1);
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+  await trigger.click();
+  await page.getByRole("navigation",{name:"CactusByte mobile menu"}).getByRole("link",{name:/Categories/}).click();
+  await expect(page.getByRole("navigation",{name:"CactusByte mobile menu"})).toHaveCount(0);
+  await expect(page.getByRole("heading",{name:"Explore Categories"})).toBeVisible();
+ }
+});
+test("SLB11 verified CactusByte wordmark survives the corrupt legacy PNG",async({page})=>{
+ await page.route("**/logo2.png",route=>route.abort());
+ for(const width of [360,884,1104]){
+  await page.setViewportSize({width,height:844});
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const brand=width<760?page.locator('[class*=mobileBrand]').first():page.locator('[class*=brandLockup]').first();
+  await expect(brand).toBeVisible();
+  await expect(brand).toContainText("Cactus🌵Byte");
+  const img=brand.locator('img[src="/logo2.png"]');
+  await expect(img).toHaveCount(0);
+  const label=brand.locator("b");
+  const bounds=await label.evaluate(el=>{const r=el.getBoundingClientRect();return{width:r.width,right:r.right,viewport:innerWidth}});
+  expect(bounds.width).toBeGreaterThan(40);
+  expect(bounds.right).toBeLessThanOrEqual(bounds.viewport+1);
+ }
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await expect(page.locator('header a[aria-label="Profile"]')).toContainText("♙");
+});
+test("SLB11 phone menu and search never remain open together",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.getByRole("button",{name:"Open menu"}).click();
+ await page.getByRole("button",{name:"Search apps"}).click();
+ await expect(page.getByRole("navigation",{name:"CactusByte mobile menu"})).toHaveCount(0);
+ await expect(page.getByPlaceholder("Search apps...",{exact:true})).toBeVisible();
+ await page.getByRole("button",{name:"Open menu"}).click();
+ await expect(page.getByPlaceholder("Search apps...",{exact:true})).toHaveCount(0);
+ await expect(page.getByRole("navigation",{name:"CactusByte mobile menu"})).toBeVisible();
 });

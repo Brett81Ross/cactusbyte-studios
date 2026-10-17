@@ -1,8 +1,8 @@
 "use client";
 
-import {useEffect,useMemo,useState,type CSSProperties} from "react";
+import {useEffect,useMemo,useState,type CSSProperties,type MouseEvent} from "react";
 import {studioApps,type StudioApp} from "../../data/apps";
-import {brandAssets,cactusByteBrand,verifiedBrandAsset} from "../../data/brand-assets";
+import {brandAssets,verifiedBrandAsset} from "../../data/brand-assets";
 import styles from "./storefront.module.css";
 
 const RECENT_KEY="cb-storefront-recent-v4";
@@ -82,44 +82,80 @@ export default function StorefrontPage(){
   const[selected,setSelected]=useState<StudioApp|null>(null);
   const[demo,setDemo]=useState<StudioApp|null>(null);
   const[mobileSearch,setMobileSearch]=useState(false);
+  const[mobileMenu,setMobileMenu]=useState(false);
   const[showAll,setShowAll]=useState(false);
+  const[showCategoryFilters,setShowCategoryFilters]=useState(false);
 
-  useEffect(()=>{try{const raw=localStorage.getItem(RECENT_KEY);setRecentIds(raw?JSON.parse(raw):[])}catch{}},[]);
+  useEffect(()=>{
+    if(!mobileMenu)return;
+    const dismiss=(event:KeyboardEvent)=>{if(event.key==="Escape")setMobileMenu(false)};
+    document.addEventListener("keydown",dismiss);
+    return ()=>document.removeEventListener("keydown",dismiss);
+  },[mobileMenu]);
+
+  useEffect(()=>{
+    if(!selected&&!demo)return;
+    const dismiss=(event:KeyboardEvent)=>{
+      if(event.key==="Escape"){setSelected(null);setDemo(null)}
+    };
+    document.addEventListener("keydown",dismiss);
+    return ()=>document.removeEventListener("keydown",dismiss);
+  },[selected,demo]);
+
+  useEffect(()=>{
+    try{
+      const raw=localStorage.getItem(RECENT_KEY);
+      const saved:unknown=raw?JSON.parse(raw):[];
+      if(!Array.isArray(saved))return;
+      const valid=saved.filter((id):id is string=>typeof id==="string"&&studioApps.some(app=>app.id===id));
+      setRecentIds([...new Set(valid)].slice(0,5));
+    }catch{/* Invalid or unavailable browser storage must not block the storefront. */}
+  },[]);
 
   const heroApp=studioApps.find(app=>app.id==="acelynn-pro")??studioApps[0];
   const featured=findApps(featuredIds);
   const more=findApps(moreIds);
   const recent=findApps(recentIds);
   const recommended=findApps(["noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"]);
+  const searchQuery=q.trim().toLowerCase();
+  const searchMode=searchQuery.length>0;
   const apps=useMemo(()=>studioApps.filter(app=>{
     const copy=copyFor(app);
     const haystack=`${app.name} ${app.shortName} ${copy.tagline} ${copy.category}`.toLowerCase();
-    return (!q||haystack.includes(q.toLowerCase()))&&(category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
-  }),[q,category]);
-  const visibleApps=showAll||q||category!=="All Apps"?apps:apps.slice(0,8);
+    return (!searchQuery||haystack.includes(searchQuery))&&(searchQuery.length>0||category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
+  }),[searchQuery,category]);
+  const visibleApps=showAll||searchMode||category!=="All Apps"?apps:apps.slice(0,8);
 
   function remember(app:StudioApp){
     const next=[app.id,...recentIds.filter(id=>id!==app.id)].slice(0,5);
     setRecentIds(next);try{localStorage.setItem(RECENT_KEY,JSON.stringify(next))}catch{}
   }
   function open(app:StudioApp){remember(app);if(app.url)window.open(app.url,"_blank","noopener,noreferrer")}
-  function chooseCategory(name:string){setCategory(name);requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}))}
+  function chooseCategory(name:string){
+    setCategory(name);setQ("");setMobileSearch(false);setMobileMenu(false);
+    requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}));
+  }
+  function browseFromSearch(event:MouseEvent<HTMLAnchorElement>,target:string){
+    if(!searchMode)return;
+    event.preventDefault();setQ("");setMobileSearch(false);setMobileMenu(false);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})));
+  }
 
   return <main className={styles.page}>
     <aside className={styles.brandRail}>
       <a className={styles.brandLockup} href="/" aria-label="CactusByte home">
-        {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}
-        <span><b>CACTUSBYTE</b><small>STUDIOS</small></span>
+        
+        <span><b>Cactus🌵Byte</b><small>STUDIOS</small></span>
       </a>
       <div className={styles.railStatement}>
         <span>BOLDER APPS</span><span>BRIGHTER</span><span>REAL WORLDS</span>
       </div>
       <div className={styles.railArt} aria-hidden="true"><strong>Create<br/>Brighter<br/>Days.</strong><b>🌵</b></div>
       <nav className={styles.railNav} aria-label="CactusByte sections">
-        <a className={styles.railOn} href="#home">⌂ <span>Home</span></a>
-        <a href="#featured">◇ <span>Discover</span></a>
+        <a className={styles.railOn} href="#home" onClick={e=>browseFromSearch(e,"home")}>⌂ <span>Home</span></a>
+        <a href="#featured" onClick={e=>browseFromSearch(e,"featured")}>◇ <span>Discover</span></a>
         <a href="#all-apps">▦ <span>Apps</span></a>
-        <a href="#categories">◫ <span>Categories</span></a>
+        <a href="#categories" onClick={e=>browseFromSearch(e,"categories")}>◫ <span>Categories</span></a>
         <a href="/studio">✦ <span>Studio</span></a>
         <a href="/studio#releases">◌ <span>Updates</span></a>
         <a href="/studio#settings">♙ <span>Profile</span></a>
@@ -129,23 +165,33 @@ export default function StorefrontPage(){
 
     <div className={styles.shell}>
       <header className={styles.topbar}>
+        <button className={styles.mobileMenuToggle} aria-label={mobileMenu?"Close menu":"Open menu"} aria-controls="cactusbyte-mobile-menu" aria-expanded={mobileMenu} onClick={()=>{setMobileMenu(v=>!v);setMobileSearch(false);setQ("")}}><span aria-hidden="true">☰</span></button>
         <a className={styles.mobileBrand} href="/" aria-label="CactusByte home">
-          {cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}
-          <span><b>CactusByte Studios</b><small>Your apps. One launchpad.</small></span>
+          
+          <span><b>Cactus🌵Byte</b><small>STUDIOS · YOUR APPS. ONE LAUNCHPAD.</small></span>
         </a>
-        <label className={styles.search}><span>⌕</span><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps, tools, creators..." /></label>
+        <label className={styles.search}><span>⌕</span><input aria-label="Search apps" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps, tools, creators..." /></label>
         <div className={styles.topActions}>
           <a href="/studio#releases" aria-label="Updates">♢</a>
-          <a href="/studio" aria-label="Profile">{cactusByteBrand.src&&<img src={cactusByteBrand.src} alt="" />}</a>
-          <button className={styles.mobileSearchToggle} aria-label="Search apps" onClick={()=>setMobileSearch(v=>!v)}>⌕</button>
+          <a href="/studio#settings" aria-label="Profile"><span className={styles.profileGlyph} aria-hidden="true">♙</span></a>
+          <button className={styles.mobileSearchToggle} aria-label={mobileSearch?"Close search":"Search apps"} aria-expanded={mobileSearch} onClick={()=>{setMobileMenu(false);if(mobileSearch)setQ("");setMobileSearch(v=>!v)}}>⌕</button>
         </div>
+        {mobileMenu&&<nav id="cactusbyte-mobile-menu" className={styles.mobileMenuPanel} aria-label="CactusByte mobile menu">
+          <a href="#home" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"home")}}>⌂ Home</a>
+          <a href="#featured" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"featured")}}>◇ Discover</a>
+          <a href="#all-apps" onClick={()=>setMobileMenu(false)}>▦ All Apps</a>
+          <a href="#categories" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"categories")}}>◫ Categories</a>
+          <a href="/studio" onClick={()=>setMobileMenu(false)}>✦ Studio</a>
+          <a href="/studio#releases" onClick={()=>setMobileMenu(false)}>◌ Updates</a>
+          <a href="/studio#settings" onClick={()=>setMobileMenu(false)}>♙ Profile</a>
+        </nav>}
       </header>
 
-      {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
+      {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input aria-label="Search apps" autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
 
+      {!searchMode&&<>
       <section className={styles.hero} id="home" style={accentStyle(heroApp)}>
-        <video className={styles.heroMedia} src={demoPaths[heroApp.id]} poster="/acelynn-beta-icon.png" autoPlay muted loop playsInline preload="metadata"/>
-        <div className={styles.heroPortrait} aria-hidden="true"/>
+        <div className={styles.heroPortrait} aria-hidden="true"><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
         <div className={styles.heroOverlay}/>
         <div className={styles.heroNoise}/>
         <div className={styles.heroCopy}>
@@ -160,12 +206,16 @@ export default function StorefrontPage(){
             <span>✦ Real-Time Analysis</span><span>✦ AI-Powered Tools</span><span>✦ Stunning Clarity</span><span>✦ Pro Audio Engine</span>
           </div>
         </div>
-        <div className={styles.heroSlogan}><small>A CLEARER</small><b>WORLD</b><small>SOUNDS</small><b>BETTER</b></div>
+        <div className={styles.heroSlogan}><small>MUSIC</small><b>FEELS</b><small>BETTER WHEN</small><b>IT’S CLEAR</b></div>
       </section>
 
-      <div className={styles.categoryStrip} id="categories">
-        {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
-      </div>
+      <section className={styles.heroTools} aria-label="Acelynn Pro capabilities">
+        <div><span aria-hidden="true">≋</span><b>Analyze</b><small>Check your mix</small></div>
+        <div><span aria-hidden="true">◫</span><b>A/B Compare</b><small>Compare versions</small></div>
+        <div><span aria-hidden="true">▤</span><b>Save</b><small>Keep snapshots</small></div>
+        <div><span aria-hidden="true">◈</span><b>Insights</b><small>Hear the difference</small></div>
+      </section>
+      <section className={styles.heroAbout} aria-label="About Acelynn Pro"><div><h2>About Acelynn Pro</h2><p>Audio diagnostics and mix guidance for better balance, clearer frequencies, and confident A/B comparisons.</p></div><button onClick={()=>setDemo(heroApp)} aria-label="Watch Acelynn Pro demo">Watch Demo →</button></section>
 
       <section className={styles.section} id="featured">
         <SectionHead title="Featured Apps" subtitle="Powerful tools. Real possibilities. Built by CactusByte Studios." action="#all-apps"/>
@@ -177,10 +227,14 @@ export default function StorefrontPage(){
         <div className={styles.recentGrid}>{recent.slice(0,4).map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>}
 
-      <section className={styles.section} aria-label="Explore categories">
+      <section className={styles.section} id="categories" aria-label="Explore categories">
         <SectionHead title="Explore Categories" subtitle="Find apps by what moves you." action="#all-apps"/>
         <div className={styles.categoryTiles}>
-          {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
+          {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} aria-pressed={category===t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
+        </div>
+        <button className={styles.categoryMoreToggle} aria-controls="category-filter-options" aria-expanded={showCategoryFilters} onClick={()=>setShowCategoryFilters(v=>!v)}>{showCategoryFilters?"Hide categories":"More categories"} <span aria-hidden="true">{showCategoryFilters?"↑":"↓"}</span></button>
+        <div className={styles.categoryStrip} id="category-filter-options" hidden={!showCategoryFilters}>
+          {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} aria-pressed={category===item.name} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
         </div>
       </section>
 
@@ -193,12 +247,13 @@ export default function StorefrontPage(){
         <SectionHead title="Recommended Apps" subtitle="More tools from our verified app lineup." action="#all-apps"/>
         <div className={styles.recommendGrid}>{recommended.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>
+      </>}
 
-      <section className={styles.section} id="all-apps">
-        <SectionHead title={category==="All Apps"?"All Apps":category} subtitle={category==="All Apps"?"The complete CactusByte ecosystem.":`${apps.length} matching apps`}/>
+      <section className={styles.section} id="all-apps" aria-label={searchMode?"App search results":undefined}>
+        <SectionHead title={searchMode?"Search results":category==="All Apps"?"All Apps":category} subtitle={searchMode?`${apps.length} ${apps.length===1?"app":"apps"} matching “${q.trim()}”`:category==="All Apps"?"The complete CactusByte ecosystem.":`${apps.length} matching apps`}/>
         <div className={styles.allGrid}>{visibleApps.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
         {visibleApps.length===0&&<p className={styles.emptyState} role="status">No apps match your search or category. Try another search or select All Apps.</p>}
-        {!q&&category==="All Apps"&&apps.length>8&&<button className={styles.showAllButton} onClick={()=>setShowAll(v=>!v)}>{showAll?"Show Less":"View All Apps"} <span>{showAll?"↑":"↓"}</span></button>}
+        {!searchMode&&category==="All Apps"&&apps.length>8&&<button className={styles.showAllButton} onClick={()=>setShowAll(v=>!v)}>{showAll?"Show Less":"View All Apps"} <span>{showAll?"↑":"↓"}</span></button>}
       </section>
 
       <footer className={styles.footer}>
@@ -208,7 +263,7 @@ export default function StorefrontPage(){
     </div>
 
     <nav className={styles.bottomNav} aria-label="CactusByte navigation">
-      <a className={styles.navOn} href="#home"><span>⌂</span>Home</a>
+      <a className={styles.navOn} href="#home" onClick={e=>browseFromSearch(e,"home")}><span>⌂</span>Home</a>
       <a href="#all-apps"><span>▦</span>Apps</a>
       <a href="/studio"><span>🌵</span>Studio</a>
       <a href="/studio#releases"><span>◌</span>Updates</a>
@@ -216,21 +271,21 @@ export default function StorefrontPage(){
     </nav>
 
     {selected&&<div className={styles.backdrop} onClick={()=>setSelected(null)}>
-      <section className={styles.detail} data-app={selected.id} style={accentStyle(selected)} onClick={e=>e.stopPropagation()}>
+      <section className={styles.detail} data-app={selected.id} style={accentStyle(selected)} role="dialog" aria-modal="true" aria-labelledby={`detail-${selected.id}`} onClick={e=>e.stopPropagation()}>
         <button className={styles.close} aria-label="Close details" onClick={()=>setSelected(null)}>×</button>
         <div className={styles.detailGlow}/>
-        <div className={styles.detailHero}><BrandMark app={selected} large/><div><span>{copyFor(selected).category}</span><h2>{selected.name}</h2><p>{copyFor(selected).short}</p></div></div>
+        <div className={styles.detailHero}><BrandMark app={selected} large/><div><span>{copyFor(selected).category}</span><h2 id={`detail-${selected.id}`}>{selected.name}</h2><p>{copyFor(selected).short}</p></div></div>
         <p className={styles.detailDescription}>{copyFor(selected).tagline}</p>
         <div className={styles.detailMeta}><span>{selected.version}</span><span>{selected.platform}</span><span>{selected.status}</span></div>
-        <div className={styles.detailActions}><button onClick={()=>open(selected)}>Open App</button>{demoPaths[selected.id]&&<button className={styles.secondaryButton} onClick={()=>setDemo(selected)}>▶ Watch Demo</button>}</div>
+        <div className={styles.detailActions}><button onClick={()=>open(selected)}>Open App</button>{demoPaths[selected.id]&&<button className={styles.secondaryButton} onClick={()=>{setSelected(null);setDemo(selected)}}>▶ Watch Demo</button>}</div>
         {brandAssets[selected.id]?.status==="unresolved"&&<p className={styles.brandWarning}>Official logo pending recovery. No substitute artwork is being used.</p>}
       </section>
     </div>}
 
     {demo&&demoPaths[demo.id]&&<div className={styles.backdrop} onClick={()=>setDemo(null)}>
-      <section className={styles.demoModal} onClick={e=>e.stopPropagation()}>
+      <section className={styles.demoModal} role="dialog" aria-modal="true" aria-labelledby={`demo-${demo.id}`} onClick={e=>e.stopPropagation()}>
         <button className={styles.close} aria-label="Close demo" onClick={()=>setDemo(null)}>×</button>
-        <div className={styles.demoTitle}><BrandMark app={demo}/><div><small>60-SECOND DEMO</small><h2>{demo.name}</h2></div></div>
+        <div className={styles.demoTitle}><BrandMark app={demo}/><div><small>60-SECOND DEMO</small><h2 id={`demo-${demo.id}`}>{demo.name}</h2></div></div>
         <video src={demoPaths[demo.id]} controls autoPlay playsInline/>
       </section>
     </div>}
