@@ -519,3 +519,7 @@
 .brandLockup b,.mobileBrand b{background:linear-gradient(90deg,#f9ffff 0%,#ecffff 42%,#58fdf0 71%,#06cfea 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent}
 .mobileMenuToggle span{font-size:1.5rem;line-height:1}
+
+
+/* Keep the approved wordmark clear of action buttons on extra-narrow cover displays. */
+@media(max-width:340px){.mobileBrand b{font-size:.93rem;letter-spacing:-.07em}}
