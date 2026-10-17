@@ -442,3 +442,14 @@
  .allGrid::-webkit-scrollbar{display:none}
  .allGrid .posterCardCompact{flex:0 0 calc((100% - 16px)/3);min-width:0;--cardH:154px;scroll-snap-align:start}
 }
+
+
+/* SLB11 navigation and three-up phone shelf: protect headings and readable card copy. */
+.section[id],.hero[id]{scroll-margin-top:88px}
+@media(max-width:759px){
+ .section[id],.hero[id]{scroll-margin-top:80px}
+ .posterBody{left:9px;right:9px;bottom:8px}
+ .posterBody h3{font-size:clamp(.7rem,2.7vw,.8rem);line-height:1.16;overflow-wrap:anywhere}
+ .posterBody p{font-size:.6rem;line-height:1.24;overflow-wrap:break-word}
+ .posterCta{display:grid;place-items:center;min-height:27px;line-height:1.2;font-size:.66rem;white-space:nowrap}
+}
