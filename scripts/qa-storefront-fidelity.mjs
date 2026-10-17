@@ -62,6 +62,7 @@ const checks=[
  ["The hero renders the bundled Acelynn headphone poster as a real image element",page.includes('className={styles.heroScene} src="/posters/acelynn-pro.svg"')&&css.includes('.heroScene{position:absolute;display:block;z-index:2')],
  ["Acelynn neon hero remains photo-free and does not autoplay unrelated media",!page.includes('<video className={styles.heroMedia}')&&!css.includes("images.unsplash.com")&&css.includes('.heroPortrait:before{z-index:0;inset:0;transform:none')],
  ["Phone hero retains a compact showcase-height composition",css.includes('.hero{min-height:293px')&&css.includes('.heroScene{height:101%;top:-3%')&&css.includes('.heroTools{margin-top:8px}')],
+ ["PocketStomp storefront copy reflects its real skate-tracking function",page.includes('short:"Skate. Track. Improve."')&&page.includes('tagline:"Skate-session tracking, trick feedback, speed, and coaching."')&&!page.includes("Create. Play. Take it anywhere.")],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
