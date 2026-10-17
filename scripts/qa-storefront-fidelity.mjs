@@ -32,6 +32,11 @@ const checks=[
  ["Mobile bottom navigation exposes five usable links",css.includes(".bottomNav a:nth-child(3),.bottomNav a:nth-child(5){display:flex}")&&page.includes("Profile</a>")],
  ["Photo-free and app-logo-authentic SLB11 layout is explicit",!css.includes("images.unsplash.com")&&page.includes("Cactus🌵Byte")&&page.includes("heroTools")&&page.includes("heroAbout")&&page.includes("verifiedBrandAsset(app.id)")],
  ["All 14 app scenes are bundled as separate local vector assets",["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","orbitgather","ghostlane","hustle-first"].every(id=>fs.existsSync(`public/posters/${id}.svg`)&&fs.readFileSync(`public/posters/${id}.svg`,"utf8").includes('viewBox="0 0 600 780"')&&css.includes(`url("/posters/${id}.svg")`))],
+ ["Photo-free mockup hero remains deterministic",!page.includes('<video className={styles.heroMedia}')&&!css.includes('images.unsplash.com')&&page.includes('styles.heroWaveform')],
+ ["All original filters remain discoverable",page.includes('showCategoryFilters')&&page.includes('id="category-filter-options"')&&page.includes('More categories')&&css.includes('.categoryStrip:not([hidden]){display:flex')],
+ ["Fold CactusByte wordmark does not disappear",css.includes('.brandLockup span{display:grid}')&&page.includes('<b>Cactus🌵Byte</b>')],
+ ["Touch actions meet 44px tap target contract",css.includes('.posterDetails{width:44px;height:44px')&&css.includes('.close{width:44px;height:44px')&&css.includes('.heroActions button{min-height:44px}')],
+ ["Phone catalog uses compact swipe cards",css.includes('.allGrid{display:flex;gap:8px;overflow-x:auto')&&css.includes('.allGrid .posterCardCompact{flex:0 0 calc((100% - 16px)/3)')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
