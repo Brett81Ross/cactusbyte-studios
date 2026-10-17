@@ -414,3 +414,22 @@
  .heroActions button{min-height:44px}
  .heroAbout button{min-height:44px}
 }
+
+/* SLB11 final storefront density: avoid oversized empty-looking mobile portfolio tiles. */
+@media(max-width:1220px) and (min-width:760px){
+ .brandLockup{flex-direction:column;justify-content:center;align-items:center;gap:5px;text-align:center}
+ .brandLockup span{display:grid}
+ .brandLockup b{font-size:.82rem;line-height:1.1;letter-spacing:-.045em}
+ .brandLockup small{font-size:.5rem}
+}
+@media(max-width:980px) and (min-width:760px){
+ .brandLockup span{display:grid}
+ .brandLockup b{font-size:.73rem}
+}
+@media(max-width:759px){
+ /* Updates remain available in the bottom dock; the header has room for the actual CactusByte identity. */
+ .topActions a:first-child{display:none}
+ .allGrid{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;grid-template-columns:none;padding:2px 2px 8px}
+ .allGrid::-webkit-scrollbar{display:none}
+ .allGrid .posterCardCompact{flex:0 0 calc((100% - 16px)/3);min-width:0;--cardH:154px;scroll-snap-align:start}
+}
