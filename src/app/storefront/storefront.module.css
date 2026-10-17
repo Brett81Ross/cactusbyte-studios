@@ -378,3 +378,11 @@
  .heroTools b{font-size:.55rem}
  .heroTools small{font-size:.45rem}
 }
+
+
+/* SLB11 category discovery: hide secondary filters by default without removing them. */
+.categoryStrip[hidden]{display:none!important}
+.categoryStrip:not([hidden]){display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:9px 2px;max-width:100%;scrollbar-width:none}
+.categoryStrip:not([hidden]) button{flex:0 0 auto;min-height:44px}
+.categoryMoreToggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:7px;padding:0 12px;min-height:44px;border:1px solid #39dfed5e;border-radius:11px;background:#071c2a;color:#82f8ff;font-size:.72rem}
+.categoryMoreToggle:focus-visible,.categoryStrip button:focus-visible{outline:2px solid #53ffeb;outline-offset:3px}
