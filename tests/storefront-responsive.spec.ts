@@ -349,7 +349,9 @@ test("SLB11 phone shows actual Acelynn audio capabilities and About rather than 
  await expect(page.getByRole("region",{name:"Acelynn Pro capabilities"})).toBeVisible();
  await expect(page.getByRole("region",{name:"About Acelynn Pro"})).toBeVisible();
  await expect(page.getByText("A/B Compare",{exact:true})).toBeVisible();
- await expect(page.getByText("Save",{exact:true})).toBeVisible();
+ await expect(page.getByText("Mic Analysis",{exact:true})).toBeVisible();
+ await expect(page.getByText("Audio Files",{exact:true})).toBeVisible();
+ await expect(page.getByText("Frequency",{exact:true})).toBeVisible();
  await expect(page.getByRole("navigation",{name:"CactusByte navigation"})).toBeVisible();
  await expect(page.locator("#home img[alt*='official logo']")).toBeVisible();
 });
@@ -690,4 +692,60 @@ test("SLB11 phone menu and search never remain open together",async({page})=>{
  await page.getByRole("button",{name:"Open menu"}).click();
  await expect(page.getByPlaceholder("Search apps...",{exact:true})).toHaveCount(0);
  await expect(page.getByRole("navigation",{name:"CactusByte mobile menu"})).toBeVisible();
+});
+
+
+test("SLB11 3-up phone art cards reserve text and CTA space without overshooting the shelf",async({page})=>{
+ for(const width of [360,390,412]){
+  await page.setViewportSize({width,height:844});
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const metrics=await page.locator("#featured [class*=featuredGrid]").evaluate(el=>{
+   const root=el.getBoundingClientRect();
+   const cards=Array.from(el.querySelectorAll("article")).slice(0,3);
+   return cards.map(card=>{
+    const cr=card.getBoundingClientRect();
+    const title=card.querySelector("h3")! as HTMLElement;
+    const description=card.querySelector("p")! as HTMLElement;
+    const cta=card.querySelector("[class*=posterCta]")! as HTMLElement;
+    const image=card.querySelector("[class*=posterArt] img")! as HTMLImageElement;
+    const t=title.getBoundingClientRect(),d=description.getBoundingClientRect(),a=cta.getBoundingClientRect();
+    return {width:cr.width,height:cr.height,cardRight:cr.right,railRight:root.right,
+      ctaBottom:cr.bottom-a.bottom,titleBottom:t.bottom,descTop:d.top,ctaTop:a.top,
+      ctaHeight:a.height,lineClamp:getComputedStyle(title).webkitLineClamp,
+      imageLoaded:image.complete&&image.naturalWidth===600};
+   });
+  });
+  expect(metrics).toHaveLength(3);
+  for(const item of metrics){
+   expect(item.width).toBeGreaterThan(95);
+   expect(item.height).toBeGreaterThanOrEqual(215);
+   expect(item.cardRight).toBeLessThanOrEqual(item.railRight+1);
+   expect(item.ctaBottom).toBeGreaterThanOrEqual(5);
+   expect(item.ctaTop).toBeGreaterThanOrEqual(item.descTop);
+   expect(item.titleBottom).toBeLessThanOrEqual(item.ctaTop);
+   expect(item.ctaHeight).toBeGreaterThanOrEqual(30);
+   expect(item.lineClamp).toBe("2");
+   expect(item.imageLoaded).toBe(true);
+  }
+ }
+});
+test("SLB11 six-up Fold landscape keeps genuine poster art and readable bottom actions",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const metrics=await page.locator("#featured [class*=featuredGrid]").evaluate(el=>{
+  const right=el.getBoundingClientRect().right;
+  return Array.from(el.querySelectorAll("article")).map(card=>{
+   const r=card.getBoundingClientRect();
+   const button=card.querySelector("[class*=posterCta]")!.getBoundingClientRect();
+   const img=card.querySelector("[class*=posterArt] img")! as HTMLImageElement;
+   return {width:r.width,right:r.right,railRight:right,bottom:r.bottom,ctaBottom:button.bottom,loaded:img.complete&&img.naturalWidth===600};
+  });
+ });
+ expect(metrics).toHaveLength(6);
+ for(const m of metrics){
+  expect(m.width).toBeGreaterThan(100);
+  expect(m.right).toBeLessThanOrEqual(m.railRight+2);
+  expect(m.ctaBottom).toBeLessThanOrEqual(m.bottom);
+  expect(m.loaded).toBe(true);
+ }
 });
