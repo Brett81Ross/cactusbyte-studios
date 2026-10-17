@@ -449,3 +449,68 @@ test("SLB11 card design uses official logo artwork without repeated category pil
  const pill=card.locator('[class*=posterTop]>span');
  await expect(pill).toBeHidden();
 });
+
+
+test("SLB11 corrupted saved-app history never crashes the storefront",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const values=['{"not":"an array"}','{malformed json','[null,4,"missing-app","noproblem","noproblem"]'];
+ for(const raw of values){
+  await page.evaluate(value=>localStorage.setItem("cb-storefront-recent-v4",value),raw);
+  await page.reload({waitUntil:"domcontentloaded"});
+  await expect(page.getByRole("heading",{name:"Featured Apps",exact:true})).toBeVisible();
+  await expect(page.locator('#featured article[data-app="noproblem"]')).toHaveCount(1);
+ }
+ await expect(page.getByRole("heading",{name:"Continue Using",exact:true})).toBeVisible();
+ await expect(page.locator('section').filter({has:page.getByRole("heading",{name:"Continue Using",exact:true})}).locator('article')).toHaveCount(1);
+});
+test("SLB11 mobile search is accessible and still filters the app registry",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const open=page.getByRole("button",{name:"Search apps"});
+ await expect(open).toHaveAttribute("aria-expanded","false");
+ await open.click();
+ const close=page.getByRole("button",{name:"Close search"});
+ await expect(close).toHaveAttribute("aria-expanded","true");
+ const search=page.getByPlaceholder("Search apps...",{exact:true});
+ await expect(search).toBeVisible();
+ await search.fill("MachZero");
+ await expect(page.locator("#all-apps article")).toHaveCount(1);
+ await expect(page.locator('#all-apps article[data-app="machzero"]')).toHaveCount(1);
+ await close.click();
+ await expect(search).toHaveCount(0);
+});
+test("SLB11 mobile category navigation leaves results below the sticky header",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.getByRole("button",{name:/More categories/}).click();
+ await page.locator("#category-filter-options").getByRole("button",{name:"Security"}).click();
+ await expect(page.locator('#all-apps article[data-app="scouttrace"]')).toHaveCount(1);
+ const coords=async()=>page.evaluate(()=>{
+  const target=document.querySelector("#all-apps")!.getBoundingClientRect();
+  const header=document.querySelector("header")!.getBoundingClientRect();
+  return {gap:target.top-header.bottom,top:target.top};
+ });
+ await expect.poll(async()=>(await coords()).gap,{timeout:5000}).toBeGreaterThanOrEqual(-2);
+ await expect.poll(async()=>(await coords()).top,{timeout:5000}).toBeLessThan(400);
+});
+test("SLB11 compact phone card copy stays inside its poster",async({page})=>{
+ await page.setViewportSize({width:360,height:748});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ const cards=page.locator("#all-apps article");
+ for(let i=0;i<await cards.count();i++){
+  const bounds=await cards.nth(i).evaluate(el=>{
+   const card=el.getBoundingClientRect();
+   const body=el.querySelector('[class*=posterBody]')!.getBoundingClientRect();
+   const title=el.querySelector("h3")!.getBoundingClientRect();
+   const cta=el.querySelector('[class*=posterCta]')!.getBoundingClientRect();
+   return {left:body.left-card.left,right:card.right-body.right,bottom:card.bottom-body.bottom,
+     titleRight:title.right-card.right,ctaRight:cta.right-card.right};
+  });
+  expect(bounds.left).toBeGreaterThanOrEqual(6);
+  expect(bounds.right).toBeGreaterThanOrEqual(6);
+  expect(bounds.bottom).toBeGreaterThanOrEqual(4);
+  expect(bounds.titleRight).toBeLessThanOrEqual(0);
+  expect(bounds.ctaRight).toBeLessThanOrEqual(0);
+ }
+});
