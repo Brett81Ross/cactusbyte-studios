@@ -52,6 +52,10 @@ const checks=[
  ["Mobile storefront menu has seven working real route targets",page.includes('id="cactusbyte-mobile-menu"')&&page.includes('aria-label="CactusByte mobile menu"')&&page.includes('href="#featured"')&&page.includes('href="#categories"')&&page.includes('href="/studio#settings"')],
  ["Mobile menu and search are mutually exclusive and Escape-dismissible",page.includes('setMobileMenu(v=>!v);setMobileSearch(false);setQ("")')&&page.includes('setMobileMenu(false);if(mobileSearch)setQ("")')&&page.includes('if(event.key==="Escape")setMobileMenu(false)')],
  ["Mobile menu is hidden on desktop with 44px targets on phones",css.includes('.mobileMenuToggle,.mobileMenuPanel{display:none}')&&css.includes('.mobileMenuToggle{display:grid')&&css.includes('.mobileMenuPanel a{display:flex;align-items:center;min-height:44px')],
+ ["Owner-approved CactusByte wordmark survives failed canonical logo file",page.includes('onError={e=>{e.currentTarget.hidden=true}}')&&css.includes('.brandLockup img,.mobileBrand img{display:none!important}')&&page.includes('<b>Cactus🌵Byte</b>')],
+ ["Functional phone hamburger has accessible expanded state",page.includes('className={styles.mobileMenuToggle}')&&page.includes('aria-controls="cactusbyte-mobile-menu"')&&page.includes('aria-expanded={mobileMenu}')&&page.includes('setMobileMenu(v=>!v)')],
+ ["Phone menu routes are real and remain isolated from search",page.includes('aria-label="CactusByte mobile menu"')&&page.includes('href="#featured"')&&page.includes('href="#categories"')&&page.includes('href="/studio#settings"')&&page.includes('setMobileMenu(false);if(mobileSearch)setQ("")')],
+ ["Fold and desktop hide the phone menu while narrow screens get 44px targets",css.includes('.mobileMenuToggle,.mobileMenuPanel{display:none}')&&css.includes('.mobileMenuToggle{display:grid')&&css.includes('.mobileMenuPanel a{display:flex;align-items:center;min-height:44px')],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
