@@ -98,3 +98,41 @@ test("SLB12 bottom dock never prevents reaching All Apps or copyright on narrow 
  await page.locator("footer").scrollIntoViewIfNeeded();
  await expect(page.getByRole("link",{name:"CactusByte Studios app home"})).toBeVisible();
 });
+
+
+test("SLB12 Acelynn hero avoids legacy overexposure and the card labels no longer obscure artwork",async({page})=>{
+ for(const viewport of [{width:390,height:844},{width:1104,height:884},{width:1440,height:900}]){
+  await page.setViewportSize(viewport);
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const hero=page.locator("#home");
+  const image=hero.locator('img[src="/posters/acelynn-pro.svg"]');
+  await image.evaluate(async el=>{await (el as HTMLImageElement).decode()});
+  const style=await image.evaluate(el=>{
+   const c=getComputedStyle(el);
+   return{filter:c.filter,blend:c.mixBlendMode,opacity:parseFloat(c.opacity)};
+  });
+  expect(style.blend,"hero must not use additive screen blend").toBe("normal");
+  expect(style.filter,"hero should not use old 1.95x brightness").not.toContain("brightness(1.95)");
+  expect(style.opacity).toBeLessThanOrEqual(.9);
+  const heroHeight=(await hero.boundingBox())?.height??0;
+  if(viewport.width>759)expect(heroHeight,"Fold/desktop hero height").toBeLessThanOrEqual(340);
+  else expect(heroHeight,"phone hero height").toBeLessThanOrEqual(330);
+  const first=page.locator('#featured article[data-app="first-bearing"]');
+  const layout=await first.evaluate(card=>{
+   const c=card.getBoundingClientRect();
+   const title=card.querySelector("h3")!;
+   const cta=card.querySelector('[class*="posterCta"]')!;
+   const cap=card.querySelector('[class*="posterBody"]')!;
+   const titleStyle=getComputedStyle(title);
+   const ctaStyle=getComputedStyle(cta);
+   return{ratio:cta.getBoundingClientRect().width/c.width,
+    font:parseFloat(titleStyle.fontSize),
+    caption:getComputedStyle(cap).backgroundImage,
+    cta:ctaStyle.alignSelf};
+  });
+  expect(layout.ratio,"Open badge must not span the entire illustration").toBeLessThan(.56);
+  expect(layout.caption).toContain("linear-gradient");
+  expect(layout.cta).toBe("flex-end");
+  expect(layout.font).toBeGreaterThanOrEqual(10);
+ }
+});
