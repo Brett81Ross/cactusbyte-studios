@@ -54,7 +54,7 @@ test("SLB12 real six-card More shelf stays distinct, working and correctly order
  await page.goto("/");
  const ids=await page.locator('[class*="moreGrid"]').first().locator("article[data-app]").evaluateAll(els=>els.map(el=>el.getAttribute("data-app")));
  expect(ids).toEqual(["rivetex","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","pocketstomp"]);
- await page.locator('[class*="moreGrid"]').first().getByRole("button",{name:"Details for RIVETEX"}).click();
+ await page.locator('[class*="moreGrid"]').first().getByRole("button",{name:/Details for RIVETEX/}).click();
  await expect(page.getByRole("dialog")).toBeVisible();
  await expect(page.getByRole("heading",{name:/RIVETEX/}).last()).toBeVisible();
  await page.getByRole("button",{name:"Close details"}).click();
