@@ -835,3 +835,22 @@ test("SLB11 category filters show complete matching apps instead of sideways-hid
  await expect(grid).toHaveCSS("display","grid");
  await expect(page.locator('[data-category="Sports"]')).toHaveAttribute("aria-pressed","true");
 });
+
+
+test("SLB11 branded home links meet 44px tap target across Fold, phone and DeX",async({page})=>{
+ for(const viewport of [
+  {width:360,height:748},{width:390,height:844},{width:412,height:915},
+  {width:884,height:1104},{width:1104,height:884},{width:1440,height:900}
+ ]){
+  await page.setViewportSize(viewport);
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const brand=viewport.width<760?page.locator("header a[class*=mobileBrand]"):page.locator("aside a[class*=brandLockup]");
+  await expect(brand).toBeVisible();
+  const geometry=await brand.evaluate(el=>{
+   const r=el.getBoundingClientRect();
+   return{height:r.height,width:r.width};
+  });
+  expect(geometry.height,"brand height at "+viewport.width+"px").toBeGreaterThanOrEqual(44);
+  expect(geometry.width).toBeGreaterThanOrEqual(44);
+ }
+});
