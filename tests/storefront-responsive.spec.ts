@@ -881,6 +881,12 @@ test("SLB11 painted poster images visibly contribute pixels to real rendered car
     stack:document.elementsFromPoint(x,y).slice(0,7).map(node=>{const style=getComputedStyle(node);return [String(node.className).slice(0,60),style.zIndex,style.backgroundColor,style.opacity,style.visibility]})};
   });
   console.log("[SLB11-POSTER-DIAG] "+id+" "+JSON.stringify(diagnostic));
+  expect(diagnostic.art[0],id+" art width").toBeGreaterThan(60);
+  expect(diagnostic.art[1],id+" art height").toBeGreaterThan(100);
+  expect(diagnostic.image[0],id+" image rendered width").toBeGreaterThan(60);
+  expect(diagnostic.image[1],id+" image rendered height").toBeGreaterThan(100);
+  expect(diagnostic.button[1],id+" poster hit background color").toBe("rgba(0, 0, 0, 0)");
+  expect(diagnostic.button[2],id+" poster hit background image MUST be none").toBe("none");
   const withArtwork=(await card.screenshot()).toString("base64");
   await art.evaluate(el=>{(el as HTMLElement).style.visibility="hidden"});
   await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
@@ -896,7 +902,7 @@ test("SLB11 painted poster images visibly contribute pixels to real rendered car
     return{data:ctx.getImageData(0,0,canvas.width,canvas.height).data,w:canvas.width,h:canvas.height};
    }
    const a=await pixels(visible),b=await pixels(hidden);
-   if(a.w!==b.w||a.h!==b.h)return 0;
+   if(a.w!==b.w||a.h!==b.h)throw new Error("Comparing different screenshot sizes: visible "+a.w+"x"+a.h+" vs hidden "+b.w+"x"+b.h);
    let changed=0,total=0;
    for(let y=Math.floor(a.h*.17);y<Math.floor(a.h*.65);y+=3)
     for(let x=Math.floor(a.w*.12);x<Math.floor(a.w*.88);x+=3){
