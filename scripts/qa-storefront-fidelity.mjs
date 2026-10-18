@@ -70,6 +70,9 @@ const checks=[
  ["Rendered poster artwork has a pixel-difference regression test",fs.readFileSync("tests/storefront-responsive.spec.ts","utf8").includes("painted poster images visibly contribute pixels")],
  ["Poster hit-area buttons cannot obscure actual SVG artwork",css.includes(".posterCard > .posterHit,.posterCardCompact > .posterHit{")&&css.includes("background:none!important;background-image:none!important;background-color:transparent!important")&&css.includes("box-shadow:none!important;filter:none!important")],
  ["Chromium pixel comparison checks transparent overlays and screenshot dimensions",fs.readFileSync("tests/storefront-responsive.spec.ts","utf8").includes("poster hit background image MUST be none")&&fs.readFileSync("tests/storefront-responsive.spec.ts","utf8").includes("Comparing different screenshot sizes")],
+ ["App poster details actions use one non-overlapping icon rather than duplicate chevrons",page.includes('<span aria-hidden="true">i</span></button>')&&css.includes(".posterCard .posterDetails::before,.posterCardCompact .posterDetails::before,")&&css.includes("content:none!important;display:none!important")],
+ ["Poster captions use a dark label surface over the same unmodified source artwork",css.includes(".posterCard .posterBody,.posterCardCompact .posterBody{")&&css.includes("backdrop-filter:blur(2px)")],
+ ["Owner-reviewed Fold and phone logo/detail geometry has browser regression protection",fs.readFileSync("tests/storefront-responsive.spec.ts","utf8").includes("owner-review cards place one details icon away from real brand logos")],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
