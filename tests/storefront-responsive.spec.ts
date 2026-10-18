@@ -238,8 +238,11 @@ test("North Star featured shelf uses six actual apps with poster artwork",async(
  await expect(featured.nth(0)).toHaveAttribute("data-app","acelynn-pro");
  await expect(featured.nth(1)).toHaveAttribute("data-app","noproblem");
  await expect(featured.nth(5)).toHaveAttribute("data-app","pocketstomp");
- const image=await featured.first().locator("[class*=posterArt]").evaluate(el=>getComputedStyle(el).backgroundImage);
- expect(image).toContain("/posters/acelynn-pro.svg");
+ const image=featured.first().locator('[class*=posterArt] img');
+  await expect(image).toHaveAttribute("src","/posters/acelynn-pro.svg");
+  await expect(image).toBeVisible();
+  const paintedOnce=await featured.first().locator("[class*=posterArt]").evaluate(el=>getComputedStyle(el).backgroundImage);
+  expect(paintedOnce).toBe("none");
  await expect(page.getByText("Firstep Kitchen")).toHaveCount(0);
 });
 
@@ -274,8 +277,9 @@ test("North Star artwork is individually bundled and decodes as images",async({p
   expect(await asset.text()).toContain('viewBox="0 0 600 780"');
  }
  await page.goto("/",{waitUntil:"domcontentloaded"});
- const scene=await page.locator('#featured article[data-app="acelynn-pro"]').locator("[class*=posterArt]").evaluate(el=>getComputedStyle(el).backgroundImage);
- expect(scene).toContain("/posters/acelynn-pro.svg");
+ const scene=page.locator('#featured article[data-app="acelynn-pro"] [class*=posterArt] img');
+  await expect(scene).toHaveAttribute("src","/posters/acelynn-pro.svg");
+  await expect(scene).toBeVisible();
  const decoded=await page.evaluate(async()=>{
   const img=new Image();img.src="/posters/acelynn-pro.svg";await img.decode();return{w:img.naturalWidth,h:img.naturalHeight};
  });
@@ -852,5 +856,41 @@ test("SLB11 branded home links meet 44px tap target across Fold, phone and DeX",
   });
   expect(geometry.height,"brand height at "+viewport.width+"px").toBeGreaterThanOrEqual(44);
   expect(geometry.width).toBeGreaterThanOrEqual(44);
+ }
+});
+
+
+test("SLB11 painted poster images visibly contribute pixels to real rendered cards",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ for(const id of ["acelynn-pro","noproblem","fantasy-matrix"]){
+  const card=page.locator('#featured article[data-app="'+id+'"]');
+  const art=card.locator('[class*=posterArt]');
+  await art.locator("img").evaluate(async el=>{await (el as HTMLImageElement).decode()});
+  const withArtwork=(await card.screenshot()).toString("base64");
+  await art.evaluate(el=>{(el as HTMLElement).style.visibility="hidden"});
+  const withoutArtwork=(await card.screenshot()).toString("base64");
+  await art.evaluate(el=>{(el as HTMLElement).style.removeProperty("visibility")});
+  const fraction=await page.evaluate(async([visible,hidden])=>{
+   async function pixels(b64:string){
+    const im=new Image();im.src="data:image/png;base64,"+b64;await im.decode();
+    const canvas=document.createElement("canvas");
+    canvas.width=im.naturalWidth;canvas.height=im.naturalHeight;
+    const ctx=canvas.getContext("2d")!;ctx.drawImage(im,0,0);
+    return{data:ctx.getImageData(0,0,canvas.width,canvas.height).data,w:canvas.width,h:canvas.height};
+   }
+   const a=await pixels(visible),b=await pixels(hidden);
+   if(a.w!==b.w||a.h!==b.h)return 0;
+   let changed=0,total=0;
+   for(let y=Math.floor(a.h*.17);y<Math.floor(a.h*.65);y+=3)
+    for(let x=Math.floor(a.w*.12);x<Math.floor(a.w*.88);x+=3){
+     const k=(y*a.w+x)*4;
+     const delta=Math.abs(a.data[k]-b.data[k])+Math.abs(a.data[k+1]-b.data[k+1])+Math.abs(a.data[k+2]-b.data[k+2]);
+     if(delta>30)changed++;
+     total++;
+    }
+   return changed/Math.max(total,1);
+  },[withArtwork,withoutArtwork] as [string,string]);
+  expect(fraction,id+" artwork visual difference").toBeGreaterThan(.06);
  }
 });
