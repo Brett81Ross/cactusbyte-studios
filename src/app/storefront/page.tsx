@@ -4,12 +4,13 @@ import {useEffect,useMemo,useState,type CSSProperties,type MouseEvent} from "rea
 import {studioApps,type StudioApp} from "../../data/apps";
 import {brandAssets,verifiedBrandAsset} from "../../data/brand-assets";
 import styles from "./storefront.module.css";
+import showcase from "./showcase-layout.module.css";
 
 const RECENT_KEY="cb-storefront-recent-v4";
 const STOREFRONT_VERSION="1.7.0";
 
-const featuredIds=["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"];
-const moreIds=["shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","orbitgather"];
+const featuredIds=["acelynn-pro","first-bearing","fantasy-matrix","hustle-first","noproblem"];
+const moreIds=["rivetex","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","pocketstomp"];
 const categories=[
   {name:"All Apps",label:"All Apps"},
   {name:"Business",label:"Productivity"},
@@ -116,7 +117,7 @@ export default function StorefrontPage(){
   const featured=findApps(featuredIds);
   const more=findApps(moreIds);
   const recent=findApps(recentIds);
-  const recommended=findApps(["noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp"]);
+
   const searchQuery=q.trim().toLowerCase();
   const searchMode=searchQuery.length>0;
   const apps=useMemo(()=>studioApps.filter(app=>{
@@ -124,7 +125,7 @@ export default function StorefrontPage(){
     const haystack=`${app.name} ${app.shortName} ${copy.tagline} ${copy.category}`.toLowerCase();
     return (!searchQuery||haystack.includes(searchQuery))&&(searchQuery.length>0||category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
   }),[searchQuery,category]);
-  const visibleApps=showAll||searchMode||category!=="All Apps"?apps:apps.slice(0,8);
+  const visibleApps=showAll||searchMode||category!=="All Apps"?apps:[];
 
   function remember(app:StudioApp){
     const next=[app.id,...recentIds.filter(id=>id!==app.id)].slice(0,5);
@@ -132,7 +133,7 @@ export default function StorefrontPage(){
   }
   function open(app:StudioApp){remember(app);if(app.url)window.open(app.url,"_blank","noopener,noreferrer")}
   function chooseCategory(name:string){
-    setCategory(name);setQ("");setMobileSearch(false);setMobileMenu(false);
+    setCategory(name);setQ("");setMobileSearch(false);setMobileMenu(false);setShowAll(true);
     requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}));
   }
   function seeAllApps(){
@@ -144,7 +145,7 @@ export default function StorefrontPage(){
     requestAnimationFrame(()=>requestAnimationFrame(()=>document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})));
   }
 
-  return <main className={styles.page}>
+  return <main className={`${styles.page} ${showcase.root}`}>
     <aside className={styles.brandRail}>
       <a className={styles.brandLockup} href="/" aria-label="CactusByte home">
         
@@ -166,8 +167,8 @@ export default function StorefrontPage(){
       <div className={styles.railPlaque}><span>APPS</span><span>PEOPLE</span><span>BUILD</span><span>REAL</span><span>THINGS</span><b>🌵</b></div>
     </aside>
 
-    <div className={styles.shell}>
-      <header className={styles.topbar}>
+    <div className={`${styles.shell} ${showcase.shell}`}>
+      <header className={`${styles.topbar} ${showcase.topbar}`}>
         <button className={styles.mobileMenuToggle} aria-label={mobileMenu?"Close menu":"Open menu"} aria-controls="cactusbyte-mobile-menu" aria-expanded={mobileMenu} onClick={()=>{setMobileMenu(v=>!v);setMobileSearch(false);setQ("")}}><span aria-hidden="true">☰</span></button>
         <a className={styles.mobileBrand} href="/" aria-label="CactusByte home">
           
@@ -193,11 +194,11 @@ export default function StorefrontPage(){
       {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input aria-label="Search apps" autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
 
       {!searchMode&&<>
-      <section className={styles.hero} id="home" style={accentStyle(heroApp)}>
-        <div className={styles.heroPortrait} aria-hidden="true"><img className={styles.heroScene} src="/posters/acelynn-pro.svg" alt="" decoding="async"/><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
-        <div className={styles.heroOverlay}/>
+      <section className={`${styles.hero} ${showcase.hero}`} id="home" style={accentStyle(heroApp)}>
+        <div className={`${styles.heroPortrait} ${showcase.heroPortrait}`} aria-hidden="true"><img className={styles.heroScene} src="/posters/acelynn-pro.svg" alt="" decoding="async"/><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
+        <div className={`${styles.heroOverlay} ${showcase.heroOverlay}`}/>
         <div className={styles.heroNoise}/>
-        <div className={styles.heroCopy}>
+        <div className={`${styles.heroCopy} ${showcase.heroCopy}`}>
           <span className={styles.featureBadge}>FEATURED APP</span>
           <div className={styles.heroIdentity}><BrandMark app={heroApp} large/><div><h1>{heroApp.shortName}</h1><p>{copyFor(heroApp).short}</p></div></div>
           <p className={styles.heroDescription}>{copyFor(heroApp).tagline}</p>
@@ -212,17 +213,32 @@ export default function StorefrontPage(){
         <div className={styles.heroSlogan}><small>MUSIC</small><b>FEELS</b><small>BETTER WHEN</small><b>IT’S CLEAR</b></div>
       </section>
 
-      <section className={styles.heroTools} aria-label="Acelynn Pro capabilities">
+      <section className={`${styles.heroTools} ${showcase.heroTools}`} aria-label="Acelynn Pro capabilities">
         <div><span aria-hidden="true">≋</span><b>Mic Analysis</b><small>Live input</small></div>
         <div><span aria-hidden="true">▤</span><b>Audio Files</b><small>Upload &amp; check</small></div>
         <div><span aria-hidden="true">◫</span><b>A/B Compare</b><small>Compare mixes</small></div>
         <div><span aria-hidden="true">◈</span><b>Frequency</b><small>See balance</small></div>
       </section>
-      <section className={styles.heroAbout} aria-label="About Acelynn Pro"><div><h2>About Acelynn Pro</h2><p>Audio diagnostics and mix guidance for better balance, clearer frequencies, and confident A/B comparisons.</p></div><button onClick={()=>setDemo(heroApp)} aria-label="Watch Acelynn Pro demo">Watch Demo →</button></section>
+      <section className={showcase.filters} id="categories" aria-label="Explore categories">
+        <div className={showcase.filterRail} id="category-filter-options">
+          {categories.slice(0,6).map(item=><button key={item.name} type="button" className={category===item.name?showcase.selectedFilter:""} aria-pressed={category===item.name} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
+          <button type="button" className={showcase.moreFilter} aria-expanded={showCategoryFilters} aria-controls="category-extra-options" onClick={()=>setShowCategoryFilters(v=>!v)}>{showCategoryFilters?"Less":"More"} <span aria-hidden="true">{showCategoryFilters?"↑":"⌄"}</span></button>
+        </div>
+        {showCategoryFilters&&<div className={showcase.extraFilters} id="category-extra-options">
+          {categories.slice(6).map(item=><button key={item.name} type="button" aria-pressed={category===item.name} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
+          <button type="button" onClick={()=>chooseCategory("Beta Labs")}>Beta Labs</button>
+        </div>}
+      </section>
 
-      <section className={styles.section} id="featured">
+      <section className={`${styles.section} ${showcase.featuredSection}`} id="featured">
         <SectionHead title="Featured Apps" subtitle="Powerful tools. Real possibilities. Built by CactusByte Studios." action="#all-apps" onAction={seeAllApps}/>
-        <div className={styles.featuredGrid}>{featured.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
+        <div className={`${styles.featuredGrid} ${showcase.featuredGrid}`}>{featured.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected}/>)}</div>
+      </section>
+
+
+      <section className={styles.section}>
+        <SectionHead title="More from CactusByte Studios" subtitle="Different worlds. Same mission — premium tools for a bolder tomorrow." action="#all-apps" onAction={seeAllApps}/>
+        <div className={`${styles.moreGrid} ${showcase.moreGrid}`}>{more.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>
 
       {recent.length>0&&<section className={styles.section}>
@@ -230,47 +246,30 @@ export default function StorefrontPage(){
         <div className={styles.recentGrid}>{recent.slice(0,4).map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
       </section>}
 
-      <section className={styles.section} id="categories" aria-label="Explore categories">
-        <SectionHead title="Explore Categories" subtitle="Find apps by what moves you." action="#all-apps" onAction={seeAllApps}/>
-        <div className={styles.categoryTiles}>
-          {([{id:"Music & Audio",label:"Music",glyph:"♫",sub:"Hear more"},{id:"Business",label:"Business",glyph:"▣",sub:"Build & grow"},{id:"Field Tools",label:"Field Tools",glyph:"⚒",sub:"Get it done"},{id:"Sports",label:"Sports",glyph:"✦",sub:"Play smarter"},{id:"Beta Labs",label:"Beta Labs",glyph:"✳",sub:"Early access"},{id:"All Apps",label:"All Apps",glyph:"🌵",sub:"Explore everything"}] as const).map(t=><button className={styles.categoryTile} data-category={t.id} key={t.id} aria-pressed={category===t.id} onClick={()=>chooseCategory(t.id)}><span>{t.glyph}</span><b>{t.label}</b><small>{t.sub}</small></button>)}
-        </div>
-        <button className={styles.categoryMoreToggle} aria-controls="category-filter-options" aria-expanded={showCategoryFilters} onClick={()=>setShowCategoryFilters(v=>!v)}>{showCategoryFilters?"Hide categories":"More categories"} <span aria-hidden="true">{showCategoryFilters?"↑":"↓"}</span></button>
-        <div className={styles.categoryStrip} id="category-filter-options" hidden={!showCategoryFilters}>
-          {categories.map(item=><button key={item.name} className={category===item.name?styles.categoryOn:""} aria-pressed={category===item.name} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
-        </div>
-      </section>
 
-      <section className={styles.section}>
-        <SectionHead title="More from CactusByte Studios" subtitle="Different worlds. Same mission — premium tools for a bolder tomorrow." action="#all-apps" onAction={seeAllApps}/>
-        <div className={styles.moreGrid}>{more.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
-      </section>
 
-      <section className={styles.section}>
-        <SectionHead title="Recommended Apps" subtitle="More tools from our verified app lineup." action="#all-apps" onAction={seeAllApps}/>
-        <div className={styles.recommendGrid}>{recommended.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
-      </section>
       </>}
 
-      <section className={styles.section} id="all-apps" aria-label={searchMode?"App search results":undefined}>
+      <section className={`${styles.section} ${showcase.allSection}`} id="all-apps" aria-label={searchMode?"App search results":undefined}>
         <SectionHead title={searchMode?"Search results":category==="All Apps"?"All Apps":category} subtitle={searchMode?`${apps.length} ${apps.length===1?"app":"apps"} matching “${q.trim()}”`:category==="All Apps"?"The complete CactusByte ecosystem.":`${apps.length} matching apps`}/>
-        <div className={`${styles.allGrid} ${showAll||searchMode||category!=="All Apps"?styles.allGridExpanded:""}`}>{visibleApps.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
-        {visibleApps.length===0&&<p className={styles.emptyState} role="status">No apps match your search or category. Try another search or select All Apps.</p>}
+        <div className={`${styles.allGrid} ${showAll||searchMode||category!=="All Apps"?styles.allGridExpanded:""} ${showcase.allGrid}`}>{visibleApps.map(app=><PosterCard key={app.id} app={app} open={open} details={setSelected} compact/>)}</div>
+        {visibleApps.length===0&&(searchMode||category!=="All Apps")&&<p className={styles.emptyState} role="status">No apps match your search or category. Try another search or select All Apps.</p>}
         {!searchMode&&category==="All Apps"&&apps.length>8&&<button className={styles.showAllButton} onClick={()=>setShowAll(v=>!v)}>{showAll?"Show Less":"View All Apps"} <span>{showAll?"↑":"↓"}</span></button>}
       </section>
 
-      <footer className={styles.footer}>
+      <footer className={`${styles.footer} ${showcase.footer}`}>
         <div><a className={styles.footerBrand} href="/" aria-label="CactusByte Studios app home">Cactus🌵Byte Studios™</a><small>All Rights Reserved</small></div>
         <span>v{STOREFRONT_VERSION}</span>
       </footer>
     </div>
 
-    <nav className={styles.bottomNav} aria-label="CactusByte navigation">
+    <nav className={`${styles.bottomNav} ${showcase.bottomNav}`} aria-label="CactusByte navigation">
       <a className={styles.navOn} href="#home" onClick={e=>browseFromSearch(e,"home")}><span>⌂</span>Home</a>
-      <a href="#all-apps"><span>▦</span>Apps</a>
-      <a href="/studio"><span>🌵</span>Studio</a>
+      <a href="#all-apps" onClick={seeAllApps}><span>▦</span>My Apps</a>
       <a href="/studio#releases"><span>◌</span>Updates</a>
-      <a href="/studio#settings"><span>♙</span>Profile</a>
+      <a href="#featured" onClick={e=>browseFromSearch(e,"featured")}><span>✦</span>Explore</a>
+      <a href="#categories" onClick={e=>browseFromSearch(e,"categories")}><span>◫</span>Categories</a>
+      <a href="/studio#settings"><span>⚙</span>Settings</a>
     </nav>
 
     {selected&&<div className={styles.backdrop} onClick={()=>setSelected(null)}>
@@ -301,14 +300,14 @@ function SectionHead({title,subtitle,action,onAction}:{title:string;subtitle:str
 
 function PosterCard({app,open,details,compact=false}:{app:StudioApp;open:(app:StudioApp)=>void;details:(app:StudioApp)=>void;compact?:boolean}){
   const copy=copyFor(app);
-  return <article className={compact?styles.posterCardCompact:styles.posterCard} data-app={app.id} style={accentStyle(app)}>
+  return <article className={`${compact?styles.posterCardCompact:styles.posterCard} ${showcase.poster}`} data-app={app.id} style={accentStyle(app)}>
     <button className={styles.posterHit} aria-label={`Open ${app.name}`} onClick={()=>open(app)}/>
     {/* Avoid autoplaying a grid of demos; each real video remains available from app details. */}
-    <div className={styles.posterArt} aria-hidden="true"><img src={`/posters/${app.id}.svg`} alt="" loading={compact?"lazy":"eager"} decoding="async"/></div>
-    <div className={styles.posterShade}/>
-    <div className={styles.posterTop}><BrandMark app={app}/><span>{copy.category}</span></div>
-    <div className={styles.posterBody}><h3>{app.shortName}</h3><p>{copy.short}</p><span className={styles.posterCta} aria-hidden="true">{app.url?"Open":"Details"} ↗</span></div>
-    <button className={styles.posterDetails} aria-label={`Details for ${app.name}`} onClick={()=>details(app)}><span aria-hidden="true">i</span></button>
+    <div className={`${styles.posterArt} ${showcase.posterArt}`} aria-hidden="true"><img src={`/posters/${app.id}.svg`} alt="" loading={compact?"lazy":"eager"} decoding="async"/></div>
+    <div className={`${styles.posterShade} ${showcase.posterShade}`}/>
+    <div className={`${styles.posterTop} ${showcase.posterTop}`}><BrandMark app={app}/><span>{copy.category}</span></div>
+    <div className={`${styles.posterBody} ${showcase.posterBody}`}><h3>{app.shortName}</h3><p>{copy.short}</p><span className={styles.posterCta} aria-hidden="true">{app.url?"Open":"Details"} ↗</span></div>
+    <button className={`${styles.posterDetails} ${showcase.posterDetails}`} aria-label={`Details for ${app.name}`} onClick={()=>details(app)}><span aria-hidden="true">i</span></button>
   </article>
 }
 
