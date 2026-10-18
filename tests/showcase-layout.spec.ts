@@ -1,0 +1,100 @@
+import {expect,test} from "@playwright/test";
+
+/* SLB12: verify the owner-approved UI hierarchy, not the rejected SLB10/11
+   promotional sections. Real app registry, links, logos and accessible controls
+   must remain correct. Exact photographic posters are a separately gated asset. */
+const viewports=[
+ {name:"Fold cover",width:360,height:748},
+ {name:"Android phone",width:412,height:915},
+ {name:"iPhone",width:390,height:844},
+ {name:"Fold open portrait",width:884,height:1104},
+ {name:"Fold open landscape",width:1104,height:884},
+ {name:"DeX desktop",width:1440,height:900}
+];
+
+for(const device of viewports){
+ test("SLB12 showcase "+device.name+" keeps a coherent image-led viewport",async({page})=>{
+  await page.setViewportSize({width:device.width,height:device.height});
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  await expect(page.getByRole("heading",{name:"Acelynn Pro"}).first()).toBeVisible();
+  const featured=page.locator("#featured");
+  await expect(featured).toBeVisible();
+  const cards=featured.locator("article[data-app]");
+  await expect(cards).toHaveCount(5);
+  const more=page.locator('[class*="moreGrid"]').first();
+  await expect(more.locator("article[data-app]")).toHaveCount(6);
+  const doc=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,viewport:innerWidth}));
+  expect(doc.scroll,"root horizontal overflow").toBeLessThanOrEqual(doc.viewport+2);
+  const nav=page.getByRole("navigation",{name:"CactusByte navigation"});
+  await expect(nav).toBeVisible();
+  const navBox=await nav.boundingBox();
+  expect(navBox).not.toBeNull();
+  expect(navBox!.y+navBox!.height).toBeLessThanOrEqual(device.height+2);
+  const filter=page.locator("#categories");
+  await expect(filter).toBeVisible();
+  const positions=await page.evaluate(()=>{
+   const a=document.querySelector('[class*="heroTools"]')!.getBoundingClientRect();
+   const b=document.getElementById("categories")!.getBoundingClientRect();
+   const c=document.getElementById("featured")!.getBoundingClientRect();
+   return{heroBottom:a.bottom,filterTop:b.top,filterBottom:b.bottom,featuredTop:c.top};
+  });
+  expect(positions.filterTop).toBeGreaterThanOrEqual(positions.heroBottom-4);
+  expect(positions.featuredTop).toBeGreaterThanOrEqual(positions.filterBottom-4);
+  const first=await cards.evaluateAll(els=>els.filter(el=>getComputedStyle(el).display!=="none").map(el=>el.getAttribute("data-app")));
+  if(device.width<760){
+   expect(first.slice(0,3)).toEqual(["first-bearing","fantasy-matrix","hustle-first"]);
+  }else{
+   expect(first.slice(0,5)).toEqual(["acelynn-pro","first-bearing","fantasy-matrix","hustle-first","noproblem"]);
+  }
+ });
+}
+
+test("SLB12 real six-card More shelf stays distinct, working and correctly ordered",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});
+ await page.goto("/");
+ const ids=await page.locator('[class*="moreGrid"]').first().locator("article[data-app]").evaluateAll(els=>els.map(el=>el.getAttribute("data-app")));
+ expect(ids).toEqual(["rivetex","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","pocketstomp"]);
+ await page.locator('[class*="moreGrid"]').first().getByRole("button",{name:"Details for RIVETEX"}).click();
+ await expect(page.getByRole("dialog")).toBeVisible();
+ await expect(page.getByRole("heading",{name:/RIVETEX/}).last()).toBeVisible();
+ await page.getByRole("button",{name:"Close details"}).click();
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
+test("SLB12 More categories exposes real searchable catalog and no duplicate empty default shelf",async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/");
+ await expect(page.locator("#all-apps article[data-app]")).toHaveCount(0);
+ const advanced=page.getByRole("button",{name:/More categories/});
+ await expect(advanced).toHaveAttribute("aria-expanded","false");
+ await advanced.click();
+ await expect(page.locator("#category-extra-options")).toBeVisible();
+ await page.locator("#category-extra-options").getByRole("button",{name:"Security"}).click();
+ await expect(page.locator("#all-apps article[data-app]")).not.toHaveCount(0);
+ await expect(page.locator("#all-apps").getByRole("heading",{name:"Security"})).toBeVisible();
+});
+
+test("SLB12 card information controls never overlap real official logo badges",async({page})=>{
+ for(const width of [360,390,412,884,1104]){
+  await page.setViewportSize({width,height:915});await page.goto("/");
+  const card=page.locator('#featured article[data-app="first-bearing"]');
+  const rects=await card.evaluate(el=>{
+   const logo=el.querySelector('[class*="posterTop"] [class*="logo"]')!.getBoundingClientRect();
+   const info=el.querySelector('[class*="posterDetails"]')!.getBoundingClientRect();
+   return{overlap:Math.max(0,Math.min(logo.right,info.right)-Math.max(logo.left,info.left))*Math.max(0,Math.min(logo.bottom,info.bottom)-Math.max(logo.top,info.top)),infoWidth:info.width};
+  });
+  expect(rects.overlap,"badge/details overlap at "+width).toBe(0);
+  expect(rects.infoWidth).toBeGreaterThanOrEqual(42);
+ }
+});
+
+test("SLB12 bottom dock never prevents reaching All Apps or copyright on narrow Fold",async({page})=>{
+ await page.setViewportSize({width:360,height:748});await page.goto("/");
+ const nav=page.getByRole("navigation",{name:"CactusByte navigation"});
+ await expect(nav.getByRole("link",{name:/My Apps/})).toBeVisible();
+ await nav.getByRole("link",{name:/My Apps/}).click();
+ const catalog=page.locator("#all-apps");
+ await expect(catalog.locator("article[data-app]").first()).toBeVisible();
+ await page.locator("footer").scrollIntoViewIfNeeded();
+ await expect(page.getByRole("link",{name:"CactusByte Studios app home"})).toBeVisible();
+});
