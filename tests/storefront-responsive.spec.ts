@@ -867,10 +867,26 @@ test("SLB11 painted poster images visibly contribute pixels to real rendered car
   const card=page.locator('#featured article[data-app="'+id+'"]');
   const art=card.locator('[class*=posterArt]');
   await art.locator("img").evaluate(async el=>{await (el as HTMLImageElement).decode()});
+  const diagnostic=await card.evaluate(el=>{
+   const art=el.querySelector('[class*=posterArt]') as HTMLElement;
+   const img=art.querySelector("img") as HTMLImageElement;
+   const shade=el.querySelector('[class*=posterShade]') as HTMLElement;
+   const button=el.querySelector('[class*=posterHit]') as HTMLElement;
+   const a=art.getBoundingClientRect(),i=img.getBoundingClientRect(),r=el.getBoundingClientRect();
+   const styles=getComputedStyle(img),layer=getComputedStyle(art),shadeCSS=getComputedStyle(shade),btn=getComputedStyle(button);
+   const x=r.left+r.width*.5,y=r.top+r.height*.35;
+   return {card:[r.width,r.height],art:[a.width,a.height,layer.display,layer.visibility,layer.opacity,layer.zIndex,layer.filter,layer.backgroundImage],
+    image:[i.width,i.height,img.naturalWidth,img.naturalHeight,img.complete,styles.visibility,styles.opacity,styles.zIndex,styles.objectFit,styles.filter],
+    shade:[shadeCSS.zIndex,shadeCSS.backgroundImage.slice(0,160)],button:[btn.zIndex,btn.backgroundColor,btn.backgroundImage],
+    stack:document.elementsFromPoint(x,y).slice(0,7).map(node=>{const style=getComputedStyle(node);return [String(node.className).slice(0,60),style.zIndex,style.backgroundColor,style.opacity,style.visibility]})};
+  });
+  console.log("[SLB11-POSTER-DIAG] "+id+" "+JSON.stringify(diagnostic));
   const withArtwork=(await card.screenshot()).toString("base64");
   await art.evaluate(el=>{(el as HTMLElement).style.visibility="hidden"});
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
   const withoutArtwork=(await card.screenshot()).toString("base64");
   await art.evaluate(el=>{(el as HTMLElement).style.removeProperty("visibility")});
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
   const fraction=await page.evaluate(async([visible,hidden])=>{
    async function pixels(b64:string){
     const im=new Image();im.src="data:image/png;base64,"+b64;await im.decode();
@@ -891,6 +907,6 @@ test("SLB11 painted poster images visibly contribute pixels to real rendered car
     }
    return changed/Math.max(total,1);
   },[withArtwork,withoutArtwork] as [string,string]);
-  expect(fraction,id+" artwork visual difference").toBeGreaterThan(.06);
+  expect(fraction,id+" artwork visual difference · "+JSON.stringify(diagnostic)).toBeGreaterThan(.06);
  }
 });
