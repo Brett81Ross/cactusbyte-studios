@@ -308,7 +308,7 @@ function PosterCard({app,open,details,compact=false}:{app:StudioApp;open:(app:St
     <div className={styles.posterShade}/>
     <div className={styles.posterTop}><BrandMark app={app}/><span>{copy.category}</span></div>
     <div className={styles.posterBody}><h3>{app.shortName}</h3><p>{copy.short}</p><span className={styles.posterCta} aria-hidden="true">{app.url?"Open":"Details"} ↗</span></div>
-    <button className={styles.posterDetails} aria-label={`Details for ${app.name}`} onClick={()=>details(app)}>›</button>
+    <button className={styles.posterDetails} aria-label={`Details for ${app.name}`} onClick={()=>details(app)}><span aria-hidden="true">i</span></button>
   </article>
 }
 
