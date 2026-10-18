@@ -26,7 +26,7 @@ const checks=[
  ["Studio UI version remains package-aligned",studio.includes(`const V="${pkg.version}"`)], 
  ["Storefront footer includes a tappable CactusByte home link and rights notice",page.includes('className={styles.footerBrand} href="/"')&&page.includes("Cactus🌵Byte Studios™")&&page.includes("All Rights Reserved")],
  ["Studio footer links back to CactusByte without duplicate brand names",studio.includes('<footer><a className="footerBrand" href="/">Cactus🌵Byte Studios™</a> · v{V} · All Rights Reserved</footer>')],
- ["North Star art-backed poster cards use real registry IDs and bundled imagery",css.includes('[data-app="noproblem"]')&&css.includes('[data-app="pocketstomp"]')&&css.includes("background-image:var(--localCardImage)")&&page.includes('src={`/posters/${app.id}.svg`}')],
+ ["North Star art-backed poster cards use real registry IDs and bundled imagery",css.includes('[data-app="noproblem"]')&&css.includes('[data-app="pocketstomp"]')&&css.includes(".posterCard .posterArt,.posterCardCompact .posterArt{")&&css.includes("background-image:none;background-color:transparent;filter:none")&&page.includes('src={`/posters/${app.id}.svg`}')],
  ["North Star featured row includes real SchismMatrix and no fictional apps",page.includes('"noproblem","fantasy-matrix"')&&!page.includes("firstep-kitchen")],
  ["Functional category tile shelf and recommendation shelf exist",page.includes("Explore Categories")&&page.includes("Recommended Apps")&&page.includes('data-category={t.id}')],
  ["Mobile bottom navigation exposes five usable links",css.includes(".bottomNav a:nth-child(3),.bottomNav a:nth-child(5){display:flex}")&&page.includes("Profile</a>")],
@@ -66,6 +66,8 @@ const checks=[
  ["Every storefront See All shelf activates the full application registry",page.includes("function seeAllApps()")&&page.includes('setShowAll(true)')&&page.includes('onClick={onAction}')&&page.includes('action="#all-apps" onAction={seeAllApps}')],
  ["Full catalog and filtered phone results are displayed in a real grid",page.includes('styles.allGridExpanded')&&css.includes('.allGridExpanded{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))')],
  ["Show Less restores the original eight-app preview",page.includes('showAll?"Show Less":"View All Apps"')&&page.includes('apps.slice(0,8)')],
+ ["Actual SVG illustrations are drawn once instead of being masked by a duplicate background",css.includes("SLB11 VISUAL-FIDELITY GATE")&&css.includes("background-image:none;background-color:transparent;filter:none")&&css.includes("object-position:50% 53%")],
+ ["Rendered poster artwork has a pixel-difference regression test",fs.readFileSync("tests/storefront-responsive.spec.ts","utf8").includes("painted poster images visibly contribute pixels")],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
