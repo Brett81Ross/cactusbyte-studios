@@ -96,6 +96,7 @@
 }
 .filterRail .moreFilter{border-color:#48dfea61}
 .extraFilters{display:flex;gap:7px;flex-wrap:wrap;padding:9px 4px 4px;background:#040f1b;border-radius:12px}
+.extraFilters[hidden]{display:none!important}
 .root :global([class*="section__"]){margin:14px 0 4px!important;padding:0!important;min-width:0!important}
 .root :global([class*="sectionHead"]){margin:4px 0 11px!important;align-items:center!important}
 .root :global([class*="sectionHead"] h2){font-size:clamp(1.05rem,1.6vw,1.45rem)!important;font-weight:800!important;margin:0 0 4px!important}
