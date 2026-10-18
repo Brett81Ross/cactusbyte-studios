@@ -26,8 +26,8 @@ export async function GET() {
         <img
           src={src}
           alt=""
-          width={158}
-          height={158}
+          width={157}
+          height={157}
           style={{ objectFit: "contain" }}
         />
       </div>
