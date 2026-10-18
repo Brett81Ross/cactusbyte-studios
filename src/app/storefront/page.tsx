@@ -222,12 +222,12 @@ export default function StorefrontPage(){
       <section className={showcase.filters} id="categories" aria-label="Explore categories">
         <div className={showcase.filterRail} id="category-filter-options">
           {categories.slice(0,6).map(item=><button key={item.name} type="button" className={category===item.name?showcase.selectedFilter:""} aria-pressed={category===item.name} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
-          <button type="button" className={showcase.moreFilter} aria-expanded={showCategoryFilters} aria-controls="category-extra-options" onClick={()=>setShowCategoryFilters(v=>!v)}>{showCategoryFilters?"Less":"More"} <span aria-hidden="true">{showCategoryFilters?"↑":"⌄"}</span></button>
+          <button type="button" className={showcase.moreFilter} aria-expanded={showCategoryFilters} aria-controls="category-extra-options" onClick={()=>setShowCategoryFilters(v=>!v)}>{showCategoryFilters?"Hide categories":"More categories"} <span aria-hidden="true">{showCategoryFilters?"↑":"⌄"}</span></button>
         </div>
-        {showCategoryFilters&&<div className={showcase.extraFilters} id="category-extra-options">
+        <div className={showcase.extraFilters} id="category-extra-options" hidden={!showCategoryFilters}>
           {categories.slice(6).map(item=><button key={item.name} type="button" aria-pressed={category===item.name} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
           <button type="button" onClick={()=>chooseCategory("Beta Labs")}>Beta Labs</button>
-        </div>}
+        </div>
       </section>
 
       <section className={`${styles.section} ${showcase.featuredSection}`} id="featured">
