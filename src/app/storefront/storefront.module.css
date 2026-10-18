@@ -641,3 +641,50 @@
 }
 .posterCard > .posterHit::before,.posterCard > .posterHit::after,
 .posterCardCompact > .posterHit::before,.posterCardCompact > .posterHit::after{content:none!important}
+
+
+/* SLB11 owner screenshot review: a details chevron was painted over each
+   authentic logo plus a second pseudo-chevron beneath it. One discreet,
+   accessible info control must stay at top RIGHT, not on the logo. */
+.posterCard .posterDetails,.posterCardCompact .posterDetails{
+  position:absolute!important;top:5px!important;right:5px!important;
+  bottom:auto!important;left:auto!important;z-index:8;
+  width:44px;height:44px;min-width:44px;min-height:44px;
+  display:grid;place-items:center;padding:0;border:0;
+  color:#e6fffc;background:transparent!important;
+  box-shadow:none!important;filter:none!important;
+  font-size:0;line-height:1;opacity:1;pointer-events:auto
+}
+.posterCard .posterDetails::before,.posterCardCompact .posterDetails::before,
+.posterCard .posterDetails::after,.posterCardCompact .posterDetails::after{
+  content:none!important;display:none!important
+}
+.posterCard .posterDetails span,.posterCardCompact .posterDetails span{
+  display:grid;place-items:center;width:28px;height:28px;border-radius:50%;
+  border:1px solid #73eee6a8;background:#061321ef;
+  color:#dffffb;font-size:.84rem;font-weight:800;font-style:normal;
+  box-shadow:0 0 9px #0ef4e52e
+}
+.posterCard .posterDetails:hover span,.posterCardCompact .posterDetails:hover span,
+.posterCard .posterDetails:focus-visible span,.posterCardCompact .posterDetails:focus-visible span{
+  background:#07535b;border-color:#b3fffa
+}
+/* Card titles and CTAs need one calm surface, never opaque rectangles over the
+   entire illustration. Real original posters remain full-size and unmodified. */
+.posterCard .posterBody,.posterCardCompact .posterBody{
+  padding:7px 7px 6px;border-radius:11px;
+  background:linear-gradient(180deg,rgba(2,7,20,.50),rgba(2,7,20,.87) 44%,rgba(2,7,20,.96));
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  box-shadow:0 3px 16px #01051177
+}
+.posterCard .posterBody h3,.posterCardCompact .posterBody h3{
+  color:#fff;text-shadow:0 2px 6px #000b
+}
+.posterCard .posterBody p,.posterCardCompact .posterBody p{
+  color:#e3f3f7;text-shadow:none
+}
+@media(max-width:759px){
+ .posterCard .posterBody,.posterCardCompact .posterBody{
+   left:7px;right:7px;bottom:7px;padding:5px 5px 4px;border-radius:8px
+ }
+}
