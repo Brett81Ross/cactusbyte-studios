@@ -68,6 +68,8 @@ const checks=[
  ["Show Less restores the original eight-app preview",page.includes('showAll?"Show Less":"View All Apps"')&&page.includes('apps.slice(0,8)')],
  ["Actual SVG illustrations are drawn once instead of being masked by a duplicate background",css.includes("SLB11 VISUAL-FIDELITY GATE")&&css.includes("background-image:none;background-color:transparent;filter:none")&&css.includes("object-position:50% 53%")],
  ["Rendered poster artwork has a pixel-difference regression test",fs.readFileSync("tests/storefront-responsive.spec.ts","utf8").includes("painted poster images visibly contribute pixels")],
+ ["Poster hit-area buttons cannot obscure actual SVG artwork",css.includes(".posterCard > .posterHit,.posterCardCompact > .posterHit{")&&css.includes("background:none!important;background-image:none!important;background-color:transparent!important")&&css.includes("box-shadow:none!important;filter:none!important")],
+ ["Chromium pixel comparison checks transparent overlays and screenshot dimensions",fs.readFileSync("tests/storefront-responsive.spec.ts","utf8").includes("poster hit background image MUST be none")&&fs.readFileSync("tests/storefront-responsive.spec.ts","utf8").includes("Comparing different screenshot sizes")],
  ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
 ];
 
