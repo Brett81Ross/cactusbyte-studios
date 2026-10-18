@@ -596,3 +596,9 @@
  .allGridExpanded .posterBody p{font-size:.67rem}
  .allGridExpanded .posterCta{min-height:31px;font-size:.73rem}
 }
+
+
+/* SLB11 real Playwright Fold-cover failure: the branded home link was only 35.73px tall.
+   Both mobile and desktop/Fold sidebar brand links must be full-size touch targets. */
+.mobileBrand,.brandLockup{min-height:44px;box-sizing:border-box;align-items:center;touch-action:manipulation}
+.mobileBrand:focus-visible,.brandLockup:focus-visible{outline:2px solid #66fff2;outline-offset:3px}
