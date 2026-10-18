@@ -136,3 +136,17 @@ test("SLB12 Acelynn hero avoids legacy overexposure and the card labels no longe
   expect(layout.font).toBeGreaterThanOrEqual(10);
  }
 });
+
+
+test("SLB12 official PWA icon endpoints return actual PNG bytes at exact declared dimensions",async({request})=>{
+ for(const dimension of [192,512]){
+  const response=await request.get("/pwa-icon-"+dimension);
+  expect(response.status(),"PWA icon "+dimension+" status").toBe(200);
+  expect(response.headers()["content-type"],"PWA icon MIME").toContain("image/png");
+  const image=await response.body();
+  expect(image.length).toBeGreaterThan(1024);
+  expect(image.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))).toBe(true);
+  expect(image.readUInt32BE(16),"PNG width").toBe(dimension);
+  expect(image.readUInt32BE(20),"PNG height").toBe(dimension);
+ }
+});
