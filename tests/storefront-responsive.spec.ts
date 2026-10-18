@@ -916,3 +916,41 @@ test("SLB11 painted poster images visibly contribute pixels to real rendered car
   expect(fraction,id+" artwork visual difference · "+JSON.stringify(diagnostic)).toBeGreaterThan(.06);
  }
 });
+
+
+test("SLB11 owner-review cards place one details icon away from real brand logos and protect caption contrast",async({page})=>{
+ for(const viewport of [{width:360,height:748},{width:390,height:844},{width:412,height:915},{width:884,height:1104},{width:1104,height:884},{width:1440,height:900}]){
+  await page.setViewportSize(viewport);
+  await page.goto("/",{waitUntil:"domcontentloaded"});
+  const card=page.locator('#featured article[data-app="acelynn-pro"]');
+  const info=card.getByRole("button",{name:"Details for Acelynn Pro"});
+  await expect(info).toBeVisible();
+  await expect(info.locator("span")).toHaveText("i");
+  const position=await card.evaluate(el=>{
+   const logo=el.querySelector('[class*=posterTop] [class*=logo]') as HTMLElement;
+   const info=el.querySelector('[class*=posterDetails]') as HTMLElement;
+   const body=el.querySelector('[class*=posterBody]') as HTMLElement;
+   const a=logo.getBoundingClientRect(),b=info.getBoundingClientRect(),c=el.getBoundingClientRect();
+   const style=getComputedStyle(info),caption=getComputedStyle(body);
+   const overlapX=Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left));
+   const overlapY=Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
+   return{overlapArea:overlapX*overlapY,infoRightGap:c.right-b.right,
+    infoTopGap:b.top-c.top,infoWidth:b.width,infoHeight:b.height,
+    glyph:style.getPropertyValue("background-image"),pseudo:getComputedStyle(info,"::before").content,
+    captionBackground:caption.backgroundImage};
+  });
+  expect(position.overlapArea,"logo and details must not overlap at "+viewport.width).toBe(0);
+  expect(position.infoRightGap).toBeGreaterThanOrEqual(0);
+  expect(position.infoRightGap).toBeLessThanOrEqual(16);
+  expect(position.infoTopGap).toBeGreaterThanOrEqual(0);
+  expect(position.infoWidth).toBeGreaterThanOrEqual(44);
+  expect(position.infoHeight).toBeGreaterThanOrEqual(44);
+  expect(position.glyph).toBe("none");
+  expect(["none","normal",""].includes(position.pseudo)).toBe(true);
+  expect(position.captionBackground).toContain("linear-gradient");
+ }
+ await page.setViewportSize({width:390,height:844});
+ await page.goto("/",{waitUntil:"domcontentloaded"});
+ await page.locator('#featured article[data-app="acelynn-pro"]').getByRole("button",{name:"Details for Acelynn Pro"}).click();
+ await expect(page.getByRole("heading",{name:"Acelynn Pro™"})).toBeVisible();
+});
