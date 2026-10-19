@@ -9,6 +9,18 @@ import showcase from "./showcase-layout.module.css";
 const RECENT_KEY="cb-storefront-recent-v4";
 const STOREFRONT_VERSION="1.7.0";
 
+// 13 owner-approved cinematic compositions; OrbitGather's new poster is
+// deliberately excluded until the owner approves it separately.
+// Fallback protects the draft branch until the original image package lands.
+const approvedPosterIds=new Set([
+  "acelynn-pro","first-bearing","fantasy-matrix","noproblem",
+  "shadownex-prime","scouttrace","rapid-takeoff","hustle-first",
+  "machzero","pocketstomp","ghostlane","terraflow-matrix","rivetex"
+]);
+function approvedPosterSource(appId:string){
+  return approvedPosterIds.has(appId)?`/cinematic/${appId}.webp`:`/posters/${appId}.svg`;
+}
+
 const featuredIds=["acelynn-pro","first-bearing","fantasy-matrix","hustle-first","noproblem"];
 const moreIds=["rivetex","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","pocketstomp"];
 const categories=[
@@ -195,7 +207,7 @@ export default function StorefrontPage(){
 
       {!searchMode&&<>
       <section className={`${styles.hero} ${showcase.hero}`} id="home" style={accentStyle(heroApp)}>
-        <div className={`${styles.heroPortrait} ${showcase.heroPortrait}`} aria-hidden="true"><img className={styles.heroScene} src="/posters/acelynn-pro.svg" alt="" decoding="async"/><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
+        <div className={`${styles.heroPortrait} ${showcase.heroPortrait}`} aria-hidden="true"><img className={styles.heroScene} src="/cinematic/acelynn-pro.webp" alt="" decoding="async" onError={event=>{if(!event.currentTarget.src.endsWith("/posters/acelynn-pro.svg"))event.currentTarget.src="/posters/acelynn-pro.svg"}}/><div className={styles.heroWaveform}><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div><div className={styles.heroVinyl}/></div>
         <div className={`${styles.heroOverlay} ${showcase.heroOverlay}`}/>
         <div className={styles.heroNoise}/>
         <div className={`${styles.heroCopy} ${showcase.heroCopy}`}>
@@ -303,7 +315,7 @@ function PosterCard({app,open,details,compact=false}:{app:StudioApp;open:(app:St
   return <article className={`${compact?styles.posterCardCompact:styles.posterCard} ${showcase.poster}`} data-app={app.id} style={accentStyle(app)}>
     <button className={styles.posterHit} aria-label={`Open ${app.name}`} onClick={()=>open(app)}/>
     {/* Avoid autoplaying a grid of demos; each real video remains available from app details. */}
-    <div className={`${styles.posterArt} ${showcase.posterArt}`} aria-hidden="true"><img src={`/posters/${app.id}.svg`} alt="" loading={compact?"lazy":"eager"} decoding="async"/></div>
+    <div className={`${styles.posterArt} ${showcase.posterArt}`} aria-hidden="true"><img src={approvedPosterSource(app.id)} alt="" loading={compact?"lazy":"eager"} decoding="async" onError={event=>{if(!event.currentTarget.src.endsWith(`/posters/${app.id}.svg`))event.currentTarget.src=`/posters/${app.id}.svg`}}/></div>
     <div className={`${styles.posterShade} ${showcase.posterShade}`}/>
     <div className={`${styles.posterTop} ${showcase.posterTop}`}><BrandMark app={app}/><span>{copy.category}</span></div>
     <div className={`${styles.posterBody} ${showcase.posterBody}`}><h3>{app.shortName}</h3><p>{copy.short}</p><span className={styles.posterCta} aria-hidden="true">{app.url?"Open":"Details"} ↗</span></div>
@@ -314,5 +326,5 @@ function PosterCard({app,open,details,compact=false}:{app:StudioApp;open:(app:St
 function BrandMark({app,large=false}:{app:StudioApp;large?:boolean}){
   const brand=verifiedBrandAsset(app.id);
   if(!brand)return <div className={large?styles.wordmarkLarge:styles.wordmark} aria-label={`${app.shortName} official logo pending recovery`}><span>{large?app.shortName:"LOGO"}</span><small>{large?"Official logo pending recovery":"Pending"}</small></div>;
-  return <div className={large?styles.logoLarge:styles.logo}><img src={brand.src!} alt={`${app.shortName} official logo`}/></div>;
+  return <div className={large?styles.logoLarge:styles.logo}><img src={app.id==="orbitgather"?"/brand/orbitgather-icon.webp":brand.src!} alt={`${app.shortName} ${app.id==="orbitgather"?"approved provisional logo":"official logo"}`} onError={event=>{if(app.id==="orbitgather"&&event.currentTarget.src.endsWith("/brand/orbitgather-icon.webp"))event.currentTarget.src=brand.src!}}/></div>;
 }
