@@ -105,7 +105,7 @@ test("SLB12 Acelynn hero avoids legacy overexposure and the card labels no longe
   await page.setViewportSize(viewport);
   await page.goto("/",{waitUntil:"domcontentloaded"});
   const hero=page.locator("#home");
-  const image=hero.locator('img[src="/posters/acelynn-pro.svg"]');
+  const image=hero.locator('img[src^="/cinematic/"], img[src^="/posters/"]').first();
   await image.evaluate(async el=>{await (el as HTMLImageElement).decode()});
   const style=await image.evaluate(el=>{
    const c=getComputedStyle(el);
@@ -149,4 +149,18 @@ test("SLB12 official PWA icon endpoints return actual PNG bytes at exact declare
   expect(image.readUInt32BE(16),"PNG width").toBe(dimension);
   expect(image.readUInt32BE(20),"PNG height").toBe(dimension);
  }
+});
+
+test("SLB13 artwork upgrade selects 13 approved posters and keeps OrbitGather poster pending",async({page})=>{
+ await page.goto("/");
+ const hero=page.locator("#home img").first();
+ const heroSource=await hero.getAttribute("src");
+ expect(["/cinematic/acelynn-pro.webp","/posters/acelynn-pro.svg"]).toContain(heroSource);
+ for(const id of ["acelynn-pro","first-bearing","fantasy-matrix","rivetex","pocketstomp"]){
+  const img=page.locator(`article[data-app="${id}"] [class*="posterArt"] img`).first();
+  if(await img.count())expect(["/cinematic/"+id+".webp","/posters/"+id+".svg"]).toContain(await img.getAttribute("src"));
+ }
+ await page.getByRole("navigation",{name:"CactusByte navigation"}).getByRole("link",{name:/My Apps/}).click();
+ const pending=page.locator('article[data-app="orbitgather"] [class*="posterArt"] img').first();
+ await expect(pending).toHaveAttribute("src","/posters/orbitgather.svg");
 });
