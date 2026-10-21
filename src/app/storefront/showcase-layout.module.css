@@ -9,11 +9,12 @@
   color:var(--ink);background:
     radial-gradient(ellipse 44% 24% at 78% 7%,rgba(3,120,177,.13),transparent),
     radial-gradient(ellipse 38% 17% at 12% 43%,rgba(44,8,117,.13),transparent),#020711;
-  padding:0 0 72px!important
+  padding:0 0 calc(82px + env(safe-area-inset-bottom))!important
 }
-.root > :global(aside){display:none!important}
+/* Restore the approved unfolded-Fold/desktop identity rail; phones retain the compact header. */
+.root > :global(aside){display:block!important}
 .shell{
-  width:min(1420px,100%)!important;max-width:1420px!important;margin:0 auto!important;
+  width:min(1420px,calc(100% - 270px))!important;max-width:1420px!important;margin:0 auto 0 250px!important;
   padding:0 clamp(12px,2.1vw,30px) 28px!important;
   height:auto!important;max-height:none!important;min-height:0!important;
   display:flex!important;flex-direction:column!important;
@@ -33,7 +34,7 @@
 .topbar :global([class*="mobileMenuToggle"]){display:none!important}
 .topbar :global([class*="search"]){display:flex!important;min-width:0!important;border-radius:999px!important;background:#08172b!important;border:1px solid #2ae9eb35!important;box-shadow:inset 0 1px 4px #0008!important}
 .topbar :global([class*="topActions"]){display:flex!important;gap:7px!important;align-items:center!important}
-.topbar :global([class*="topActions"] a){width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important;border-radius:50%!important}
+.topbar :global([class*="topActions"] a){width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;border-radius:50%!important}
 .topbar :global([class*="mobileSearchToggle"]){display:none!important}
 .hero{
   position:relative!important;isolation:isolate!important;
@@ -63,7 +64,7 @@
 .heroCopy :global([class*="heroIdentity"] h1){font-size:clamp(1.9rem,3vw,3.25rem)!important;line-height:1.06!important;text-shadow:0 2px 16px #02040c!important}
 .heroCopy :global([class*="heroDescription"]){font-size:clamp(.82rem,1.2vw,.99rem)!important;max-width:540px!important;line-height:1.42!important;margin:12px 0!important}
 .heroCopy :global([class*="heroActions"]){display:flex!important;gap:10px!important;margin:8px 0 0!important}
-.heroCopy :global([class*="heroActions"] button){min-height:43px!important;min-width:125px!important;border-radius:11px!important;flex:0 1 186px!important;font-size:.87rem!important}
+.heroCopy :global([class*="heroActions"] button){min-height:44px!important;min-width:125px!important;border-radius:11px!important;flex:0 1 186px!important;font-size:.87rem!important}
 .heroCopy :global([class*="heroFeatures"]){display:none!important}
 .hero :global([class*="heroSlogan"]){display:none!important}
 .heroTools{
@@ -86,7 +87,7 @@
  scroll-snap-type:x proximity;padding:5px 3px 7px;white-space:nowrap}
 .filterRail::-webkit-scrollbar{display:none}
 .filterRail button,.extraFilters button{
- flex:0 0 auto;min-height:36px;padding:0 17px;border-radius:999px;
+ flex:0 0 auto;min-height:44px;padding:0 17px;border-radius:999px;
  border:1px solid rgba(137,159,190,.23);background:#081320;
  color:#c2d1e6;font-size:.72rem;font-weight:650;white-space:nowrap;cursor:pointer;
  box-shadow:none;scroll-snap-align:start
@@ -167,7 +168,7 @@
  color:#e2fffd!important;text-align:center!important
 }
 .posterDetails{position:absolute!important;z-index:8!important;top:4px!important;right:4px!important;left:auto!important;
- bottom:auto!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;
+ bottom:auto!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
  padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;display:grid!important;place-items:center!important}
 .posterDetails > span{display:grid!important;place-items:center!important;
  width:26px!important;height:26px!important;border-radius:50%!important;
@@ -183,7 +184,7 @@
  border-top:1px solid #55e5f82b!important}
 .bottomNav{
  position:fixed!important;z-index:50!important;left:0!important;right:0!important;bottom:0!important;
- width:100%!important;height:60px!important;min-height:60px!important;
+ width:100%!important;height:calc(60px + env(safe-area-inset-bottom))!important;min-height:calc(60px + env(safe-area-inset-bottom))!important;
  margin:0!important;padding:5px max(10px,env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))!important;
  border:1px solid #16495079!important;border-radius:13px 13px 0 0!important;
  background:#020b16f5!important;backdrop-filter:blur(12px)!important;
@@ -196,14 +197,21 @@
 .bottomNav a span{line-height:1.05!important;font-size:1.15rem!important}
 .bottomNav :global([class*="navOn"]){color:#eafffc!important;border:1px solid #4ef7ce8c!important;
  background:#064f48b9!important;box-shadow:0 0 12px #12f3c54a!important}
+@media(min-width:981px) and (max-width:1220px){
+ .shell{width:calc(100% - 210px)!important;max-width:none!important;margin:0 16px 0 194px!important}
+}
+@media(min-width:760px) and (max-width:980px){
+ .shell{width:calc(100% - 180px)!important;max-width:none!important;margin:0 12px 0 168px!important}
+}
 @media(max-width:1220px){
  .featuredGrid{grid-auto-columns:calc((100% - 32px)/5)!important}
  .moreGrid{grid-auto-columns:calc((100% - 24px)/4)!important}
  .root :global([class*="heroSlogan"]){display:none!important}
 }
 @media(max-width:759px){
- .root{padding:0 0 74px!important;overflow-y:auto!important;min-height:100dvh!important;height:auto!important}
- .shell{padding:0 12px 20px!important;display:block!important;height:auto!important}
+ .root{padding:0 0 calc(86px + env(safe-area-inset-bottom))!important;overflow-y:auto!important;min-height:100dvh!important;height:auto!important}
+ .root > :global(aside){display:none!important}
+ .shell{width:100%!important;margin:0 auto!important;padding:0 12px 20px!important;display:block!important;height:auto!important}
  .topbar{grid-template-columns:44px minmax(0,1fr) auto!important;gap:6px!important;
    min-height:70px!important;padding:8px 0!important}
  .topbar :global([class*="mobileMenuToggle"]){display:grid!important}
@@ -225,12 +233,12 @@
  .heroCopy :global([class*="heroIdentity"] h1){font-size:clamp(1.55rem,5.2vw,1.92rem)!important}
  .heroCopy :global([class*="heroDescription"]){font-size:.75rem!important;margin:9px 0 10px!important;max-width:none!important}
  .heroCopy :global([class*="heroActions"]){margin:0!important}
- .heroCopy :global([class*="heroActions"] button){flex:1 1 0!important;min-width:0!important;min-height:42px!important;font-size:.76rem!important;padding:0 6px!important}
+ .heroCopy :global([class*="heroActions"] button){flex:1 1 0!important;min-width:0!important;min-height:44px!important;font-size:.76rem!important;padding:0 6px!important}
  .heroTools{margin:8px 0 5px!important;gap:5px!important;flex-wrap:nowrap!important;overflow-x:auto!important;justify-content:flex-start!important;scrollbar-width:none}
  .heroTools > div{flex:0 0 auto!important;padding:4px 9px!important;min-height:29px!important}
  .heroTools > div b{font-size:.58rem!important}
  .filters{margin:7px 0 9px!important}
- .filterRail button,.extraFilters button{padding:0 13px!important;min-height:34px!important;font-size:.67rem!important}
+ .filterRail button,.extraFilters button{padding:0 13px!important;min-height:44px!important;font-size:.67rem!important}
  .root :global([class*="sectionHead"]){margin:5px 0 8px!important}
  .root :global([class*="sectionHead"] h2){font-size:1.03rem!important}
  .root :global([class*="sectionHead"] p){font-size:.64rem!important}
@@ -247,12 +255,12 @@
  .posterBody p{font-size:clamp(.48rem,1.8vw,.62rem)!important;margin:0 0 4px!important}
  .posterBody :global([class*="posterCta"]){height:19px!important;min-height:19px!important;line-height:17px!important;font-size:.56rem!important;min-width:44px!important;padding:0 4px!important}
  .posterTop :global([class*="logo__"]),.posterTop :global([class*="wordmark__"]){width:26px!important;height:26px!important;min-width:26px!important}
- .posterDetails{width:42px!important;height:42px!important}
+ .posterDetails{width:44px!important;height:44px!important}
  .posterDetails span{width:23px!important;height:23px!important}
  .allGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
  .allGrid .poster{height:175px!important}
  .footer{padding:15px 0 20px!important}
- .bottomNav{height:66px!important;min-height:66px!important;gap:1px!important;padding:4px 5px calc(5px + env(safe-area-inset-bottom))!important}
+ .bottomNav{height:calc(66px + env(safe-area-inset-bottom))!important;min-height:calc(66px + env(safe-area-inset-bottom))!important;gap:1px!important;padding:4px 5px calc(5px + env(safe-area-inset-bottom))!important}
  .bottomNav a{font-size:.55rem!important;min-height:44px!important}
  .bottomNav a span{font-size:1.05rem!important}
 }
