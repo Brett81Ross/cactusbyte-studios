@@ -15,6 +15,8 @@ const extract=(label,pattern)=>{
 const featured=extract("Featured",/const featuredIds=\[([^\]]+)\]/);
 const more=extract("More",/const moreIds=\[([^\]]+)\]/);
 const cinematic=extract("Cinematic",/const approvedPosterIds=new Set\(\[([\s\S]*?)\]\)/);
+const categoryNames=[...page.match(/const categories=\[([\s\S]*?)\];/)[1].matchAll(/name:"([^"]+)"/g)].map(m=>m[1]);
+const copyCategories=[...page.match(/const storefrontCopy:[\s\S]*?=\{([\s\S]*?)\};/)[1].matchAll(/category:"([^"]+)"/g)].map(m=>m[1]);
 const demos=extract("Demo paths",/const demoPaths:Record<string,string>=\{([\s\S]*?)\};/).filter(x=>x.startsWith("/demos/"));
 const marks=[...brand.matchAll(/\bsrc:\s*"(\/[^"]+)"/g)].map(m=>m[1]);
 const urls=[...registry.matchAll(/\burl:"([^"]+)"/g)].map(m=>m[1]);
@@ -24,6 +26,10 @@ const checks=[
   ["Registry keeps 14 unique app IDs",ids.length===14&&unique(ids)],
   ["Featured contains five real unique apps",featured.length===5&&unique(featured)&&featured.every(x=>ids.includes(x))],
   ["More contains six real unique apps",more.length===6&&unique(more)&&more.every(x=>ids.includes(x))],
+  ["Every real copy category has a visible filter",unique(categoryNames)&&copyCategories.every(cat=>categoryNames.includes(cat))],
+  ["GhostLane Navigation filter remains reachable",categoryNames.includes("Navigation")&&page.includes('categories.slice(6).map(item=>')],
+  ["Search indexes real descriptions and short copy",page.includes('${app.description} ${copy.tagline} ${copy.short}')],
+  ["Reduced-motion scroll preference is respected",page.includes('window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"')],
   ["Featured and More remain distinct",featured.every(x=>!more.includes(x))],
   ["All 14 SVG fallback posters exist",ids.every(id=>file(join("public","posters",id+".svg")))],
   ["Only 13 approved cinematic app IDs are mapped",cinematic.length===13&&unique(cinematic)&&cinematic.every(x=>ids.includes(x))&&!cinematic.includes("orbitgather")],

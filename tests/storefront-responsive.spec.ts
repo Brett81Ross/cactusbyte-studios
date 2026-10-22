@@ -321,3 +321,61 @@ test("SLB16 mobile search Escape clears query and refocuses toggle",async({page}
  await expect(page.locator("#featured")).toBeVisible();
  await expect(page.getByRole("button",{name:"Search apps",exact:true})).toBeFocused();
 });
+
+
+test("SLB17 Navigation is discoverable under More categories and filters actual GhostLane",async({page})=>{
+ await page.goto("/");
+ await page.getByRole("button",{name:/More categories/}).click();
+ const nav=page.locator("#category-extra-options").getByRole("button",{name:"Navigation"});
+ await expect(nav).toHaveAttribute("aria-pressed","false");
+ await nav.click();
+ await expect(nav).toHaveAttribute("aria-pressed","true");
+ await expect(page.locator('#all-apps article[data-app="ghostlane"]')).toHaveCount(1);
+ await expect(page.locator("#all-apps article")).toHaveCount(1);
+ await page.locator("#category-filter-options").getByRole("button",{name:"All Apps"}).click();
+ await expect(page.locator("#all-apps article")).toHaveCount(14);
+});
+
+test("SLB17 search indexes real registry descriptions, not just marketing taglines",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});await page.goto("/");
+ const search=page.getByRole("textbox",{name:"Search apps"});
+ await search.fill("appraisal");
+ await expect(page.locator('#all-apps article[data-app="machzero"]')).toHaveCount(1);
+ await expect(page.locator("#all-apps article")).toHaveCount(1);
+ await search.fill("exterior-service");
+ await expect(page.locator('#all-apps article[data-app="noproblem"]')).toHaveCount(1);
+ await search.fill("skate coaching");
+ await expect(page.locator('#all-apps article[data-app="pocketstomp"]')).toHaveCount(1);
+});
+
+test("SLB17 category scroll honors reduced-motion preference",async({page})=>{
+ await page.emulateMedia({reducedMotion:"reduce"});
+ await page.goto("/");
+ await page.evaluate(()=>{
+  (window as any).__scrollModes=[];
+  const original=Element.prototype.scrollIntoView;
+  Element.prototype.scrollIntoView=function(arg?:ScrollIntoViewOptions|boolean){
+   (window as any).__scrollModes.push({id:this.id,behavior:typeof arg==="object"?arg.behavior:"unspecified"});
+   // Record only: avoid a layout-changing native animation in the assertion.
+  };
+  (window as any).__nativeScrollIntoView=original;
+ });
+ await page.locator("#category-filter-options").getByRole("button",{name:"Sports"}).click();
+ await expect.poll(()=>page.evaluate(()=>(window as any).__scrollModes.length)).toBeGreaterThan(0);
+ const calls=await page.evaluate(()=>(window as any).__scrollModes);
+ expect(calls).toContainEqual({id:"all-apps",behavior:"auto"});
+});
+
+test("SLB17 category scroll uses smooth behavior when no reduced-motion preference",async({page})=>{
+ await page.emulateMedia({reducedMotion:"no-preference"});
+ await page.goto("/");
+ await page.evaluate(()=>{
+  (window as any).__scrollModes=[];
+  Element.prototype.scrollIntoView=function(arg?:ScrollIntoViewOptions|boolean){
+   (window as any).__scrollModes.push({id:this.id,behavior:typeof arg==="object"?arg.behavior:"unspecified"});
+  };
+ });
+ await page.locator("#category-filter-options").getByRole("button",{name:"Sports"}).click();
+ await expect.poll(()=>page.evaluate(()=>(window as any).__scrollModes.length)).toBeGreaterThan(0);
+ expect(await page.evaluate(()=>(window as any).__scrollModes)).toContainEqual({id:"all-apps",behavior:"smooth"});
+});

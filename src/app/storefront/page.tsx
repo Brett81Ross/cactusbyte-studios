@@ -32,7 +32,8 @@ const categories=[
   {name:"Sports",label:"Sports"},
   {name:"Construction",label:"Construction"},
   {name:"Security",label:"Security"},
-  {name:"Marketplace",label:"Marketplace"}
+  {name:"Marketplace",label:"Marketplace"},
+  {name:"Navigation",label:"Navigation"}
 ];
 
 const storefrontCopy:Record<string,{tagline:string;category:string;short:string;eyebrow?:string}>={
@@ -180,7 +181,7 @@ export default function StorefrontPage(){
   const searchMode=searchQuery.length>0;
   const apps=useMemo(()=>studioApps.filter(app=>{
     const copy=copyFor(app);
-    const haystack=`${app.name} ${app.shortName} ${copy.tagline} ${copy.category}`.toLowerCase();
+    const haystack=`${app.name} ${app.shortName} ${app.description} ${copy.tagline} ${copy.short} ${copy.category} ${app.category}`.toLowerCase();
     return (!searchQuery||haystack.includes(searchQuery))&&(searchQuery.length>0||category==="All Apps"||(category==="Beta Labs"?app.channel==="beta":copy.category===category||app.category===category));
   }),[searchQuery,category]);
   const visibleApps=showAll||searchMode||category!=="All Apps"?apps:[];
@@ -190,9 +191,13 @@ export default function StorefrontPage(){
     setRecentIds(next);try{localStorage.setItem(RECENT_KEY,JSON.stringify(next))}catch{}
   }
   function open(app:StudioApp){remember(app);if(app.url)window.open(app.url,"_blank","noopener,noreferrer")}
+  function scrollToSection(target:string){
+    const behavior:ScrollBehavior=window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
+    document.getElementById(target)?.scrollIntoView({behavior,block:"start"});
+  }
   function chooseCategory(name:string){
     setCategory(name);setQ("");setMobileSearch(false);setMobileMenu(false);setShowAll(true);
-    requestAnimationFrame(()=>document.getElementById("all-apps")?.scrollIntoView({behavior:"smooth",block:"start"}));
+    requestAnimationFrame(()=>scrollToSection("all-apps"));
   }
   function seeAllApps(){
     setCategory("All Apps");setQ("");setMobileSearch(false);setMobileMenu(false);setShowAll(true);
@@ -200,7 +205,7 @@ export default function StorefrontPage(){
   function browseFromSearch(event:MouseEvent<HTMLAnchorElement>,target:string){
     if(!searchMode)return;
     event.preventDefault();setQ("");setMobileSearch(false);setMobileMenu(false);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>scrollToSection(target)));
   }
 
   return <main className={`${styles.page} ${showcase.root}`}>
