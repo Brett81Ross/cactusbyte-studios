@@ -276,3 +276,48 @@ test("SLB15 modal traps keyboard Tab, Escape restores opener and close target is
   await expect(dialog).toHaveCount(0);
   await expect(opener).toBeFocused();
 });
+
+
+test("SLB16 Details-to-Demo Escape restores focus to originating card",async({page})=>{
+ await page.setViewportSize({width:1104,height:884});await page.goto("/");
+ const opener=page.locator('#featured article[data-app="first-bearing"]').getByRole("button",{name:"Details for First Bearing™"});
+ await opener.focus();await opener.click();
+ await expect(page.getByRole("dialog").getByRole("button",{name:"Close details"})).toBeFocused();
+ await page.getByRole("dialog").getByRole("button",{name:/Watch Demo/}).click();
+ await expect(page.getByRole("dialog")).toHaveCount(1);
+ await expect(page.getByRole("dialog").getByRole("button",{name:"Close demo"})).toBeFocused();
+ await page.keyboard.press("Escape");
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+ await expect(opener).toBeFocused();
+});
+
+test("SLB16 demo scroll lock restores original inline overflow",async({page})=>{
+ await page.goto("/");
+ const original=await page.evaluate(()=>document.body.style.overflow);
+ await page.locator("#home").getByRole("button",{name:/Watch Demo/}).click();
+ await expect(page.getByRole("dialog")).toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>document.body.style.overflow)).toBe("hidden");
+ await page.getByRole("button",{name:"Close demo"}).click();
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+ await expect.poll(()=>page.evaluate(()=>document.body.style.overflow)).toBe(original);
+});
+
+test("SLB16 menu focus enters first link and returns to launcher on Escape",async({page})=>{
+ await page.setViewportSize({width:390,height:844});await page.goto("/");
+ await page.getByRole("button",{name:"Open menu"}).click();
+ const menu=page.getByRole("navigation",{name:"CactusByte mobile menu"});
+ await expect(menu.getByRole("link",{name:"Home"})).toBeFocused();
+ await page.keyboard.press("Escape");
+ await expect(menu).toHaveCount(0);
+ await expect(page.getByRole("button",{name:"Open menu"})).toBeFocused();
+});
+
+test("SLB16 mobile search Escape clears query and refocuses toggle",async({page})=>{
+ await page.setViewportSize({width:390,height:844});await page.goto("/");
+ await page.getByRole("button",{name:"Search apps",exact:true}).click();
+ await page.getByRole("textbox",{name:"Search apps"}).last().fill("ShadowNex");
+ await expect(page.locator('#all-apps article[data-app="shadownex-prime"]')).toHaveCount(1);
+ await page.keyboard.press("Escape");
+ await expect(page.locator("#featured")).toBeVisible();
+ await expect(page.getByRole("button",{name:"Search apps",exact:true})).toBeFocused();
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect,useMemo,useState,type CSSProperties,type MouseEvent} from "react";
+import {useEffect,useMemo,useRef,useState,type CSSProperties,type MouseEvent} from "react";
 import {studioApps,type StudioApp} from "../../data/apps";
 import {brandAssets,verifiedBrandAsset} from "../../data/brand-assets";
 import styles from "./storefront.module.css";
@@ -98,25 +98,46 @@ export default function StorefrontPage(){
   const[mobileMenu,setMobileMenu]=useState(false);
   const[showAll,setShowAll]=useState(false);
   const[showCategoryFilters,setShowCategoryFilters]=useState(false);
+  const modalOrigin=useRef<HTMLElement|null>(null);
 
   useEffect(()=>{
     if(!mobileMenu)return;
-    const dismiss=(event:KeyboardEvent)=>{if(event.key==="Escape")setMobileMenu(false)};
+    document.querySelector<HTMLAnchorElement>("#cactusbyte-mobile-menu a")?.focus();
+    const dismiss=(event:KeyboardEvent)=>{
+      if(event.key!=="Escape"||document.querySelector('[role="dialog"]'))return;
+      event.preventDefault();setMobileMenu(false);
+      document.querySelector<HTMLButtonElement>('[aria-controls="cactusbyte-mobile-menu"]')?.focus();
+    };
     document.addEventListener("keydown",dismiss);
     return ()=>document.removeEventListener("keydown",dismiss);
   },[mobileMenu]);
 
   useEffect(()=>{
+    if(!mobileSearch)return;
+    const dismiss=(event:KeyboardEvent)=>{
+      if(event.key!=="Escape"||document.querySelector('[role="dialog"]'))return;
+      event.preventDefault();setQ("");setMobileSearch(false);
+      document.querySelector<HTMLButtonElement>('[aria-label="Close search"]')?.focus();
+    };
+    document.addEventListener("keydown",dismiss);
+    return ()=>document.removeEventListener("keydown",dismiss);
+  },[mobileSearch]);
+
+  useEffect(()=>{
     if(!selected&&!demo)return;
-    const previousFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    // Preserve the card/hero opener across Details -> Demo transitions.
+    if(!modalOrigin.current?.isConnected){
+      const active=document.activeElement;
+      if(active instanceof HTMLElement&&!active.closest('[role="dialog"]'))modalOrigin.current=active;
+    }
+    const previousOverflow=document.body.style.overflow;
+    document.body.style.overflow="hidden";
     const dialog=document.querySelector<HTMLElement>('[role="dialog"]');
     const focusable=()=>Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],video[controls]')??[]);
     focusable()[0]?.focus();
     const dismiss=(event:KeyboardEvent)=>{
       if(event.key==="Escape"){
-        event.preventDefault();
-        setSelected(null);setDemo(null);
-        return;
+        event.preventDefault();setSelected(null);setDemo(null);return;
       }
       if(event.key!=="Tab"||!dialog)return;
       const controls=focusable();
@@ -131,7 +152,12 @@ export default function StorefrontPage(){
     document.addEventListener("keydown",dismiss);
     return ()=>{
       document.removeEventListener("keydown",dismiss);
-      if(previousFocus?.isConnected)previousFocus.focus();
+      document.body.style.overflow=previousOverflow;
+      // A replacement dialog is mounted during Details -> Demo handoff.
+      if(!document.querySelector('[role="dialog"]')){
+        const origin=modalOrigin.current;modalOrigin.current=null;
+        if(origin?.isConnected)origin.focus();
+      }
     };
   },[selected,demo]);
 
