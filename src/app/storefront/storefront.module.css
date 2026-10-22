@@ -103,7 +103,7 @@
 
 .bottomNav{position:fixed;z-index:40;left:250px;right:22px;bottom:16px;min-height:62px;padding:8px 12px;border:1px solid rgba(255,255,255,.08);border-radius:22px;background:rgba(7,10,15,.88);backdrop-filter:blur(24px);display:grid;grid-template-columns:repeat(6,1fr);box-shadow:0 20px 60px rgba(0,0,0,.45)}.bottomNav a{min-height:44px;border-radius:14px;color:#778491;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:.67rem}.bottomNav a span{font-size:1rem}.bottomNav .navOn{color:#dffff6;background:rgba(33,242,182,.1);border:1px solid rgba(33,242,182,.32);box-shadow:0 0 22px rgba(33,242,182,.14)}
 
-.backdrop{position:fixed;z-index:80;inset:0;background:rgba(0,0,0,.76);backdrop-filter:blur(16px);display:grid;place-items:center;padding:22px}.detail,.demoModal{position:relative;width:min(560px,100%);border:1px solid rgba(255,255,255,.1);border-radius:26px;background:linear-gradient(145deg,#0d121a,#070a0f);padding:24px;box-shadow:0 30px 100px rgba(0,0,0,.65);overflow:hidden}.detailGlow{position:absolute;inset:-20% -10% auto auto;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 24%,transparent),transparent 65%)}.close{position:absolute;z-index:4;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.09);background:#0c1118;color:#fff;font-size:1.3rem}.detailHero{position:relative;z-index:2;display:flex;gap:16px;align-items:center}.detailHero span{font-size:.65rem;color:var(--neon2);letter-spacing:.14em}.detailHero h2{margin:3px 0 4px;font-size:1.6rem}.detailHero p,.detailDescription{color:#98a5b1}.detailDescription{position:relative;z-index:2;line-height:1.55}.detailMeta{display:flex;gap:8px;flex-wrap:wrap}.detailMeta span{padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.05);font-size:.65rem;color:#b0bbc4}.detailActions{display:flex;gap:10px;margin-top:18px}.brandWarning{color:#ffcf7a;font-size:.72rem}.demoTitle{display:flex;align-items:center;gap:12px;margin-bottom:14px}.demoTitle h2{margin:2px 0}.demoTitle small{color:var(--neon2);font-size:.6rem;letter-spacing:.15em}.demoModal video{width:100%;border-radius:18px;background:#000}.mobileSearch{display:none}
+.backdrop{position:fixed;z-index:80;inset:0;background:rgba(0,0,0,.76);backdrop-filter:blur(16px);display:grid;place-items:center;padding:22px}.detail,.demoModal{position:relative;width:min(560px,100%);border:1px solid rgba(255,255,255,.1);border-radius:26px;background:linear-gradient(145deg,#0d121a,#070a0f);padding:24px;box-shadow:0 30px 100px rgba(0,0,0,.65);overflow:hidden}.detailGlow{position:absolute;inset:-20% -10% auto auto;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 24%,transparent),transparent 65%)}.close{position:absolute;z-index:4;top:12px;right:12px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.09);background:#0c1118;color:#fff;font-size:1.3rem}.detailHero{position:relative;z-index:2;display:flex;gap:16px;align-items:center}.detailHero span{font-size:.65rem;color:var(--neon2);letter-spacing:.14em}.detailHero h2{margin:3px 0 4px;font-size:1.6rem}.detailHero p,.detailDescription{color:#98a5b1}.detailDescription{position:relative;z-index:2;line-height:1.55}.detailMeta{display:flex;gap:8px;flex-wrap:wrap}.detailMeta span{padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.05);font-size:.65rem;color:#b0bbc4}.detailActions{display:flex;gap:10px;margin-top:18px}.brandWarning{color:#ffcf7a;font-size:.72rem}.demoTitle{display:flex;align-items:center;gap:12px;margin-bottom:14px}.demoTitle h2{margin:2px 0}.demoTitle small{color:var(--neon2);font-size:.6rem;letter-spacing:.15em}.demoModal video{width:100%;border-radius:18px;background:#000}.mobileSearch{display:none}
 
 @media(max-width:1220px){
   .brandRail{width:174px}.shell{width:calc(100% - 214px);margin-left:194px}.bottomNav{left:194px}
@@ -151,10 +151,14 @@
 .hero{min-height:330px;border-radius:23px;box-shadow:0 16px 62px rgba(0,0,0,.45),0 0 30px rgba(125,61,246,.22)}
 .hero:before{display:none}
 .heroMedia{opacity:.1;filter:blur(10px) saturate(1.4)}
-.heroPortrait{position:absolute;inset:0;z-index:1;
- background-image:radial-gradient(circle at 70% 28%,rgba(223,34,225,.35),transparent 38%),linear-gradient(90deg,rgba(4,5,15,.8) 1%,transparent 55%),url("https://images.unsplash.com/photo-1776000505704-264075621e97?auto=format&fit=crop&w=1200&q=80"),url("/posters/acelynn-pro.svg");
- background-size:cover,cover,cover,cover;background-position:center,center,70% 47%,center;background-repeat:no-repeat;
- filter:saturate(1.55) contrast(1.18)}
+.heroPortrait{position:absolute;inset:0;z-index:1;overflow:hidden;
+ background:radial-gradient(circle at 80% 36%,#ff3ed26e,transparent 28%),radial-gradient(circle at 72% 45%,#18ddff62,transparent 39%),radial-gradient(circle at 62% 55%,#6c20ff9c,transparent 55%),linear-gradient(112deg,#040914 12%,#100338 63%,#0a0320 100%)}
+.heroPortrait:before{content:"";position:absolute;inset:-8% 0 0 45%;background:url("/posters/acelynn-pro.svg") center 45%/cover no-repeat;opacity:.9;filter:brightness(1.7) saturate(2.25);mix-blend-mode:screen;transform:scale(1.02)}
+.heroPortrait:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(105deg,transparent 0 34px,#ff58ee16 35px,transparent 37px 68px),radial-gradient(circle at 78% 28%,transparent 13%,#40eaff40 13.5%,transparent 15%,transparent 26%,#ce42ff30 26.5%,transparent 28%);mix-blend-mode:screen}
+.heroWaveform{position:absolute;z-index:2;left:54%;right:3%;top:38%;height:30%;display:flex;align-items:center;justify-content:space-around;gap:5px;opacity:.94;transform:skewY(-7deg);filter:drop-shadow(0 0 14px #12ddff)}
+.heroWaveform i{height:42%;flex:1;max-width:12px;border-radius:30px;background:linear-gradient(#fb2be9,#12f5ff);box-shadow:0 0 16px #b643ff9a}
+.heroWaveform i:nth-child(3n){height:82%}.heroWaveform i:nth-child(4n){height:25%}.heroWaveform i:nth-child(5n){height:98%}
+.heroVinyl{position:absolute;right:7%;top:3%;width:31%;aspect-ratio:1;border:9px solid #41eaff5c;border-radius:50%;box-shadow:0 0 0 13px #4519ff33,0 0 0 22px #fb52e525,0 0 45px #b723ffbf,inset 0 0 40px #05ddff5e;transform:rotate(18deg)}
 .heroOverlay{z-index:2;background:linear-gradient(90deg,rgba(3,5,14,.97) 0%,rgba(3,5,14,.91) 28%,rgba(4,6,22,.6) 54%,rgba(9,3,29,.07) 83%),linear-gradient(0deg,rgba(3,4,10,.8),transparent 35%)}
 .heroNoise{z-index:2;pointer-events:none}.heroCopy{z-index:3;max-width:56%;padding:25px 30px 22px}
 .heroIdentity{margin-top:12px;gap:13px}.heroIdentity h1{font-size:clamp(2rem,3.6vw,3.7rem)}
@@ -167,29 +171,15 @@
 .moreGrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
 .recentGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
 .recommendGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-.posterCard,.posterCardCompact{--cardH:210px;border-radius:14px;box-shadow:0 8px 22px #0008}
+.posterCard,.posterCardCompact{--cardH:210px;border-radius:12px;box-shadow:0 10px 28px #000a,0 0 14px color-mix(in srgb,var(--accent) 22%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 25%,#060c19),#030815 74%)}
 .posterCardCompact{--cardH:182px}
 .posterCard{--cardImage:none}
 .posterCardCompact{--cardImage:none}
-.posterCard[data-app="acelynn-pro"],.posterCardCompact[data-app="acelynn-pro"]{--cardImage:url("https://images.unsplash.com/photo-1776000505704-264075621e97?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="noproblem"],.posterCardCompact[data-app="noproblem"]{--cardImage:url("https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="fantasy-matrix"],.posterCardCompact[data-app="fantasy-matrix"]{--cardImage:url("https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="first-bearing"],.posterCardCompact[data-app="first-bearing"]{--cardImage:url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="rivetex"],.posterCardCompact[data-app="rivetex"]{--cardImage:url("https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="pocketstomp"],.posterCardCompact[data-app="pocketstomp"]{--cardImage:url("https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="machzero"],.posterCardCompact[data-app="machzero"]{--cardImage:url("https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="rapid-takeoff"],.posterCardCompact[data-app="rapid-takeoff"]{--cardImage:url("https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="ghostlane"],.posterCardCompact[data-app="ghostlane"]{--cardImage:url("https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="scouttrace"],.posterCardCompact[data-app="scouttrace"]{--cardImage:url("https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="shadownex-prime"],.posterCardCompact[data-app="shadownex-prime"]{--cardImage:url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="terraflow-matrix"],.posterCardCompact[data-app="terraflow-matrix"]{--cardImage:url("https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="orbitgather"],.posterCardCompact[data-app="orbitgather"]{--cardImage:url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=750&q=80")}
-.posterCard[data-app="hustle-first"],.posterCardCompact[data-app="hustle-first"]{--cardImage:url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=750&q=80")}
-.posterArt{background-image:var(--localCardImage);background-size:cover;background-position:center;background-repeat:no-repeat;filter:saturate(1.15) contrast(1.08)}
-.posterArt img{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;object-position:center;filter:saturate(1.18) contrast(1.1)}
+.posterArt{z-index:1;inset:0;background-image:var(--localCardImage);background-size:cover;background-position:center;background-repeat:no-repeat;opacity:1;filter:brightness(1.22) saturate(1.7) contrast(1.15)}
+.posterArt img{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;object-position:center;filter:brightness(1.35) saturate(1.7) contrast(1.15)}
 .posterArt:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 40% 15%,transparent,rgba(4,7,15,.22) 70%)}
-.posterShade{background:linear-gradient(0deg,rgba(2,4,10,.98) 0%,rgba(2,4,10,.8) 24%,rgba(2,4,10,.17) 57%,transparent 85%)}
-.posterTop{left:9px;right:9px;top:9px}.posterTop>span{font-size:.5rem}
+.posterShade{z-index:2;pointer-events:none;background:linear-gradient(0deg,rgba(1,4,12,.97) 0%,rgba(1,4,12,.78) 18%,rgba(1,4,12,.22) 39%,transparent 65%)}
+.posterTop{left:9px;right:9px;top:9px}.posterTop>span{font-size:.5rem;background:#020b14c9;color:#e8fffb}
 .logo,.wordmark{width:38px;height:38px;border-radius:12px}.logo img{padding:3px}
 .posterBody{left:10px;right:10px;bottom:9px}.posterBody h3{font-size:.85rem;line-height:1.13}.posterBody p{font-size:.62rem;color:#d0dbe3}
 .posterCta{display:block;margin-top:9px;border:1px solid rgba(39,243,238,.75);border-radius:10px;line-height:27px;text-align:center;background:rgba(4,14,24,.58);color:#d9fffc;font-size:.7rem;font-weight:750;pointer-events:none}
@@ -198,7 +188,7 @@
 .posterCard:hover .posterDetails,.posterCardCompact:hover .posterDetails,.posterDetails:focus-visible{opacity:1}
 .posterCard:focus-within,.posterCardCompact:focus-within{outline:2px solid #17fbe4;outline-offset:2px}
 .categoryTiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
-.categoryTile{position:relative;isolation:isolate;min-width:0;min-height:124px;padding:12px 8px;border:1px solid rgba(67,245,223,.2);border-radius:15px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:4px;color:#f8ffff;background:radial-gradient(circle at 50% 25%,rgba(209,38,233,.56),transparent 70%),linear-gradient(140deg,#231048,#070b17);box-shadow:inset 0 1px #ffffff16}
+.categoryTile{position:relative;isolation:isolate;min-width:0;min-height:110px;padding:12px 8px;border:1px solid rgba(67,245,223,.2);border-radius:15px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:4px;color:#f8ffff;background:radial-gradient(circle at 50% 25%,rgba(209,38,233,.56),transparent 70%),linear-gradient(140deg,#231048,#070b17);box-shadow:inset 0 1px #ffffff16}
 .categoryTile:nth-child(2){background:radial-gradient(circle at 50% 25%,#1689f168,transparent 75%),linear-gradient(#102e52,#070e1b)}
 .categoryTile:nth-child(3){background:radial-gradient(circle at 50% 25%,#0ddb7568,transparent 75%),linear-gradient(#09332a,#080e14)}
 .categoryTile:nth-child(4){background:radial-gradient(circle at 50% 25%,#ff982768,transparent 75%),linear-gradient(#44230a,#0e0b11)}
@@ -211,7 +201,7 @@
 .bottomNav a{flex-direction:column;gap:1px;min-width:0;font-size:.7rem}
 .bottomNav a span{font-size:1.15rem}
 @media(min-width:1221px){.featuredGrid .posterCard{--cardH:230px}}
-@media(max-width:1220px) and (min-width:981px){.featuredGrid{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}.featuredGrid .posterCard{flex:0 0 calc((100% - 32px)/5);scroll-snap-align:start}.moreGrid{grid-template-columns:repeat(6,minmax(0,1fr))}.recommendGrid{grid-template-columns:repeat(5,minmax(0,1fr))}.bottomNav{left:194px}.posterBody h3{font-size:.75rem}.posterBody p{font-size:.56rem}}
+@media(max-width:1220px) and (min-width:981px){.featuredGrid{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}.featuredGrid .posterCard{flex:0 0 calc((100% - 40px)/6);scroll-snap-align:start}.moreGrid{grid-template-columns:repeat(6,minmax(0,1fr))}.recommendGrid{grid-template-columns:repeat(5,minmax(0,1fr))}.bottomNav{left:194px}.posterBody h3{font-size:.75rem}.posterBody p{font-size:.56rem}}
 @media(max-width:980px) and (min-width:760px){
  .featuredGrid,.moreGrid,.recentGrid,.recommendGrid{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}
  .featuredGrid .posterCard{flex:0 0 calc((100% - 27px)/4);scroll-snap-align:start}
@@ -287,3 +277,414 @@
 .posterCard[data-app="orbitgather"],.posterCardCompact[data-app="orbitgather"]{--localCardImage:url("/posters/orbitgather.svg")}
 .posterCard[data-app="ghostlane"],.posterCardCompact[data-app="ghostlane"]{--localCardImage:url("/posters/ghostlane.svg")}
 .posterCard[data-app="hustle-first"],.posterCardCompact[data-app="hustle-first"]{--localCardImage:url("/posters/hustle-first.svg")}
+
+
+/* SLB11: real Neon App Store Showcase structure, using only existing approved logos and local art. */
+.brandRail{padding:18px 13px;border-color:#16fbef4d;background:linear-gradient(#041023ec,#040718fb),radial-gradient(circle at 50% 86%,#1512a2,transparent 63%);box-shadow:0 0 30px #00e6ff1a}
+.brandLockup{gap:7px;align-items:center}
+.brandLockup img{width:44px;height:44px;flex:none}
+.brandLockup b{font-size:1.08rem;letter-spacing:-.03em;color:#faffff;text-shadow:0 0 16px #00eeff75}
+.brandLockup small{font-size:.55rem;letter-spacing:.38em;color:#bafef9}
+.railStatement{margin:23px 3px 14px;gap:5px;font-size:.61rem;letter-spacing:.12em;color:#8cefee}
+.railNav{gap:2px}.railNav a{min-height:40px;padding:0 10px;border-radius:10px;font-size:.77rem;color:#d1e1ec}
+.railArt{height:40%;bottom:5px;background:radial-gradient(circle at 50% 78%,#9a2efb70,transparent 62%),linear-gradient(0deg,#04051a,#0611299c)}
+.topbar{min-height:66px;gap:12px;padding:5px 0 12px}
+.mobileBrand{gap:8px}.mobileBrand img{width:50px;height:50px;border-radius:13px;filter:drop-shadow(0 0 10px #07edfa9a)}
+.mobileBrand b{font-size:1.36rem;letter-spacing:-.055em;color:#f8ffff;text-shadow:0 0 15px #1ffffd44}
+.mobileBrand small{letter-spacing:.17em;font-size:.5rem;color:#b2c9d9}
+.search{border-color:#00f7ff7a;background:linear-gradient(120deg,#041321e8,#051326b8);border-radius:11px;min-height:42px}
+.topActions a{border-color:#2fffff2d;border-radius:50%;background:#060b1b}
+.hero{min-height:263px;border-color:#a938e38c;border-radius:15px;box-shadow:0 0 24px #a722dd28,0 15px 35px #0009}
+.heroCopy{padding:23px 25px 18px;max-width:58%}
+.heroOverlay{z-index:2;background:linear-gradient(90deg,#040717 0%,#05091be8 29%,#0a092eac 48%,transparent 70%),linear-gradient(0deg,#05031c99,transparent 44%)}
+.heroIdentity h1{color:#fff;text-shadow:0 0 22px #8b54ff8c}
+.heroIdentity h1::first-letter{color:#41fffa}
+.heroDescription{max-width:420px;color:#d1e7ec}
+.heroActions button{min-height:42px;border-radius:12px}
+.heroSlogan{color:#e4efff;font-family:Georgia,serif;font-style:italic;letter-spacing:.06em;text-shadow:0 0 12px #9f40f4}
+.heroSlogan b{font-size:1.15rem;color:#d1fff9}
+.categoryStrip{display:none}
+.section{margin-top:15px}.sectionHead h2{font-size:1.2rem}.sectionHead p{font-size:.69rem}
+.posterCard{--cardH:184px}.posterCardCompact{--cardH:134px}
+.posterCard:hover,.posterCardCompact:hover{transform:translateY(-3px)}
+.posterBody h3{font-size:.8rem;text-shadow:0 2px 6px #000}
+.posterBody p{font-size:.57rem}
+.posterCta{margin-top:6px;line-height:25px;font-size:.67rem;background:#030a15c7}
+.posterArt:after{background:linear-gradient(180deg,transparent 0%,#01041409 48%,#01041485 87%)}
+.featuredGrid{gap:6px}.moreGrid,.recommendGrid{gap:8px}
+.categoryTiles{gap:7px}.categoryTile{border-radius:11px;box-shadow:0 0 14px color-mix(in srgb,var(--accent, #2bdefe) 12%,transparent)}
+.heroTools,.heroAbout{display:none}
+@media(max-width:1220px) and (min-width:981px){
+ .brandRail{width:168px}.shell{margin-left:190px;width:calc(100% - 206px)}
+ .hero{min-height:253px}.heroCopy{max-width:61%}
+ .featuredGrid .posterCard{--cardH:177px}
+}
+@media(max-width:980px) and (min-width:760px){
+ .brandLockup b{font-size:.8rem}.brandLockup img{width:37px;height:37px}
+ .hero{min-height:280px}.heroCopy{max-width:67%}
+ .featuredGrid .posterCard{--cardH:200px}
+}
+@media(max-width:759px){
+ .page{background:radial-gradient(circle at 50% 5%,#082136,transparent 60%),#020911}
+ .shell{padding:0 11px 22px}
+ .topbar{min-height:66px;padding:5px 0 9px;justify-items:stretch;grid-template-columns:minmax(0,1fr) auto}
+ .mobileBrand{justify-content:flex-start;gap:9px}
+ .mobileBrand img{width:39px;height:39px}
+ .mobileBrand b{font-size:1.19rem}
+ .mobileBrand small{font-size:.42rem;letter-spacing:.09em}
+ .topActions a{width:40px;height:40px}
+ .mobileSearchToggle{width:40px;height:40px;border-radius:50%;background:#051726;border-color:#27f1f668}
+ .hero{min-height:315px;border-radius:15px}
+ .heroPortrait:before{inset:0 -30% 12% 25%;opacity:.88;background-position:center 38%}
+ .heroWaveform{left:41%;right:2%;top:17%;height:28%;opacity:.73}
+ .heroVinyl{right:10%;top:2%;width:27%;border-width:6px}
+ .heroCopy{max-width:100%;min-height:315px;padding:14px 13px 13px;justify-content:end}
+ .heroOverlay{background:linear-gradient(0deg,#020716f7 0%,#03091deb 37%,#040b1e66 76%,#02071644 100%)}
+ .heroIdentity{margin-top:9px}
+ .heroIdentity h1{font-size:1.7rem}
+ .heroDescription{font-size:.69rem;line-height:1.4}
+ .heroSlogan{display:none}
+ .heroTools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:9px 0 7px}
+ .heroTools>div{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;min-width:0;min-height:77px;text-align:center;padding:7px 2px;border:1px solid #3cd9fa5f;border-radius:11px;background:linear-gradient(155deg,#1d0f3cd6,#080c23);box-shadow:inset 0 0 14px #5437ff2d}
+ .heroTools>div:nth-child(2){background:linear-gradient(155deg,#082d54,#030d1a)}
+ .heroTools>div:nth-child(3){background:linear-gradient(155deg,#06392f,#030e1b)}
+ .heroTools>div:nth-child(4){background:linear-gradient(155deg,#371366,#050b1b)}
+ .heroTools span{font-size:1.4rem;color:#5afcf7;text-shadow:0 0 12px #12eaff}
+ .heroTools b{font-size:.62rem;color:#f9ffff}
+ .heroTools small{font-size:.49rem;color:#9db6c5}
+ .heroAbout{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:13px 0 3px}
+ .heroAbout h2{margin:0 0 5px;font-size:.95rem;color:#e9faff}
+ .heroAbout p{margin:0;font-size:.67rem;line-height:1.45;color:#c6d9e5}
+ .heroAbout button{border:0;min-width:82px;padding:5px;color:#53ffef;font-size:.58rem;background:transparent}
+ .section{margin-top:16px}
+ .sectionHead h2{font-size:1.05rem}
+ .featuredGrid .posterCard{--cardH:176px}
+ .posterCardCompact{--cardH:154px}
+ .posterArt{background-position:center;filter:brightness(1.35) saturate(1.9)}
+ .posterArt img{filter:brightness(1.5) saturate(1.7)}
+ .logo,.wordmark{width:34px;height:34px}
+ .posterBody{bottom:8px}
+ .posterBody h3{font-size:.73rem}
+ .posterBody p{font-size:.54rem}
+ .posterCta{font-size:.58rem;line-height:23px}
+ .categoryTile{flex:0 0 97px;min-height:100px}
+ .categoryTile>span{font-size:1.7rem}.categoryTile>b{font-size:.69rem}
+ .allGrid{gap:7px}
+ .footer{margin-top:20px}
+ .bottomNav{min-height:62px}
+}
+@media(max-width:390px){
+ .heroIdentity h1{font-size:1.49rem}
+ .heroTools b{font-size:.55rem}
+ .heroTools small{font-size:.45rem}
+}
+
+
+/* SLB11 category discovery: hide secondary filters by default without removing them. */
+.categoryStrip[hidden]{display:none!important}
+.categoryStrip:not([hidden]){display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:9px 2px;max-width:100%;scrollbar-width:none}
+.categoryStrip:not([hidden]) button{flex:0 0 auto;min-height:44px}
+.categoryMoreToggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:7px;padding:0 12px;min-height:44px;border:1px solid #39dfed5e;border-radius:11px;background:#071c2a;color:#82f8ff;font-size:.72rem}
+.categoryMoreToggle:focus-visible,.categoryStrip button:focus-visible{outline:2px solid #53ffeb;outline-offset:3px}
+
+
+/* SLB11 minimum usable tap targets, including keyboard and touch-screen access. */
+.posterDetails{width:44px;height:44px;min-width:44px;min-height:44px;opacity:0;pointer-events:none;touch-action:manipulation}
+.posterCard:hover .posterDetails,.posterCardCompact:hover .posterDetails,.posterDetails:focus-visible{opacity:1;pointer-events:auto}
+@media(hover:none),(pointer:coarse){
+ .posterDetails{opacity:1;pointer-events:auto;background:#030c19c9}
+}
+.heroAbout button{min-height:44px;min-width:94px;font-size:.68rem;font-weight:700;cursor:pointer}
+@media(max-width:759px){
+ .heroTools b{font-size:.68rem}
+ .heroTools small{font-size:.58rem}
+ .posterBody h3{font-size:.78rem}
+ .posterBody p{font-size:.59rem}
+}
+@media(max-width:390px){
+ .heroTools b{font-size:.62rem}
+ .heroTools small{font-size:.55rem}
+}
+
+/* Visibility is viewport based too; browser QA with phone dimensions does not necessarily emulate touch media. */
+@media(max-width:759px){.posterDetails{opacity:1;pointer-events:auto;background:#030c19cf}}
+
+/* The approved showcase uses official logo badges, not redundant category chips.
+   Always expose a visible details action in every input mode, including keyboard,
+   mouse, phone touch, and the non-touch viewport emulators used for QA. */
+.posterTop>span{display:none}
+.posterDetails{opacity:1;pointer-events:auto;top:6px;right:6px;bottom:auto;background:#040e1cd9;border-color:#58fff47d}
+.posterDetails:focus-visible{outline:2px solid #5afbf3;outline-offset:2px}
+/* SLB11 Android/iOS target-size overrides; no change to destinations or behavior. */
+.close{width:44px;height:44px;min-width:44px;min-height:44px}
+.sectionHead a{min-height:44px}
+@media(max-width:759px){
+ .topActions a,.mobileSearchToggle{width:44px;height:44px;min-width:44px;min-height:44px}
+ .heroActions button{min-height:44px}
+ .heroAbout button{min-height:44px}
+}
+
+/* SLB11 final storefront density: avoid oversized empty-looking mobile portfolio tiles. */
+@media(max-width:1220px) and (min-width:760px){
+ .brandLockup{flex-direction:column;justify-content:center;align-items:center;gap:5px;text-align:center}
+ .brandLockup span{display:grid}
+ .brandLockup b{font-size:.82rem;line-height:1.1;letter-spacing:-.045em}
+ .brandLockup small{font-size:.5rem}
+}
+@media(max-width:980px) and (min-width:760px){
+ .brandLockup span{display:grid}
+ .brandLockup b{font-size:.73rem}
+}
+@media(max-width:759px){
+ /* Updates remain available in the bottom dock; the header has room for the actual CactusByte identity. */
+ .topActions a:first-child{display:none}
+ .allGrid{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;grid-template-columns:none;padding:2px 2px 8px}
+ .allGrid::-webkit-scrollbar{display:none}
+ .allGrid .posterCardCompact{flex:0 0 calc((100% - 16px)/3);min-width:0;--cardH:154px;scroll-snap-align:start}
+}
+
+
+/* SLB11 navigation and three-up phone shelf: protect headings and readable card copy. */
+.section[id],.hero[id]{scroll-margin-top:88px}
+@media(max-width:759px){
+ .section[id],.hero[id]{scroll-margin-top:80px}
+ .posterBody{left:9px;right:9px;bottom:8px}
+ .posterBody h3{font-size:clamp(.7rem,2.7vw,.8rem);line-height:1.16;overflow-wrap:anywhere}
+ .posterBody p{font-size:.6rem;line-height:1.24;overflow-wrap:break-word}
+ .posterCta{display:grid;place-items:center;min-height:27px;line-height:1.2;font-size:.66rem;white-space:nowrap}
+}
+
+
+/* SLB11 selected category feedback: match the filter state shown in the results. */
+.categoryTile[aria-pressed="true"]{border-color:#51ffed;box-shadow:0 0 0 1px #51ffed96 inset,0 0 22px #2ef6e938}
+.categoryTile:focus-visible{outline:2px solid #60fff0;outline-offset:2px}
+.categoryStrip button[aria-pressed="true"]{color:#eafff9;border-color:#4fffe7;background:#14e5d324}
+
+/* SLB11 rendered-card fidelity correction: preserve full touch target, reduce visual obstruction. */
+.posterDetails{
+  width:44px;height:44px;min-width:44px;min-height:44px;
+  top:4px;right:4px;bottom:auto;
+  display:grid;place-items:center;
+  padding:0;border:0;background:transparent!important;
+  font-size:0;line-height:1;color:transparent;
+  opacity:1;pointer-events:auto;
+  filter:none
+}
+.posterDetails::before{
+  content:"›";display:grid;place-items:center;
+  width:28px;height:28px;border:1px solid rgba(104,253,242,.62);
+  border-radius:50%;background:rgba(2,10,24,.84);
+  color:#d8fffb;font-size:1.1rem;line-height:1;
+  box-shadow:0 0 12px rgba(15,245,239,.16)
+}
+.posterDetails:hover::before,.posterDetails:focus-visible::before{background:rgba(13,78,91,.96);border-color:#56ffee}
+.posterBody h3{text-shadow:0 2px 5px #000,0 0 12px #000c}
+.posterBody p{text-shadow:0 1px 4px #000,0 0 8px #000e}
+.posterShade{background:linear-gradient(0deg,rgba(1,4,10,.98) 0%,rgba(1,4,10,.9) 16%,rgba(1,4,10,.33) 40%,transparent 67%)}
+
+
+/* SLB11: original CactusByte logo2.png fails PNG CRC. Show the verified wordmark,
+   never a browser-broken image or a fabricated replacement brand mark. */
+.brandLockup img[hidden],.mobileBrand img[hidden]{display:none!important}
+.profileGlyph{display:grid;place-items:center;width:24px;height:24px;font-size:1.7rem;line-height:1;color:#8dfff0}
+.mobileMenuToggle,.mobileMenuPanel{display:none}
+@media(max-width:759px){
+ .topbar{grid-template-columns:44px minmax(0,1fr) auto;column-gap:7px}
+ .mobileMenuToggle{display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;
+   border:1px solid rgba(72,251,241,.38);border-radius:12px;background:rgba(4,19,34,.9);
+   color:#77fff1;font-size:1.5rem;line-height:1}
+ .mobileMenuToggle[aria-expanded="true"]{background:#05443e;border-color:#59ffe3}
+ .mobileMenuToggle:focus-visible,.mobileMenuPanel a:focus-visible{outline:2px solid #78fff2;outline-offset:2px}
+ .mobileBrand{justify-content:center;min-width:0;text-align:center;gap:4px}
+ .mobileBrand img{width:24px;height:28px;flex:0 0 24px}
+ .mobileBrand span{min-width:0}
+ .mobileBrand b{font-size:clamp(.98rem,4.4vw,1.15rem);white-space:nowrap;letter-spacing:-.06em}
+ .mobileBrand small{font-size:.42rem;letter-spacing:.06em;white-space:nowrap}
+ .topActions{gap:5px}
+ .mobileMenuPanel{display:grid;position:absolute;z-index:50;top:calc(100% - 3px);left:0;right:0;
+   grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:12px;
+   border:1px solid #37e5d18a;border-radius:0 0 16px 16px;
+   background:linear-gradient(160deg,#05182bf7,#090b24fc);box-shadow:0 16px 45px #000e,0 0 20px #17dcc126}
+ .mobileMenuPanel a{display:flex;align-items:center;min-height:44px;padding:0 13px;
+   border:1px solid #38c6d64b;border-radius:10px;background:#061723;
+   text-decoration:none;color:#e7fffc;font-size:.82rem;font-weight:700}
+ .mobileMenuPanel a:hover,.mobileMenuPanel a:active{background:#085a5b;color:white}
+}
+
+
+/* SLB11 verified text-first brand while logo2 PNG is corrupt.
+   Do NOT replace the owner-approved artwork with a different cactus icon.
+   Hide only the broken image; retain the approved Cactus🌵Byte name. */
+.brandLockup img,.mobileBrand img{display:none!important}
+.brandLockup b,.mobileBrand b{background:linear-gradient(90deg,#f9ffff 0%,#ecffff 42%,#58fdf0 71%,#06cfea 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.mobileMenuToggle span{font-size:1.5rem;line-height:1}
+
+
+/* Keep the approved wordmark clear of action buttons on extra-narrow cover displays. */
+@media(max-width:340px){.mobileBrand b{font-size:.93rem;letter-spacing:-.07em}}
+
+
+/* SLB11 rendered showcase-card QA: readable 3-up phone cards and 6-up Fold shelf.
+   Only scale the card content: preserve all 14 existing poster assets and real brand badges. */
+@media(max-width:759px){
+ .featuredGrid .posterCard{--cardH:217px;height:217px}
+ .featuredGrid .posterBody,.allGrid .posterBody,.moreGrid .posterBody,.recommendGrid .posterBody{left:9px;right:9px;bottom:8px}
+ .posterBody h3{font-size:clamp(.7rem,2.8vw,.82rem);line-height:1.13;letter-spacing:-.015em;
+   min-height:2.25em;max-height:2.25em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+   text-shadow:0 2px 6px #000,0 0 12px #000e}
+ .posterBody p{font-size:.61rem;line-height:1.15;min-height:1.2em;max-height:1.2em;display:block;
+   overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#d2e8ef;text-shadow:0 0 8px #000}
+ .posterCta{display:grid;place-items:center;height:30px;min-height:30px;margin-top:6px;
+   font-size:.68rem;line-height:1;font-weight:800;border-radius:9px}
+ .posterTop{top:7px;left:7px;right:7px}
+ .posterTop .logo,.posterTop .wordmark{width:33px;height:33px;min-width:33px}
+ .posterArt img{object-position:center 35%}
+}
+@media(max-width:1220px) and (min-width:760px){
+ .featuredGrid .posterCard{--cardH:193px;height:193px}
+ .featuredGrid .posterBody{left:9px;right:9px;bottom:8px}
+ .featuredGrid .posterBody h3{font-size:clamp(.71rem,1.2vw,.9rem);line-height:1.13;
+   min-height:2.25em;max-height:2.25em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+ .featuredGrid .posterBody p{font-size:.62rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+ .featuredGrid .posterCta{margin-top:6px;min-height:26px;line-height:26px;font-size:.68rem}
+}
+
+
+/* SLB11 audio-stage fidelity: prominence for the existing approved vector headphones;
+   absolutely no stock portraits, generated art, or substituted official logos. */
+.hero{isolation:isolate;background:radial-gradient(ellipse at 75% 25%,#541edb65,transparent 40%),linear-gradient(115deg,#05091d,#12052a 75%,#06091a);border-color:#aa4cfa9e}
+.heroPortrait{z-index:1;isolation:isolate;background:radial-gradient(ellipse at 75% 30%,#11dfff4f,transparent 36%),radial-gradient(ellipse at 89% 80%,#ec28d946,transparent 47%),linear-gradient(120deg,#060b24 30%,#1a0951 75%,#090a25)}
+.heroPortrait:before{z-index:0;inset:0;transform:none;opacity:1;background:repeating-radial-gradient(circle at 75% 45%,#00ecff26 0 2px,transparent 3px 35px),radial-gradient(circle at 72% 38%,#ac4ef63e,transparent 48%)}
+.heroPortrait:after{z-index:4;pointer-events:none;background:linear-gradient(110deg,transparent 5%,#e536fa13 45%,transparent 70%),repeating-linear-gradient(90deg,transparent 0 43px,#0de9ff13 44px,transparent 46px 87px);opacity:.65}
+.heroScene{position:absolute;display:block;z-index:2;top:-5%;right:2%;height:114%;width:auto;max-width:none!important;max-height:none!important;opacity:.96;object-fit:contain;mix-blend-mode:screen;filter:brightness(1.95) saturate(1.95) contrast(1.12) drop-shadow(0 0 25px #961aff8a);pointer-events:none}
+.heroWaveform{z-index:3;left:56%;right:2%;top:42%;height:24%;opacity:.56;filter:drop-shadow(0 0 14px #4efaff);transform:skewY(-7deg)}
+.heroVinyl{z-index:1;right:11%;top:8%;width:30%;opacity:.28;box-shadow:0 0 0 13px #4519ff33,0 0 0 22px #fb52e525,0 0 55px #b723ffad,inset 0 0 40px #05ddff5e}
+.heroOverlay{background:linear-gradient(90deg,#03071ff5 0%,#04071fe0 26%,#100a2f81 52%,#050a1e1a 80%),linear-gradient(0deg,#040515bf,transparent 34%)}
+.heroIdentity h1{letter-spacing:-.055em}
+@media(max-width:759px){
+ .hero{min-height:293px;box-shadow:0 9px 28px #000b,0 0 18px #ac20fe3a}
+ .heroCopy{min-height:293px;max-width:100%;padding:13px 12px 12px}
+ .heroScene{height:101%;top:-3%;right:-7%;opacity:1;filter:brightness(1.9) saturate(1.8) contrast(1.1) drop-shadow(0 0 15px #7726ffb5)}
+ .heroWaveform{top:15%;height:20%;left:24%;right:4%;opacity:.3}
+ .heroVinyl{top:-12%;right:4%;width:42%;opacity:.2}
+ .heroOverlay{background:linear-gradient(0deg,#03071bfb 0%,#03071bf2 42%,#020d278a 64%,#020a2030 83%,#040a2360 100%)}
+ .heroIdentity{margin-top:7px;gap:10px}
+ .heroIdentity h1{font-size:1.65rem;line-height:1.04}
+ .heroDescription{font-size:.72rem;line-height:1.3;margin-top:7px}
+ .heroActions{margin-top:10px;gap:8px}
+ .heroActions button{min-height:43px;white-space:nowrap}
+ .heroTools{margin-top:8px}
+}
+@media(max-width:390px){
+ .hero{min-height:299px}
+ .heroCopy{min-height:299px}
+ .heroScene{right:-8%;top:-3%}
+}
+@media(min-width:760px) and (max-width:980px){
+ .heroScene{height:118%;top:-6%;right:-8%}
+}
+
+
+/* SLB11 full-catalog accessibility: promotional shelves remain 3-up swipe rails, but
+   View All, category filters and search results expand into a legible real catalog. */
+@media(max-width:759px){
+ .allGridExpanded{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+   overflow:visible!important;scroll-snap-type:none;padding-bottom:10px}
+ .allGridExpanded .posterCardCompact{width:auto;min-width:0;flex:none;--cardH:185px;height:185px;scroll-snap-align:none}
+ .allGridExpanded .posterBody h3{font-size:.88rem}
+ .allGridExpanded .posterBody p{font-size:.67rem}
+ .allGridExpanded .posterCta{min-height:31px;font-size:.73rem}
+}
+
+
+/* SLB11 real Playwright Fold-cover failure: the branded home link was only 35.73px tall.
+   Both mobile and desktop/Fold sidebar brand links must be full-size touch targets. */
+.mobileBrand,.brandLockup{min-height:44px;box-sizing:border-box;align-items:center;touch-action:manipulation}
+.mobileBrand:focus-visible,.brandLockup:focus-visible{outline:2px solid #66fff2;outline-offset:3px}
+
+
+/* SLB11 VISUAL-FIDELITY GATE: real product art, not empty accent rectangles.
+   Display each existing /posters/{app-id}.svg exactly once. The previous
+   background-image + <img> combination double-rendered the same asset, and
+   stacked dark scrims reduced legibility of the real illustrations. */
+.posterCard .posterArt,.posterCardCompact .posterArt{
+  z-index:1;inset:0;display:block;overflow:hidden;opacity:1;
+  background-image:none;background-color:transparent;filter:none
+}
+.posterCard .posterArt img,.posterCardCompact .posterArt img{
+  position:absolute;inset:0;display:block;width:100%;height:100%;
+  max-width:none;max-height:none;object-fit:cover;object-position:50% 53%;
+  opacity:1;filter:brightness(1.32) saturate(1.6) contrast(1.13)
+}
+.posterCard .posterArt::after,.posterCardCompact .posterArt::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 0%,transparent 58%,rgba(1,5,15,.12) 77%,rgba(1,5,15,.45) 100%)
+}
+.posterCard .posterShade,.posterCardCompact .posterShade{
+  z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,transparent 0%,transparent 43%,rgba(1,5,15,.04) 60%,rgba(1,5,15,.50) 79%,rgba(1,5,15,.94) 100%)
+}
+
+
+/* SLB11 real Chromium visual defect: the full-card action hit area sits ABOVE the
+   poster (z-index 4 vs 1). It must never draw its own background or shadow.
+   Keep the button interactive/accessibly labelled, but make its paint fully transparent. */
+.posterCard > .posterHit,.posterCardCompact > .posterHit{
+  position:absolute;inset:0;z-index:4;
+  display:block;width:100%;height:100%;
+  appearance:none;-webkit-appearance:none;
+  background:none!important;background-image:none!important;background-color:transparent!important;
+  border:0!important;border-radius:inherit;padding:0;
+  box-shadow:none!important;filter:none!important;
+  opacity:1;cursor:pointer
+}
+.posterCard > .posterHit::before,.posterCard > .posterHit::after,
+.posterCardCompact > .posterHit::before,.posterCardCompact > .posterHit::after{content:none!important}
+
+
+/* SLB11 owner screenshot review: a details chevron was painted over each
+   authentic logo plus a second pseudo-chevron beneath it. One discreet,
+   accessible info control must stay at top RIGHT, not on the logo. */
+.posterCard .posterDetails,.posterCardCompact .posterDetails{
+  position:absolute!important;top:5px!important;right:5px!important;
+  bottom:auto!important;left:auto!important;z-index:8;
+  width:44px;height:44px;min-width:44px;min-height:44px;
+  display:grid;place-items:center;padding:0;border:0;
+  color:#e6fffc;background:transparent!important;
+  box-shadow:none!important;filter:none!important;
+  font-size:0;line-height:1;opacity:1;pointer-events:auto
+}
+.posterCard .posterDetails::before,.posterCardCompact .posterDetails::before,
+.posterCard .posterDetails::after,.posterCardCompact .posterDetails::after{
+  content:none!important;display:none!important
+}
+.posterCard .posterDetails span,.posterCardCompact .posterDetails span{
+  display:grid;place-items:center;width:28px;height:28px;border-radius:50%;
+  border:1px solid #73eee6a8;background:#061321ef;
+  color:#dffffb;font-size:.84rem;font-weight:800;font-style:normal;
+  box-shadow:0 0 9px #0ef4e52e
+}
+.posterCard .posterDetails:hover span,.posterCardCompact .posterDetails:hover span,
+.posterCard .posterDetails:focus-visible span,.posterCardCompact .posterDetails:focus-visible span{
+  background:#07535b;border-color:#b3fffa
+}
+/* Card titles and CTAs need one calm surface, never opaque rectangles over the
+   entire illustration. Real original posters remain full-size and unmodified. */
+.posterCard .posterBody,.posterCardCompact .posterBody{
+  padding:7px 7px 6px;border-radius:11px;
+  background:linear-gradient(180deg,rgba(2,7,20,.50),rgba(2,7,20,.87) 44%,rgba(2,7,20,.96));
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  box-shadow:0 3px 16px #01051177
+}
+.posterCard .posterBody h3,.posterCardCompact .posterBody h3{
+  color:#fff;text-shadow:0 2px 6px #000b
+}
+.posterCard .posterBody p,.posterCardCompact .posterBody p{
+  color:#e3f3f7;text-shadow:none
+}
+@media(max-width:759px){
+ .posterCard .posterBody,.posterCardCompact .posterBody{
+   left:7px;right:7px;bottom:7px;padding:5px 5px 4px;border-radius:8px
+ }
+}

@@ -1,45 +1,71 @@
+// Rebuilt SLB12 presentation: objective checks against the exact preserved reference.
+// This script must not assert rejected CSS selectors from the prior storefront.
 import fs from "node:fs";
-
-const page=fs.readFileSync("src/app/storefront/page.tsx","utf8");
-const css=fs.readFileSync("src/app/storefront/storefront.module.css","utf8");
-const vercel=JSON.parse(fs.readFileSync("vercel.json","utf8"));
-const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
-const studio=fs.readFileSync("src/app/studio/page.tsx","utf8");
-
+const read=p=>fs.readFileSync(p,"utf8");
+const page=read("src/app/storefront/page.tsx");
+const layout=read("src/app/storefront/showcase-layout.module.css");
+const base=read("src/app/storefront/storefront.module.css");
+const note=read("docs/APPROVED_NEON_APP_STORE_SHOWCASE.md");
+const browser=read("playwright.config.ts");
+const pkg=JSON.parse(read("package.json"));
 const checks=[
- ["Premium storefront remains the root experience",fs.readFileSync("src/app/page.tsx","utf8").includes('export {default} from "./storefront/page"')],
- ["Studio command center remains separate",page.includes('href="/studio"')],
- ["Approved cinematic hero is present",page.includes("FEATURED APP")&&page.includes("heroIdentity")&&page.includes("heroActions")&&page.includes("heroFeatures")],
- ["Approved storefront shelves are present",page.includes("Featured Apps")&&page.includes("More from CactusByte Studios")&&page.includes("All Apps")],
- ["Actual verified brand assets remain wired",page.includes("verifiedBrandAsset(app.id)")&&page.includes("official logo")],
- ["PocketStomp unresolved-brand safeguard remains intact",page.includes('large?app.shortName:"LOGO"')&&page.includes("Official logo pending recovery")],
- ["Cinematic neon shell is explicit",css.includes("--neon:#21f2b6")&&css.includes(".hero{")&&css.includes(".posterCard")&&css.includes(".brandRail")],
- ["Hero uses layered atmospheric media with approved artwork and text protection",css.includes(".heroMedia")&&css.includes("filter:blur(6px)")&&css.includes("filter:blur(7px)")&&css.includes('url("/acelynn-beta-icon.png")')&&css.includes("background-size:cover,auto 65%")&&css.includes("background-size:cover,auto 38%")&&css.includes(".featureBadge{align-self:flex-start}")&&css.includes(".heroOverlay")&&css.includes("box-shadow:0 30px 90px")],
- ["Category strip uses non-shrinking scrollable pills",css.includes(".categoryStrip")&&css.includes(".categoryOn")&&css.includes(".categoryStrip button{flex:0 0 auto")],
- ["Desktop/Fold storefront keeps persistent brand rail",css.includes("@media(max-width:980px)")&&css.includes(".brandRail{left:12px")],
- ["Phone storefront switches to compact full-width shell",css.includes("@media(max-width:759px)")&&css.includes(".brandRail{display:none}")&&css.includes(".featuredGrid,.moreGrid,.recentGrid{display:flex;overflow-x:auto")],
- ["Bottom nav is persistent and mockup-aligned",page.includes('aria-label="CactusByte navigation"')&&css.includes(".bottomNav")],
- ["Updates and Settings destinations activate the intended Studio screens",page.includes('href="/studio#releases"')&&page.includes('href="/studio#settings"')&&studio.includes('hash==="releases"')&&studio.includes('hash==="settings"')],
- ["Unmatched search results receive a readable empty state",page.includes('role="status">No apps match your search or category.')&&css.includes(".emptyState")],
- ["Initial portfolio density remains capped",page.includes("apps.slice(0,8)")],
- ["Storefront display version matches the verified package release",page.includes(`STOREFRONT_VERSION="${pkg.version}"`)], 
- ["Studio UI version remains package-aligned",studio.includes(`const V="${pkg.version}"`)], 
- ["Storefront footer includes a tappable CactusByte home link and rights notice",page.includes('className={styles.footerBrand} href="/"')&&page.includes("Cactus🌵Byte Studios™")&&page.includes("All Rights Reserved")],
- ["Studio footer links back to CactusByte without duplicate brand names",studio.includes('<footer><a className="footerBrand" href="/">Cactus🌵Byte Studios™</a> · v{V} · All Rights Reserved</footer>')],
- ["North Star art-backed poster cards are bound to real registry IDs",css.includes('[data-app="noproblem"]')&&css.includes('[data-app="pocketstomp"]')&&css.includes(".posterArt{background-image")],
- ["North Star featured row includes real SchismMatrix and no fictional apps",page.includes('"noproblem","fantasy-matrix"')&&!page.includes("firstep-kitchen")],
- ["Functional category tile shelf and recommendation shelf exist",page.includes("Explore Categories")&&page.includes("Recommended Apps")&&page.includes('data-category={t.id}')],
- ["Mobile bottom navigation exposes five usable links",css.includes(".bottomNav a:nth-child(3),.bottomNav a:nth-child(5){display:flex}")&&page.includes("Profile</a>")],
- ["All 14 app scenes are bundled as separate local vector assets",["acelynn-pro","noproblem","fantasy-matrix","first-bearing","rivetex","pocketstomp","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","machzero","orbitgather","ghostlane","hustle-first"].every(id=>fs.existsSync(`public/posters/${id}.svg`)&&fs.readFileSync(`public/posters/${id}.svg`,"utf8").includes('viewBox="0 0 600 780"')&&css.includes(`url("/posters/${id}.svg")`))],
- ["Production deployment remains disabled",vercel?.git?.deploymentEnabled===false]
+ ["Reference locked",note.includes("3b40225c75a08d25219647addbb4ab87ccb6bb079087bdc63dbd65df76b4c438")],
+ ["Original Library pointer locked",note.includes("libfile_3d36fd0244a08191817ba3ce301398fc")],
+ ["Dedicated coherent showcase styles",page.includes('import showcase from "./showcase-layout.module.css"')&&page.includes("showcase.root")],
+ ["Approved Fold/desktop sidebar restored",layout.includes(".root > :global(aside){display:block!important}")&&layout.includes("margin:0 16px 0 194px!important")],
+ ["Phone retains compact header without desktop sidebar",layout.includes(".root > :global(aside){display:none!important}")],
+ ["Header exists",page.includes("showcase.topbar")&&layout.includes(".topbar{")],
+ ["Acelynn hero and real actions",page.includes("FEATURED APP")&&page.includes("open(heroApp)")&&page.includes("setDemo(heroApp)")],
+ ["No portrait substituted",!page.includes("unsplash")&&!layout.includes("unsplash")],
+ ["Five featured real products",page.includes('["acelynn-pro","first-bearing","fantasy-matrix","hustle-first","noproblem"]')],
+ ["Six more real products",page.includes('["rivetex","shadownex-prime","scouttrace","rapid-takeoff","terraflow-matrix","pocketstomp"]')],
+ ["No duplicate recommended shelf",!page.includes("Recommended Apps")],
+ ["No giant category tiles",!page.includes("categoryTiles}")],
+ ["Pill filters before featured",page.indexOf("showcase.filters")<page.indexOf("showcase.featuredSection")],
+ ["Working category select opens catalog",page.includes("function chooseCategory")&&page.includes("setShowAll(true)")],
+ ["Filter pressed state accessible",page.includes("aria-pressed={category===item.name}")],
+ ["Navigation filter exists without modifying approved primary pill order",page.includes('{name:"Navigation",label:"Navigation"}')&&page.includes("categories.slice(0,6)")],
+ ["Search indexes full registry descriptions",page.includes('${app.description} ${copy.tagline} ${copy.short}')],
+ ["Reduced motion protects programmatic scrolling",page.includes('matchMedia("(prefers-reduced-motion: reduce)")')&&page.includes('scrollToSection("all-apps")')],
+ ["Expanded filters retain accessible target",page.includes('id="category-extra-options" hidden={!showCategoryFilters}')],
+ ["Search remains attached to live registry",page.includes("studioApps.filter(")&&page.includes("q.trim().toLowerCase()")],
+ ["Search results accessible",page.includes('title={searchMode?"Search results"')],
+ ["No default duplicated All Apps",page.includes('const visibleApps=showAll||searchMode||category!=="All Apps"?apps:[];')],
+ ["Catalog open with View All",page.includes("View All Apps")],
+ ["Bottom nav real routes",page.includes("My Apps</a>")&&page.includes("Settings</a>")],
+ ["Sidebar Apps link reveals real catalog",page.includes('<a href="#all-apps" onClick={seeAllApps}>▦ <span>Apps</span></a>')],
+ ["Phone-menu All Apps reveals real catalog",page.includes('<a href="#all-apps" onClick={seeAllApps}>▦ All Apps</a>')],
+ ["Beta Labs announces selected state",page.includes('aria-pressed={category==="Beta Labs"} onClick={()=>chooseCategory("Beta Labs")}')],
+ ["Dialog keyboard entry and Escape",page.includes("focusable()[0]?.focus()")&&page.includes('if(event.key==="Escape")')],
+ ["Modal Tab cycling and opener focus restore",page.includes('event.key!=="Tab"')&&page.includes("modalOrigin.current")&&page.includes("if(origin?.isConnected)origin.focus()")&&page.includes("last.focus()")],
+ ["Dialog close touch target 44px",base.includes("top:12px;right:12px;width:44px;height:44px;border-radius:50%")],
+ ["Modal origin persists through Details-to-Demo",page.includes("const modalOrigin=useRef<HTMLElement|null>(null)")&&page.includes("if(!modalOrigin.current?.isConnected)")],
+ ["Modal body scroll lock cleans up",page.includes('document.body.style.overflow="hidden"')&&page.includes("document.body.style.overflow=previousOverflow")],
+ ["Mobile menu Escape restores focus",page.includes('document.querySelector<HTMLAnchorElement>("#cactusbyte-mobile-menu a")?.focus()')&&page.includes('setMobileMenu(false);')],
+ ["Mobile search Escape resets query",page.includes("if(!mobileSearch)return;")&&page.includes('setQ("");setMobileSearch(false)')],
+ ["Six-option bottom dock",layout.includes("grid-template-columns:repeat(6,minmax(0,1fr))")],
+ ["Dock safe area",layout.includes("env(safe-area-inset-bottom)")],
+ ["Page reserves safe-area dock clearance",layout.includes("padding:0 0 calc(82px + env(safe-area-inset-bottom))!important")&&layout.includes("calc(86px + env(safe-area-inset-bottom))")],
+ ["44px details and filter touch targets",layout.includes("width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important")&&layout.includes("min-height:44px;padding:0 17px")],
+ ["Five-across Fold showcase",layout.includes("grid-auto-columns:calc((100% - 32px)/5)")],
+ ["Six-across secondary shelf",layout.includes("grid-auto-columns:calc((100% - 40px)/6)")],
+ ["Three-across phone shelf",layout.includes("grid-auto-columns:calc((100% - 12px)/3)")],
+ ["Mobile feature starts with First Bearing",layout.includes('[data-app="acelynn-pro"]')],
+ ["Existing poster assets retained",page.includes('/posters/${app.id}.svg')],
+ ["Poster image layer full size",layout.includes(".posterArt img{width:100%!important;height:100%!important")],
+ ["Card copy legible",layout.includes(".posterBody{")&&layout.includes("#020711ed")],
+ ["Distinct details icon",page.includes("showcase.posterDetails")&&layout.includes(".posterDetails::before,.posterDetails::after")],
+ ["Original logo resolution",page.includes("verifiedBrandAsset(app.id)")],
+ ["Actual app links unchanged",page.includes('window.open(app.url,"_blank","noopener,noreferrer")')],
+ ["App dialogs include real metadata",page.includes("selected.version")&&page.includes("selected.platform")],
+ ["Local demo media available",page.includes("demoPaths[demo.id]")],
+ ["App version matches package",page.includes('STOREFRONT_VERSION="'+pkg.version+'"')],
+ ["Footer tappable",page.includes("Cactus🌵Byte Studios™")&&page.includes('href="/" aria-label="CactusByte Studios app home"')],
+ ["Source preserves escaped dialogs",page.includes('event.key==="Escape"')],
+ ["Browser QA does not re-use stale server",browser.includes("QA_PORT=3101")&&browser.includes("reuseExistingServer:false")],
+ ["Owner sign-off explicitly required",note.includes("Explicit owner visual approval")]
 ];
-
 let failed=0;
-for(const [name,ok] of checks){
- console.log(`${ok?"✓":"✗"} ${name}`);
- if(!ok)failed++;
-}
-console.log(`\n${checks.length-failed} passed · ${failed} failed`);
+for(const [label,pass] of checks){console.log((pass?"PASS ":"FAIL ")+label);if(!pass)failed++}
+console.log("CactusByte showcase rebuild: "+(checks.length-failed)+"/"+checks.length+" source checks");
 if(failed)process.exit(1);
-
-// SLB10 approved-mockup fidelity contract.

@@ -1,11 +1,15 @@
 import { ImageResponse } from "next/og";
-import type { NextRequest } from "next/server";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-export const runtime = "edge";
+// ImageResponse needs local image bytes, not a self-fetch using request.url.
+// In private Codespaces the incoming URL may be 0.0.0.0, which cannot be fetched.
+// The PNG is the existing official CactusByte mark, never a generated substitute.
+export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
-  const logoUrl = new URL("/logo2.png", request.url).toString();
-
+export async function GET() {
+  const png = await readFile(join(process.cwd(), "public/logo2.png"));
+  const src = `data:image/png;base64,${png.toString("base64")}`;
   return new ImageResponse(
     (
       <div
@@ -16,14 +20,14 @@ export async function GET(request: NextRequest) {
           alignItems: "center",
           justifyContent: "center",
           background: "#050807",
-          padding: "46px",
+          padding: 46,
         }}
       >
         <img
-          src={logoUrl}
+          src={src}
           alt=""
-          width="420"
-          height="420"
+          width={420}
+          height={420}
           style={{ objectFit: "contain" }}
         />
       </div>
