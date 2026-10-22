@@ -4,6 +4,7 @@ import fs from "node:fs";
 const read=p=>fs.readFileSync(p,"utf8");
 const page=read("src/app/storefront/page.tsx");
 const layout=read("src/app/storefront/showcase-layout.module.css");
+const base=read("src/app/storefront/storefront.module.css");
 const note=read("docs/APPROVED_NEON_APP_STORE_SHOWCASE.md");
 const browser=read("playwright.config.ts");
 const pkg=JSON.parse(read("package.json"));
@@ -29,6 +30,12 @@ const checks=[
  ["No default duplicated All Apps",page.includes('const visibleApps=showAll||searchMode||category!=="All Apps"?apps:[];')],
  ["Catalog open with View All",page.includes("View All Apps")],
  ["Bottom nav real routes",page.includes("My Apps</a>")&&page.includes("Settings</a>")],
+ ["Sidebar Apps link reveals real catalog",page.includes('<a href="#all-apps" onClick={seeAllApps}>▦ <span>Apps</span></a>')],
+ ["Phone-menu All Apps reveals real catalog",page.includes('<a href="#all-apps" onClick={seeAllApps}>▦ All Apps</a>')],
+ ["Beta Labs announces selected state",page.includes('aria-pressed={category==="Beta Labs"} onClick={()=>chooseCategory("Beta Labs")}')],
+ ["Dialog keyboard entry and Escape",page.includes("focusable()[0]?.focus()")&&page.includes('if(event.key==="Escape")')],
+ ["Modal Tab cycling and opener focus restore",page.includes('event.key!=="Tab"')&&page.includes("previousFocus?.isConnected")&&page.includes("last.focus()")],
+ ["Dialog close touch target 44px",base.includes("top:12px;right:12px;width:44px;height:44px;border-radius:50%")],
  ["Six-option bottom dock",layout.includes("grid-template-columns:repeat(6,minmax(0,1fr))")],
  ["Dock safe area",layout.includes("env(safe-area-inset-bottom)")],
  ["Page reserves safe-area dock clearance",layout.includes("padding:0 0 calc(82px + env(safe-area-inset-bottom))!important")&&layout.includes("calc(86px + env(safe-area-inset-bottom))")],

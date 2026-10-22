@@ -108,11 +108,31 @@ export default function StorefrontPage(){
 
   useEffect(()=>{
     if(!selected&&!demo)return;
+    const previousFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    const dialog=document.querySelector<HTMLElement>('[role="dialog"]');
+    const focusable=()=>Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],video[controls]')??[]);
+    focusable()[0]?.focus();
     const dismiss=(event:KeyboardEvent)=>{
-      if(event.key==="Escape"){setSelected(null);setDemo(null)}
+      if(event.key==="Escape"){
+        event.preventDefault();
+        setSelected(null);setDemo(null);
+        return;
+      }
+      if(event.key!=="Tab"||!dialog)return;
+      const controls=focusable();
+      if(!controls.length){event.preventDefault();return}
+      const first=controls[0],last=controls[controls.length-1];
+      if(event.shiftKey&&(document.activeElement===first||!dialog.contains(document.activeElement))){
+        event.preventDefault();last.focus();
+      }else if(!event.shiftKey&&(document.activeElement===last||!dialog.contains(document.activeElement))){
+        event.preventDefault();first.focus();
+      }
     };
     document.addEventListener("keydown",dismiss);
-    return ()=>document.removeEventListener("keydown",dismiss);
+    return ()=>{
+      document.removeEventListener("keydown",dismiss);
+      if(previousFocus?.isConnected)previousFocus.focus();
+    };
   },[selected,demo]);
 
   useEffect(()=>{
@@ -170,7 +190,7 @@ export default function StorefrontPage(){
       <nav className={styles.railNav} aria-label="CactusByte sections">
         <a className={styles.railOn} href="#home" onClick={e=>browseFromSearch(e,"home")}>⌂ <span>Home</span></a>
         <a href="#featured" onClick={e=>browseFromSearch(e,"featured")}>◇ <span>Discover</span></a>
-        <a href="#all-apps">▦ <span>Apps</span></a>
+        <a href="#all-apps" onClick={seeAllApps}>▦ <span>Apps</span></a>
         <a href="#categories" onClick={e=>browseFromSearch(e,"categories")}>◫ <span>Categories</span></a>
         <a href="/studio">✦ <span>Studio</span></a>
         <a href="/studio#releases">◌ <span>Updates</span></a>
@@ -195,7 +215,7 @@ export default function StorefrontPage(){
         {mobileMenu&&<nav id="cactusbyte-mobile-menu" className={styles.mobileMenuPanel} aria-label="CactusByte mobile menu">
           <a href="#home" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"home")}}>⌂ Home</a>
           <a href="#featured" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"featured")}}>◇ Discover</a>
-          <a href="#all-apps" onClick={()=>setMobileMenu(false)}>▦ All Apps</a>
+          <a href="#all-apps" onClick={seeAllApps}>▦ All Apps</a>
           <a href="#categories" onClick={e=>{setMobileMenu(false);browseFromSearch(e,"categories")}}>◫ Categories</a>
           <a href="/studio" onClick={()=>setMobileMenu(false)}>✦ Studio</a>
           <a href="/studio#releases" onClick={()=>setMobileMenu(false)}>◌ Updates</a>
@@ -238,7 +258,7 @@ export default function StorefrontPage(){
         </div>
         <div className={showcase.extraFilters} id="category-extra-options" hidden={!showCategoryFilters}>
           {categories.slice(6).map(item=><button key={item.name} type="button" aria-pressed={category===item.name} onClick={()=>chooseCategory(item.name)}>{item.label}</button>)}
-          <button type="button" onClick={()=>chooseCategory("Beta Labs")}>Beta Labs</button>
+          <button type="button" aria-pressed={category==="Beta Labs"} onClick={()=>chooseCategory("Beta Labs")}>Beta Labs</button>
         </div>
       </section>
 

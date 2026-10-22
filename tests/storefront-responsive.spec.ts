@@ -215,7 +215,7 @@ test("CactusByte footer displays accurate version and clickable studio identity"
 test("Visible storefront controls meet mobile touch-size minimums",async({page})=>{
   await page.setViewportSize({width:390,height:844});await page.goto("/");
   const targets=page.locator("#category-filter-options button, #home [class*='heroActions'] button, #featured [class*='posterDetails']");
-  const sizes=await targets.evaluateAll(elements=>elements.map(el=>{const r=el.getBoundingClientRect();return {name:el.textContent?.trim()||el.getAttribute("aria-label"),width:r.width,height:r.height}}));
+  const sizes=await targets.evaluateAll(elements=>elements.flatMap(el=>{const r=el.getBoundingClientRect();if(r.width===0||r.height===0||getComputedStyle(el).visibility==="hidden")return [];return [{name:el.textContent?.trim()||el.getAttribute("aria-label"),width:r.width,height:r.height}]}));
   expect(sizes.length).toBeGreaterThan(4);
   expect(sizes.filter(item=>item.width<44||item.height<44),"undersized controls: "+JSON.stringify(sizes)).toEqual([]);
 });
@@ -227,4 +227,52 @@ test("No modal is simultaneously shown with another dialog",async({page})=>{
   await page.getByRole("dialog").getByRole("button",{name:/Watch Demo/}).click();
   await expect(page.getByRole("dialog")).toHaveCount(1);
   await expect(page.getByRole("dialog").locator("video")).toHaveCount(1);
+});
+
+
+test("SLB15 desktop sidebar Apps opens a real, initially collapsed catalog",async({page})=>{
+  await page.setViewportSize({width:1104,height:884});await page.goto("/");
+  await expect(page.locator("#all-apps article")).toHaveCount(0);
+  await page.getByRole("navigation",{name:"CactusByte sections"}).getByRole("link",{name:"Apps"}).click();
+  await expect(page.locator("#all-apps article")).toHaveCount(14);
+});
+
+test("SLB15 mobile-menu All Apps opens the catalog without trapping the menu",async({page})=>{
+  await page.setViewportSize({width:390,height:844});await page.goto("/");
+  await page.getByRole("button",{name:"Open menu"}).click();
+  const menu=page.getByRole("navigation",{name:"CactusByte mobile menu"});
+  await menu.getByRole("link",{name:"All Apps"}).click();
+  await expect(menu).toHaveCount(0);
+  await expect(page.locator("#all-apps article")).toHaveCount(14);
+});
+
+test("SLB15 Beta Labs filter exposes its actual pressed state",async({page})=>{
+  await page.goto("/");
+  await page.getByRole("button",{name:/More categories/}).click();
+  const beta=page.locator("#category-extra-options").getByRole("button",{name:"Beta Labs"});
+  await expect(beta).toHaveAttribute("aria-pressed","false");
+  await beta.click();
+  await expect(beta).toHaveAttribute("aria-pressed","true");
+  await page.locator("#category-filter-options").getByRole("button",{name:"All Apps"}).click();
+  await expect(beta).toHaveAttribute("aria-pressed","false");
+});
+
+test("SLB15 modal traps keyboard Tab, Escape restores opener and close target is 44px",async({page})=>{
+  await page.setViewportSize({width:1104,height:884});await page.goto("/");
+  const opener=page.locator('#featured article[data-app="first-bearing"]').getByRole("button",{name:"Details for First Bearing™"});
+  await opener.focus();
+  await opener.click();
+  const dialog=page.getByRole("dialog");
+  const close=dialog.getByRole("button",{name:"Close details"});
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(dialog.getByRole("button",{name:/Watch Demo/})).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(close).toBeFocused();
+  const box=await close.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(44);
+  expect(box?.height).toBeGreaterThanOrEqual(44);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(opener).toBeFocused();
 });
