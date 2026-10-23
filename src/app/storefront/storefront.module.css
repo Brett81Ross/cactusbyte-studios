@@ -287,3 +287,10 @@
 .posterCard[data-app="orbitgather"],.posterCardCompact[data-app="orbitgather"]{--localCardImage:url("/posters/orbitgather.svg")}
 .posterCard[data-app="ghostlane"],.posterCardCompact[data-app="ghostlane"]{--localCardImage:url("/posters/ghostlane.svg")}
 .posterCard[data-app="hustle-first"],.posterCardCompact[data-app="hustle-first"]{--localCardImage:url("/posters/hustle-first.svg")}
+
+/* Acelynn Pro owner-approved neon studio hero: remove rejected portrait and autoplay overlay. */
+.hero .heroMedia{opacity:1!important;filter:none!important;transform:none!important;object-fit:cover!important;object-position:center center!important}
+.hero::before{display:none!important;content:none!important}
+.hero .heroPortrait{display:none!important}
+.hero .heroOverlay{background:linear-gradient(90deg,rgba(2,5,19,.86) 0%,rgba(2,5,19,.64) 35%,rgba(2,5,19,.14) 68%,rgba(2,5,19,.08) 100%)!important}
+@media(max-width:759px){.hero .heroMedia{object-position:68% center!important}.hero .heroOverlay{background:linear-gradient(0deg,rgba(2,5,19,.95) 0%,rgba(2,5,19,.74) 43%,rgba(2,5,19,.12) 90%)!important}}

@@ -144,7 +144,7 @@ export default function StorefrontPage(){
       {mobileSearch&&<label className={styles.mobileSearch}><span>⌕</span><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search apps..." /></label>}
 
       <section className={styles.hero} id="home" style={accentStyle(heroApp)}>
-        <video className={styles.heroMedia} src={demoPaths[heroApp.id]} poster="/acelynn-beta-icon.png" autoPlay muted loop playsInline preload="metadata"/>
+        <img className={styles.heroMedia} src="/cinematic/acelynn-hero-approved.webp" alt="" decoding="async"/>
         <div className={styles.heroPortrait} aria-hidden="true"/>
         <div className={styles.heroOverlay}/>
         <div className={styles.heroNoise}/>
