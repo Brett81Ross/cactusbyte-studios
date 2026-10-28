@@ -1,11 +1,22 @@
 from pathlib import Path
-import json, subprocess, sys
+import json, subprocess, sys, re
 
 ROOT=Path(__file__).resolve().parents[1]
 DEMO_DIR=ROOT/'public'/'demos'
-EXPECTED={
-'cactusbyte-studios','no-problem-pressure-washing-matrix','machzero','rapid-takeoff','acelynn-pro','pocketstomp','ghostlane','first-bearing','fantasy-football-matrix','acelynn-scouttrace','terraflow-matrix','orbitgather','shadownex-prime'
+# Read the same app registry source used by the CactusByte manifest.
+# Preserve existing historical demo filenames for these three app IDs.
+DEMO_SLUG_ALIASES = {
+    'noproblem': 'no-problem-pressure-washing-matrix',
+    'fantasy-matrix': 'fantasy-football-matrix',
+    'scouttrace': 'acelynn-scouttrace',
 }
+registry_source = (ROOT/'src'/'data'/'apps.ts').read_text(encoding='utf-8')
+app_ids = re.findall(r'\\{\\s*id\\s*:\\s*["\\\']([^"\\\']+)["\\\']', registry_source)
+if not app_ids or len(app_ids) != len(set(app_ids)):
+    sys.exit('DEMO MEDIA QA FAILED: registry missing or contains duplicate app IDs')
+EXPECTED = {'cactusbyte-studios', *(DEMO_SLUG_ALIASES.get(app_id, app_id) for app_id in app_ids)}
+if len(EXPECTED) != len(app_ids) + 1:
+    sys.exit('DEMO MEDIA QA FAILED: demo filename aliases collide')
 NEURAL_HANDLER='CactusByte American Male Neural Narration'
 files=sorted(DEMO_DIR.glob('*-60-second-demo.mp4'))
 seen={p.name.removesuffix('-60-second-demo.mp4') for p in files}
