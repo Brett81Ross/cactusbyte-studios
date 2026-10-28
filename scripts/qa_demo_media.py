@@ -11,7 +11,7 @@ DEMO_SLUG_ALIASES = {
     'scouttrace': 'acelynn-scouttrace',
 }
 registry_source = (ROOT/'src'/'data'/'apps.ts').read_text(encoding='utf-8')
-app_ids = re.findall(r'\\{\\s*id\\s*:\\s*["\\\']([^"\\\']+)["\\\']', registry_source)
+app_ids = re.findall(r'\{\s*id\s*:\s*"([^"]+)"', registry_source)
 if not app_ids or len(app_ids) != len(set(app_ids)):
     sys.exit('DEMO MEDIA QA FAILED: registry missing or contains duplicate app IDs')
 EXPECTED = {'cactusbyte-studios', *(DEMO_SLUG_ALIASES.get(app_id, app_id) for app_id in app_ids)}
